@@ -19,7 +19,7 @@
 ##############################################SOURCE###############################################################################
 ###################################################################################################################################
 
-#sourceBaseLocation="D:/desarrollo/workspaces/R/multiomics/"
+# path adonde estan los archivos
 sourceBaseLocation="/home/hernan/Bioplat/multiomics/multiomics/"
 
 source(paste(sourceBaseLocation, "src/2-load/load_multiomics.R",sep=""), echo=FALSE, encoding="Cp1252")
