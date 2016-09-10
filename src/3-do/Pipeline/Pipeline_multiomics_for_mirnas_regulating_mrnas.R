@@ -35,7 +35,7 @@ library("multiMiR")
 #Where input files are and where the intermediate and result files will be stored
 #working.path="D:\datosGenomica\multiomics\paper\DCIS\5-mirna"  
 #working.path="D:/matias/academia/investigacion/medicina personalizada/8-DatosGenomica/2016-07-24---Eze-Colombia/1-gastrica/"
-working.path="D:\\desarrollo\\workspaces\\R\\multiomics\\examples\\"
+working.path=source(paste(sourceBaseLocation, "examples/",sep=""), echo=FALSE, encoding="Cp1252")
 
 # The mrna expression data. It is the path of a file with the following format
 #      -Row 1: It has the sample labels
