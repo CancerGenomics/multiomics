@@ -90,4 +90,5 @@ just.betters.maturemirna.X.mrna.considering.mirna.databases.path<-paste(working.
 ColapseMirnaXMrna(just.betters.maturemirna.X.mrna.considering.mirna.databases.path, working.path)
 
 
-#comentario para probar el merge en rstudio. Agrego esta linea para q se vea un conflicto.
+#comentario para probar el merge en rstudio con problemas...
+
