@@ -20,7 +20,7 @@
 ###################################################################################################################################
 
 # path adonde estan los archivos de entrada
-sourceBaseLocation="/home/hernan/Bioplat/multiomics/multiomics/"
+sourceBaseLocation="D:\\desarrollo\\workspaces\\R\\multiomics\\"
 
 source(paste(sourceBaseLocation, "src/2-load/load_multiomics.R",sep=""), echo=FALSE, encoding="Cp1252")
 source(paste(sourceBaseLocation, "src/3-do/Private/multiomics_private_data_validation.R",sep=""), echo=FALSE, encoding="Cp1252")
@@ -29,20 +29,20 @@ source(paste(sourceBaseLocation, "src/3-do/API/mirnasRegulatingMrnas/API_multiom
 source(paste(sourceBaseLocation, "src/3-do/API/survivalGeneByGene/API_multiomics_for_survival_gene_by_gene.R",sep=""), echo=FALSE, encoding="Cp1252")
 source(paste(sourceBaseLocation, "src/3-do/API/survivalGeneByGene/API_multiomics_for_survival_gene_by_gene.R",sep=""), echo=FALSE, encoding="Cp1252")
 source(paste(sourceBaseLocation, "src/survival.entities/matrix_utils.R",sep=""), echo=FALSE, encoding="Cp1252")
-
+library("multiMiR")
 
 ##########CONFIG: You should change this 3 variables to set your values##################
 #Where input files are and where the intermediate and result files will be stored
 #working.path="D:\datosGenomica\multiomics\paper\DCIS\5-mirna"  
 #working.path="D:/matias/academia/investigacion/medicina personalizada/8-DatosGenomica/2016-07-24---Eze-Colombia/1-gastrica/"
-working.path="/home/hernan/Bioplat/multiomics/"
+working.path="D:\\desarrollo\\workspaces\\R\\multiomics\\examples\\"
 
 # The mrna expression data. It is the path of a file with the following format
 #      -Row 1: It has the sample labels
 #	   -Column1: It has the gene symbol (for example: A1BG, A2M)
 #	   -The cells has got the expression level of each gene for each sample
 #mrna.dif.expr.path.file="gastrica-mrna-expression-chico.csv"
-mrna.dif.expr.path.file="Tejido gastrico/gastrica-mrna-expression.csv"
+mrna.dif.expr.path.file="mrnas.csv"
 
 
 #The mirna expression data. it must have the following format:
@@ -50,7 +50,7 @@ mrna.dif.expr.path.file="Tejido gastrico/gastrica-mrna-expression.csv"
 #	   -Column 1: Mature mirna ID (for example: hsa-miR-22-3p). Note that R is un upper case. This R in uppercase is the way to identify that it is a mature-mirna and not a pre-mirna. The pre-mirna for this mature-mirna is hsa-mir-22. Multimir doesnt work with premirna because the databases it queries, doesnt work with pre-mirna. So, if you pass the pre-mirna (for example hsa-miR-22) multimir does not return anything. So, it is important that this file contains mature mirna ids. With the accession it also works (MIMAT0004982). These IDs could be find in http://www.mirbase.org/cgi-bin/mirna_entry.pl?acc=MI0005761 
 #	   -Cells has the expression levels of each mirna for each sample. 
 #mirna.dif.expr.path.file="gastrica-mirnas-expression.csv"
-mirna.dif.expr.path.file="Tejido gastrico/gastrica-mirnas-expression.csv"
+mirna.dif.expr.path.file="mirnas.csv"
 ##################END CONFIG###########################################################
 
 
@@ -90,5 +90,5 @@ just.betters.maturemirna.X.mrna.considering.mirna.databases.path<-paste(working.
 ColapseMirnaXMrna(just.betters.maturemirna.X.mrna.considering.mirna.databases.path, working.path)
 
 
-#comentario para probar el merge en rstudio con problemas...
+
 
