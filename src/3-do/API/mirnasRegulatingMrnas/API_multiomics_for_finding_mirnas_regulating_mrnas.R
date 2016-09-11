@@ -172,7 +172,7 @@ keepBestGeneXMirnaAccordingCorrelationAndAddMirnaDbInfo <- function(genes.x.mirn
 ColapseMirnaXMrna <- function(mirna.X.mRNA.with.predicted.and.validated.path, output.path){
 	mirnaXmrna<-read.table(mirna.X.mRNA.with.predicted.and.validated.path, header=T)
 
-	#It keeps just the ones correlating negatively
+	#It keeps just the ones correlating negatively because it represents that when mirna increases then mrna decreases meaning that mirna is regulating mrna.
 	mirnaXmrnaNegative=mirnaXmrna[mirnaXmrna$Mirna_Mrna_Correlation<0,]
 
 	#It converts NA in the validation_pubmed_id into NO
