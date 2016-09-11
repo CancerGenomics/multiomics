@@ -86,8 +86,8 @@ keepBestGeneXMirnaAccordingCorrelationAndAddMirnaDbInfo(mirnaxrna.path, working.
 # will be colapsed into 
 #		MIR1292	hsa-miR-1292-5p	MIMAT0005943	ESRRG	-0.747206480568877	2,52E+07	NO_PUB	diana_microt, pita
 #
-#just.betters.maturemirna.X.mrna.considering.mirna.databases.path<-paste(working.path, just.betters.maturemirna.X.mrna.considering.mirna.databases, sep="")
-#ColapseMirnaXMrna(just.betters.maturemirna.X.mrna.considering.mirna.databases.path, working.path)
+just.betters.maturemirna.X.mrna.considering.mirna.databases.path<-paste(working.path, just.betters.maturemirna.X.mrna.considering.mirna.databases, sep="")
+ColapseMirnaXMrna(just.betters.maturemirna.X.mrna.considering.mirna.databases.path, working.path)
 
 
 
