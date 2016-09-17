@@ -37,17 +37,24 @@ CalculateCorrelationsMirnaMrna <- function(expression.file, mirna.file, output.p
 	ptm <- proc.time()
 
 	# read the expression data
+	print("Reading the mrna file...")
 	expression <- na.omit(read.table(expression.file, header=TRUE,fill=TRUE))
+	print("Sorting the mrna data...")
 	expression <-SortMatrixByColumnName(expression, 1)
 	rownames(expression) <- expression[,1]
-	 
+	
 	# read the mirna file
+	print("Reading the mirna file...")
 	mirna <- na.omit(read.table(mirna.file, header=TRUE, fill=TRUE, sep="\t"))  
+	print("Sorting the mirna data...")
 	mirna <-SortMatrixByColumnName(mirna, 1)
 	
 	#Checks if both files has the same samples in the same order. If not, aborts the execution.
+	print("Checking if both files has the same samples in the same order...")
 	if (checkSamples) suppressWarnings(checkSamplesFormIRNArnaCorrelation(expression, mirna, ncol.for.expression.id))
-
+	
+	print("Preparing...")
+	
 	total.rows=nrow(expression)*nrow(mirna)
 	
 	# The result matix is created
@@ -66,8 +73,19 @@ CalculateCorrelationsMirnaMrna <- function(expression.file, mirna.file, output.p
 		  actual<-actual+1
 			actual.gen<-expression[j,1]
 			expression.para.ese.gen<-expression[j,2:ncol(expression)]
-			if ((actual)%%5000==0)print(paste(actual, "/", total.rows))
-			if ((actual)%%100000==0)print(paste("elapsed", (proc.time() - ptm)[3]))
+			if ((actual)%%5000==0)print(paste("analised ", actual, " from ", total.rows))
+			if ((actual)%%100000==0) {
+			  elapsedTime <- (proc.time() - ptm)[3]
+			  print(paste(
+			    "elapsed time: (seconds)", format2Print(elapsedTime), 
+			    " - (minutes)", format2Print(elapsedTime/60), 
+			    " - (hours)", format2Print(elapsedTime/60/60)
+			  ))
+			  print(paste("estimated remaining time (seconds)", format2Print((total.rows*elapsedTime)/actual),
+			              " - (minutes)", format2Print((total.rows*elapsedTime)/actual/60), 
+			              " - (hours)", format2Print((total.rows*elapsedTime)/actual/60/60)
+			  ))
+			}
 			resultado.pearson<-cor.test(as.numeric(expression.para.ese.gen),as.numeric(mirna.para.ese.gen))
 			if (!is.na(abs(resultado.pearson$estimate))) {
 				if (abs(resultado.pearson$estimate) > r.minimium) {
@@ -190,4 +208,8 @@ ColapseMirnaXMrna <- function(mirna.X.mRNA.with.predicted.and.validated.path, ou
 	#Write output
 	csvOutputFile<-paste(output.path, "\\pipelineOutput-mirnaXmRNAWithPredictedAndValidatedColapsed.csv", sep="")
 	write.table(result, csvOutputFile, sep="\t",row.names=FALSE,quote=FALSE)
+}
+
+format2Print <- function(number){
+  return (format(round(number, 2), nsmall = 2))
 }
