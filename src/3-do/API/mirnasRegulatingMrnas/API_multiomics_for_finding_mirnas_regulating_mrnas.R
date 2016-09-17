@@ -58,10 +58,7 @@ CalculateCorrelationsMirnaMrna <- function(expression.file, mirna.file, output.p
 	total.rows=nrow(expression)*nrow(mirna)
 	
 	# The result matix is created
-	#res <- matrix(nrow=0, ncol=4) 
-	# HERNAN1: EN LUGAR DE CREARLA EN 0 FILAS, LA CREO GIGANTE. 
-	# HAY QUE VER UN NÚMERO QUE SEA MENOR A ESE PORQUE ES DEMASIADO SEGURAMENTE
-	res <- matrix(nrow=total.rows,ncol=4)
+	res <- matrix((nrow=total.rows*0.3),ncol=4)
 	colnames(res)<-(c("Gen_symbol","mature_mirna_id", "Mirna_Mrna_Correlation", "p_value_Of_Mirna_Mrna_Correlation"))
 
 	actual<-1
@@ -90,8 +87,6 @@ CalculateCorrelationsMirnaMrna <- function(expression.file, mirna.file, output.p
 			if (!is.na(abs(resultado.pearson$estimate))) {
 				if (abs(resultado.pearson$estimate) > r.minimium) {
 				  newValue<-c(as.character(actual.gen), as.character(actual.mirna), resultado.pearson$estimate, resultado.pearson$p.value)
-				  #res<-rbind(res, newValue) 
-				  # HERNAN2: EN LUGAR DE RBIND, SIMPLEMENTE ASIGNO A LA FILA ACTUAL EL VALOR
 				  res[actual.n.correlated,1:4] <- newValue
 					actual.n.correlated<-actual.n.correlated+1
 				}
@@ -99,7 +94,7 @@ CalculateCorrelationsMirnaMrna <- function(expression.file, mirna.file, output.p
 
 		}
 	}
-	# HERNAN3: SE ELIMINAN FILAS DEMAS, AHORA QUE SE SABE CUANTAS TIENE EFECTIVAMENTE
+	# deleting useless and unused rows
 	res <- res[c(1:actual.n.correlated-1),c(1:4)]
 
 	#if (!(folder.exists(output.path))) {dir.create(output.path)}
@@ -210,6 +205,7 @@ ColapseMirnaXMrna <- function(mirna.X.mRNA.with.predicted.and.validated.path, ou
 	write.table(result, csvOutputFile, sep="\t",row.names=FALSE,quote=FALSE)
 }
 
+# Formats a number with 2 decimal places
 format2Print <- function(number){
   return (format(round(number, 2), nsmall = 2))
 }
