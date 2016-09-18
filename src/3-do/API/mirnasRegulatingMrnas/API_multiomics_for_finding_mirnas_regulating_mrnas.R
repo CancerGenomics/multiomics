@@ -58,11 +58,12 @@ CalculateCorrelationsMirnaMrna <- function(expression.file, mirna.file, output.p
 	total.rows=nrow(expression)*nrow(mirna)
 	
 	# The result matix is created
-	res <- matrix((nrow=total.rows*0.3),ncol=4)
+	res <- matrix(nrow=(total.rows*0.3),ncol=4)
 	colnames(res)<-(c("Gen_symbol","mature_mirna_id", "Mirna_Mrna_Correlation", "p_value_Of_Mirna_Mrna_Correlation"))
 
 	actual<-1
 	actual.n.correlated<-1
+	print("Start process!")
 	for (i in 1:nrow(mirna)) {
 		actual.mirna<-mirna[i,1]
 		mirna.para.ese.gen<-mirna[i,2:ncol(mirna)]
