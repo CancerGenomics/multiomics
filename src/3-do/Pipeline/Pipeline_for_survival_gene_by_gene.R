@@ -123,9 +123,7 @@ a.minimium.number.of.samples.in.a.group=10
 
 #---------Do it-----------------
 #multiomics.to.spreadsheet(input.expression.with.survival.file.path, number.of.clusters=2, output.file.path=output.multiomics.to.spreadsheet.file.path, maximum.p.value.accepted=a.maximum.p.value.accepted, gene.name=a.candidate.gene.name, grouping.FUN=expression.grouping.FUN, print.surv.diff=TRUE, print.concordance.index=TRUE, print.coxph=TRUE,partner.gene.names.to.evaluate=NULL,minimium.number.of.samples.in.a.group=a.minimium.number.of.samples.in.a.group)
-multiomics.to.spreadsheet.gene.by.gene(input.expression.with.survival.file.path, number.of.clusters=2, output.file.path=output.multiomics.to.spreadsheet.file.path, maximum.p.value.accepted=a.maximum.p.value.accepted, grouping.FUN=expression.grouping.FUN, print.surv.diff=TRUE, print.concordance.index=TRUE, print.coxph=TRUE,gene.names.to.evaluate=NULL,minimium.number.of.samples.in.a.group=a.minimium.number.of.samples.in.a.group)
-multiomics.to.spreadsheet.gene.by.gene(expression.with.survival.file.path, number.of.clusters, output.file.path, maximum.p.value.accepted=0.05, grouping.FUN, print.surv.diff=TRUE, print.concordance.index=TRUE, print.coxph=TRUE, gene.names.to.evaluate=NULL, minimium.number.of.samples.in.a.group=10){
-
+#PROBAR TODAS LAS FUNCIONES DE LA API 
 
 ####################################################################################################################################################################################################################################
 #############################END STEP2 #############################################################################################################################################################################################  
