@@ -6,7 +6,7 @@
 
 install.packages("XML")
 install.packages("RCurl")
-install.packages("/home/hernan/Escritorio/multiMiR_1.0.1.tar.gz", repos=NULL, type="source")
+install.packages("D:\\desarrollo\\multiMiR_1.0.1.tar.gz", repos=NULL, type="source")
 
 install.packages("heatmap.plus")
 source("http://bioconductor.org/biocLite.R")
