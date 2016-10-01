@@ -21,6 +21,7 @@ multiomics.cut2 <-function (expression, number.of.clusters, an.iter.max=1000){
 	xgene <- cbind(expression)
 	quantile(xgene)
 	groups <- cut2(xgene, g=number.of.clusters)
+	print(groups)
 	return(groups)
 }
 

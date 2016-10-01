@@ -183,16 +183,6 @@ multiomics.to.spreadsheet <- function(expression.with.survival.file.path, number
 
 
 
-######################################ENTITIES#############################################
-######################################ENTITIES#############################################
-######################################ENTITIES#############################################
-setClass("ValidationResult",
-		representation(OK="logical", message="character"))
-
-setClass("PotentialGene",
-		representation(index="numeric", symbol="character"))
-
-
 
 
 
@@ -581,22 +571,7 @@ betters.partners <- function (expression.with.survival.file.path, number.of.clus
 	return (better.genes.matrix[,1])
 }
 
-checkGroupsAreWellFormed <- function(groups, gene.pair.name, minimium.number.of.samples.in.a.group){
-	group.names<-unique(groups)
-	for(k in 1:length(group.names)){
-		if (length(which(groups==group.names[k])) < minimium.number.of.samples.in.a.group){
-			a.message<-paste("Just ", length(which(groups==group.names[k])), " sample(s) in group ", group.names[k])
-			result<-new("ValidationResult", OK=FALSE, message=a.message)
-			return (result)
-		}
-	}
-	return (new("ValidationResult", OK=TRUE, message=""))
-}
 
-formatErrorMessage<-function(error.type, error.detail){
-	error.message<-paste(error.type, ". ", error.detail, sep="")
-	return (error.message)
-}
 
 
 

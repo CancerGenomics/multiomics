@@ -26,6 +26,27 @@
 
 #source("D:/desarrollo/workspaces/R/multiomics/3-do/API/API_multiomics_for_survival_gene_by_gene.R", echo=FALSE, encoding="Cp1252")
 #source("D:/desarrollo/workspaces/R/BioplatUtils/matrix_utils.R", echo=FALSE, encoding="Cp1252")
+# path adonde estan los archivos de entrada
+sourceBaseLocation="D:\\desarrollo\\workspaces\\R\\multiomics\\"
+source(paste(sourceBaseLocation, "src/3-do/API/survivalGeneByGene/API_multiomics_for_survival_gene_by_gene.R",sep=""), echo=FALSE, encoding="Cp1252")# path for the input files
+source(paste(sourceBaseLocation, "src/survival.utils/matrix_utils.R",sep=""), echo=FALSE, encoding="Cp1252")
+source(paste(sourceBaseLocation, "src/survival.utils/expression_grouping_functions.R",sep=""), echo=FALSE, encoding="Cp1252")
+source(paste(sourceBaseLocation, "src/survival.utils/survival_utils.R",sep=""), echo=FALSE, encoding="Cp1252")
+source(paste(sourceBaseLocation, "src/survival.utils/general_utils.R",sep=""), echo=FALSE, encoding="Cp1252")
+source(paste(sourceBaseLocation, "src/3-do/Private/multiomics_private_tcga.R",sep=""), echo=FALSE, encoding="Cp1252")
+source(paste(sourceBaseLocation, "src/survival.utils/file_utils.R",sep=""), echo=FALSE, encoding="Cp1252")
+source(paste(sourceBaseLocation, "src/survival.entities/SurvdiffEntity.R",sep=""), echo=FALSE, encoding="Cp1252")
+source(paste(sourceBaseLocation, "src/survival.entities/ConcordanceIndexEntity.R",sep=""), echo=FALSE, encoding="Cp1252")
+source(paste(sourceBaseLocation, "src/survival.entities/CoxphEntity.R",sep=""), echo=FALSE, encoding="Cp1252")
+source(paste(sourceBaseLocation, "src/survival.entities/ExpressionXSurvivalEntity.R",sep=""), echo=FALSE, encoding="Cp1252")
+source(paste(sourceBaseLocation, "src/survival.entities/PotentialGene.R",sep=""), echo=FALSE, encoding="Cp1252")
+source(paste(sourceBaseLocation, "src/survival.entities/ValidationResult.R",sep=""), echo=FALSE, encoding="Cp1252")
+
+
+
+
+
+
 
 
 ############################################################################################################################################
@@ -77,13 +98,8 @@ output.path="D:\\desarrollo\\workspaces\\R\\multiomics\\examples\\survival_gene_
 #	If you have a file with the described format, you can avoid this step
 #-------------------------------------------------------------------------------------------------------------------------------
 
-#---------SOURCE-----------------
-# path adonde estan los archivos de entrada
-sourceBaseLocation="D:\\desarrollo\\workspaces\\R\\multiomics\\"
-source(paste(sourceBaseLocation, "src/3-do/Private/multiomics_private_tcga.R",sep=""), echo=FALSE, encoding="Cp1252")
 
-
-#---------CONFIG------------------
+#---------CONFIG (you dont need to change it)------------------
 output.expression.with.survival.file.name="1-TCGAExpressionAndOS.csv"
 output.expression.with.survival.path=paste(output.path, output.expression.with.survival.file.name, sep="")
 
@@ -96,40 +112,26 @@ generateExpressionAndSurvivalDataFromTCGA(input.expression.file.path, input.clin
 
 
 
-
-
-
-
-
 ####################################################################################################################################################################################################################################
-#############################STEP2 - It calculates, gene by gene, he correlation between its expression and the follow up data. It uses coxph that is why it is not necessary to do clustering. 
+#############################STEP2 (bestKaplanMeierGeneByGene)- It calculates, gene by gene, the correlation between its expression and the follow up data. It uses coxph that is why it is not necessary to do clustering. 
 ####################################################################################################################################################################################################################################
-
-#---------SOURCE-----------------
-#source("D:/desarrollo/workspaces/R/GenomicAnalysis/ABCC4-PANCREAS/Config.R", echo=FALSE, encoding="Cp1252")
-source(paste(sourceBaseLocation, "src/survival.utils/expression_grouping_functions.R",sep=""), echo=FALSE, encoding="Cp1252")
-source(paste(sourceBaseLocation, "src/3-do/API/survivalGeneByGene/API_multiomics_for_survival_gene_by_gene.R",sep=""), echo=FALSE, encoding="Cp1252")
-
 #---------GENERAl Config-----------------
-input.expression.with.survival.file.path = output.expression.with.survival.path
-expression.grouping.FUN=multiomics.G1PairUpG2PairDown #If ABCC4 and the partner are overexpressed, then the sample is in group1; if not is iin group2.
+expression.with.survival.file.path.training="D:\\desarrollo\\workspaces\\R\\multiomics\\examples\\survival_gene_by_gene\\output\\1-TCGAExpressionAndOS.csv"
+expression.with.survival.file.path.testing="D:\\desarrollo\\workspaces\\R\\multiomics\\examples\\survival_gene_by_gene\\output\\1-TCGAExpressionAndOS.csv"
+#expression.grouping.FUN=multiomics.cut2
+expression.grouping.FUN=multiomics.kmeans
 
 #---------SpecficConfig-----------------
-output.multiomics.to.spreadsheet.file.path<-paste(output.path, "ABCC4.Withpartners.OS.G1UG2D0.7.csv", sep="")
-a.maximum.p.value.accepted=1
-a.candidate.gene.name="ABCC4"
-#partner.genes.of.interest=c("BPESC1","MLLT4","OR7G1","PIGS","PRDM10","PRDM10","SEC63","NDUFS1","PDSS2","TSNAX","VPS41","TAS2R38","GPR107","RAI1","LMTK2","KAL1","KIAA0232","STC1","UBXN7","SRCIN1","LASS6","LOC729082","TAF1L","OR2G2","CMTM4","TMEM106B","SHPRH","RGPD8","PPA2","ZNF611","ZNF616","ASH1L","MYEF2","ATF6","SLC38A2","RAB3GAP1","SDCCAG1","MED17","SYN3","ZNF223","PTPDC1","DLG1","PEX19","ZNF28","C20orf117","CCNT1","EARS2","C18orf25","SLC22A25","C11orf42","AKTIP","UHMK1","AHI1","DYNC1H1","GPR160","OR5T2","AGPAT1","MRE11A","PIP4K2B","BCLAF1","KIAA1826","ZNF322A","ZNF609","COX7B2","DDX52","CDC42BPB","OR11L1","TOR1AIP2","NBAS","LACE1","ZFC3H1","TIRAP","CBX5","MKS1","SNX19","SBNO1","EIF5","ASB4","ASB8","PRPF40B","TMEM184C","REST","MAP3K13","CEACAM6","DHX15","IKBKAP","CNNM4","DIP2B","GRHL2","RBM16","KIAA1731","RPL10L","OR5M11","PDE4A","PHF3")
-a.minimium.number.of.samples.in.a.group=10
-
+a.minimium.number.of.samples.in.a.group=3
+number.of.clusters=2
+output.file.path=output.path
 #---------Do it-----------------
-#multiomics.to.spreadsheet(input.expression.with.survival.file.path, number.of.clusters=2, output.file.path=output.multiomics.to.spreadsheet.file.path, maximum.p.value.accepted=a.maximum.p.value.accepted, gene.name=a.candidate.gene.name, grouping.FUN=expression.grouping.FUN, print.surv.diff=TRUE, print.concordance.index=TRUE, print.coxph=TRUE,partner.gene.names.to.evaluate=NULL,minimium.number.of.samples.in.a.group=a.minimium.number.of.samples.in.a.group)
-#PROBAR TODAS LAS FUNCIONES DE LA API 
+bestKaplanMeierGeneByGene(expression.with.survival.file.path.training, expression.with.survival.file.path.testing, number.of.clusters, output.file.path, x.lab="Time", y.lab="survival", expression.grouping.FUN, print.surv.diff=TRUE, print.concordance.index=TRUE, print.coxph=TRUE, gene.names.to.evaluate=NULL, minimium.number.of.samples.in.a.group=10, number.of.genes.to.keep.during.training=10)
 
 ####################################################################################################################################################################################################################################
 #############################END STEP2 #############################################################################################################################################################################################  
 ####################################################################################################################################################################################################################################
-
-
+  
 
 
 

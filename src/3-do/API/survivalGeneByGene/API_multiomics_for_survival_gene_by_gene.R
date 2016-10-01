@@ -2,14 +2,6 @@
 # Author: Matias
 ###############################################################################
 
-#Source
-#source("D:/desarrollo/workspaces/R/multiomics/src/survival.utils/survival_utils.R", echo=FALSE, encoding="Cp1252")
-#source("D:/desarrollo/workspaces/R/multiomics/src/survival.entities/ConcordanceIndexEntity.R", echo=FALSE, encoding="Cp1252")
-#source("D:/desarrollo/workspaces/R/multiomics/src/survival.entities/CoxphEntity.R", echo=FALSE, encoding="Cp1252")
-#source("D:/desarrollo/workspaces/R/multiomics/src/survival.entities/ExpressionXSurvivalEntity.R", echo=FALSE, encoding="Cp1252")
-#source("D:/desarrollo/workspaces/R/multiomics/src/survival.entities/SurvdiffEntity.R", echo=FALSE, encoding="Cp1252")
-#source("D:/desarrollo/workspaces/R/BioplatR/src/utils/file_utils.R", echo=FALSE, encoding="Cp1252")
-
 
 ######################################API#############################################
 ######################################API#############################################
@@ -340,7 +332,7 @@ do.kaplanMeierGeneByGene <- function(expression.with.survival.file.path, number.
 						#SurvFit for plotting
 						tryCatch({
 									surv.fit<-survfit(formula = Surv(expression.x.survival.object@time, expression.x.survival.object@event) ~ groups)
-									#Los colores se asignan así: el primer color del vector col se asigna al grupo más chico, el segundo color al segundo más chico y así siguiendo.
+									#Los colores se asignan as?: el primer color del vector col se asigna al grupo m?s chico, el segundo color al segundo m?s chico y as? siguiendo.
 									#Es decir, no importa el orden en el que aparezcan los elementos en el time.Considera solamente el groups. 
 									plot(surv.fit,col=c("blue", "red"), xlab=x.lab, ylab=y.lab)
 									title<-gene.name
