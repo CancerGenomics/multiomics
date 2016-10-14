@@ -1,3 +1,0 @@
-Gen_symbol	mature_mirna_id	Mirna_Mrna_Correlation	p_value_Of_Mirna_Mrna_Correlation	mirna_database	database_predicted_score	validation_pubmed_id
-SOGA1	hsa-miR-221-5p	-0.802838430583129	6.54656276791991e-09	diana_microt	0.817	NO
-SOGA1	hsa-miR-31-5p	-0.717976100467734	1.20165186865071e-06	diana_microt,pictar	0.818,17.6224	NO,NO
