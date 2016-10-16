@@ -37,28 +37,33 @@ CalculateCorrelationsMirnaMrna <- function(expression.file, mirna.file, output.p
 	ptm <- proc.time()
 
 	# read the expression data
+	print("Reading the mrna file...")
 	expression <- na.omit(read.table(expression.file, header=TRUE,fill=TRUE))
+	print("Sorting the mrna data...")
 	expression <-SortMatrixByColumnName(expression, 1)
 	rownames(expression) <- expression[,1]
-	 
+	
 	# read the mirna file
+	print("Reading the mirna file...")
 	mirna <- na.omit(read.table(mirna.file, header=TRUE, fill=TRUE, sep="\t"))  
+	print("Sorting the mirna data...")
 	mirna <-SortMatrixByColumnName(mirna, 1)
 	
 	#Checks if both files has the same samples in the same order. If not, aborts the execution.
+	print("Checking if both files has the same samples in the same order...")
 	if (checkSamples) suppressWarnings(checkSamplesFormIRNArnaCorrelation(expression, mirna, ncol.for.expression.id))
-
+	
+	print("Preparing...")
+	
 	total.rows=nrow(expression)*nrow(mirna)
 	
 	# The result matix is created
-	#res <- matrix(nrow=0, ncol=4) 
-	# HERNAN1: EN LUGAR DE CREARLA EN 0 FILAS, LA CREO GIGANTE. 
-	# HAY QUE VER UN NÚMERO QUE SEA MENOR A ESE PORQUE ES DEMASIADO SEGURAMENTE
-	res <- matrix(nrow=total.rows,ncol=4)
+	res <- matrix(nrow=(total.rows),ncol=4)
 	colnames(res)<-(c("Gen_symbol","mature_mirna_id", "Mirna_Mrna_Correlation", "p_value_Of_Mirna_Mrna_Correlation"))
 
 	actual<-1
 	actual.n.correlated<-1
+	print("Start process!")
 	for (i in 1:nrow(mirna)) {
 		actual.mirna<-mirna[i,1]
 		mirna.para.ese.gen<-mirna[i,2:ncol(mirna)]
@@ -66,14 +71,23 @@ CalculateCorrelationsMirnaMrna <- function(expression.file, mirna.file, output.p
 		  actual<-actual+1
 			actual.gen<-expression[j,1]
 			expression.para.ese.gen<-expression[j,2:ncol(expression)]
-			if ((actual)%%5000==0)print(paste(actual, "/", total.rows))
-			if ((actual)%%100000==0)print(paste("elapsed", (proc.time() - ptm)[3]))
+			if ((actual)%%500==0)print(paste("analised ", actual, " from ", total.rows))
+			if ((actual)%%1000==0) {
+			  elapsedTime <- (proc.time() - ptm)[3]
+			  print(paste(
+			    "elapsed time: (seconds)", format2Print(elapsedTime), 
+			    " - (minutes)", format2Print(elapsedTime/60), 
+			    " - (hours)", format2Print(elapsedTime/60/60)
+			  ))
+			  print(paste("estimated remaining time (seconds)", format2Print((total.rows*elapsedTime)/actual),
+			              " - (minutes)", format2Print((total.rows*elapsedTime)/actual/60), 
+			              " - (hours)", format2Print((total.rows*elapsedTime)/actual/60/60)
+			  ))
+			}
 			resultado.pearson<-cor.test(as.numeric(expression.para.ese.gen),as.numeric(mirna.para.ese.gen))
 			if (!is.na(abs(resultado.pearson$estimate))) {
 				if (abs(resultado.pearson$estimate) > r.minimium) {
 				  newValue<-c(as.character(actual.gen), as.character(actual.mirna), resultado.pearson$estimate, resultado.pearson$p.value)
-				  #res<-rbind(res, newValue) 
-				  # HERNAN2: EN LUGAR DE RBIND, SIMPLEMENTE ASIGNO A LA FILA ACTUAL EL VALOR
 				  res[actual.n.correlated,1:4] <- newValue
 					actual.n.correlated<-actual.n.correlated+1
 				}
@@ -81,7 +95,7 @@ CalculateCorrelationsMirnaMrna <- function(expression.file, mirna.file, output.p
 
 		}
 	}
-	# HERNAN3: SE ELIMINAN FILAS DEMAS, AHORA QUE SE SABE CUANTAS TIENE EFECTIVAMENTE
+	# deleting useless and unused rows
 	res <- res[c(1:actual.n.correlated-1),c(1:4)]
 
 	#if (!(folder.exists(output.path))) {dir.create(output.path)}
@@ -190,4 +204,9 @@ ColapseMirnaXMrna <- function(mirna.X.mRNA.with.predicted.and.validated.path, ou
 	#Write output
 	csvOutputFile<-paste(output.path, "\\pipelineOutput-mirnaXmRNAWithPredictedAndValidatedColapsed.csv", sep="")
 	write.table(result, csvOutputFile, sep="\t",row.names=FALSE,quote=FALSE)
+}
+
+# Formats a number with 2 decimal places
+format2Print <- function(number){
+  return (format(round(number, 2), nsmall = 2))
 }
