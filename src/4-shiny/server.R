@@ -30,7 +30,7 @@ shinyServer(function(input, output, session) {
       sharedValues$correlations <- CalculateCorrelationsMirnaMrna(mrnaExpressionData(), mirnaExpressionData(),
                                    output.path="C:\\_Hernan\\bioplat\\casoGrande\\out\\", 
                                    output.file.name = paste(input$mrnaFile$name,"outputFile.csv", sep = ""),
-                                   r.minimium = threshold())
+                                   r.minimium = threshold(), inc.progress = T)
     } 
     return (sharedValues$correlations)
   }), quoted = T)
