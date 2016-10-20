@@ -79,9 +79,10 @@ CalculateCorrelationsMirnaMrna <- function(expression.file, mirna.file, output.p
 			    " - (minutes)", format2Print(elapsedTime/60), 
 			    " - (hours)", format2Print(elapsedTime/60/60)
 			  ))
-			  print(paste("estimated remaining time (seconds)", format2Print((total.rows*elapsedTime)/actual),
-			              " - (minutes)", format2Print((total.rows*elapsedTime)/actual/60), 
-			              " - (hours)", format2Print((total.rows*elapsedTime)/actual/60/60)
+			  remainingTime <- ((total.rows*elapsedTime)/actual) - elapsedTime
+			  print(paste("estimated remaining time (seconds)", format2Print(remainingTime),
+			              " - (minutes)", format2Print(remainingTime/60), 
+			              " - (hours)", format2Print(remainingTime/60/60)
 			  ))
 			}
 			resultado.pearson<-cor.test(as.numeric(expression.para.ese.gen),as.numeric(mirna.para.ese.gen))
