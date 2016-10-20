@@ -5,20 +5,40 @@
 #source("D:/desarrollo/workspaces/R/multiomics/src/survival.utils/survival_utils.R", echo=FALSE, encoding="Cp1252")
 
 
-#Input
+
 #   expression.file: it is the path of a file with the following format
 #      -Row 1: It has the sample labels
 #	   -Column1: It has the gene symbol (for example: A1BG, A2M)
 #	   -The cells has got the expression level of each gene for each sample
-#
+readMrnaExpressionFile <- function(expression.file, ncol.for.expression.id=1) {
+  print("Reading the mrna file...")
+  expression <- na.omit(read.table(expression.file, header=TRUE,fill=TRUE))
+  print("Sorting the mrna data...")
+  expression <-SortMatrixByColumnName(expression, 1)
+  rownames(expression) <- expression[,1]
+  return (expression)
+}  
+
 #   mirna.file: it is the path of a file with the following format
 #      -Row 1: It has the sample labels
 #	   -Column 1: Mature mirna ID (for example: hsa-miR-22-3p). Note that R is un upper case. This R in uppercase is the way to identify that it is a mature-mirna and not a pre-mirna. The pre-mirna for this mature-mirna is hsa-mir-22. Multimir doesnt work with premirna because the databases it queries, doesnt work with pre-mirna. So, if you pass the pre-mirna (for example hsa-miR-22) multimir does not return anything. So, it is importante that this file contains mature mirna ids. With the accession it also works (MIMAT0004982). These IDs could be find in http://www.mirbase.org/cgi-bin/mirna_entry.pl?acc=MI0005761 
 #	   -Cells has the expression levels of each mirna for each sample. 
-#
+readMirnaExpressionFile <- function(mirna.file, ncol.for.expression.id=1) {
+  print("Reading the mirna file...")
+  mirna <- na.omit(read.table(mirna.file, header=TRUE, fill=TRUE, sep="\t"))  
+  print("Sorting the mirna data...")
+  mirna <-SortMatrixByColumnName(mirna, 1)
+  return (mirna)
+}  
+
+
+
+#Input
+# out
+# expression matrix obtained with readMirnaExpressionFile function
+# mirna matrix obtained with readMrnaExpressionFile function
 #   output.path: The folder for output file. 
 #
-#   check.samples: if TRUE, it will be checked that the sample names are the same. It is not necessary that the sample columns are in the same order, the will be automatically ordered. If it is TRUE and both files has not got the same sample names the execution stops. The default value is TRUE.  
 #
 #	ncol.for.expression.id: It defines hoy many ID columns has got the file. First one will be take into account to identify the gene or mirna; others will be discarded. The default value is 1.
 #
@@ -33,33 +53,17 @@
 #	It will be considered that both vectors correlates if (r>0.7 with p-value<0.05). In this case it would be indicate that this mirna participates in the regulation of this gene.
 #	In general, the correlation will be negative because mirnas inhibes the arnM translation (yes translation).
 #   
-CalculateCorrelationsMirnaMrna <- function(expression.file, mirna.file, output.path, output.file.name="inputStep2-matureMirnaXmrna.csv",checkSamples=TRUE, ncol.for.expression.id=1, r.minimium=0.7){
+CalculateCorrelationsMirnaMrna <- function(expression, mirna, output.path="~/", 
+                                           output.file.name="inputStep2-matureMirnaXmrna.csv",
+                                           r.minimium=0.7,
+										   inc.progress = F){
 	ptm <- proc.time()
 
-	# read the expression data
-	print("Reading the mrna file...")
-	expression <- na.omit(read.table(expression.file, header=TRUE,fill=TRUE))
-	print("Sorting the mrna data...")
-	expression <-SortMatrixByColumnName(expression, 1)
-	rownames(expression) <- expression[,1]
-	
-	# read the mirna file
-	print("Reading the mirna file...")
-	mirna <- na.omit(read.table(mirna.file, header=TRUE, fill=TRUE, sep="\t"))  
-	print("Sorting the mirna data...")
-	mirna <-SortMatrixByColumnName(mirna, 1)
-	
-	#Checks if both files has the same samples in the same order. If not, aborts the execution.
-	print("Checking if both files has the same samples in the same order...")
-	if (checkSamples) suppressWarnings(checkSamplesFormIRNArnaCorrelation(expression, mirna, ncol.for.expression.id))
-	
-	print("Preparing...")
-	
 	total.rows=nrow(expression)*nrow(mirna)
 	
 	# The result matix is created
-	res <- matrix(nrow=(total.rows),ncol=4)
-	colnames(res)<-(c("Gen_symbol","mature_mirna_id", "Mirna_Mrna_Correlation", "p_value_Of_Mirna_Mrna_Correlation"))
+	res <- matrix(nrow=total.rows,ncol=4)
+	colnames(res)<-(c("Gene symbol","Marure mirna id", "Mirna-Mrna correlation", "p_value of correlation"))
 
 	actual<-1
 	actual.n.correlated<-1
@@ -95,6 +99,10 @@ CalculateCorrelationsMirnaMrna <- function(expression.file, mirna.file, output.p
 			}
 
 		}
+		
+		if(inc.progress) {
+			incProgress(1/nrow(mirna));
+		}	
 	}
 	# deleting useless and unused rows
 	res <- res[c(1:actual.n.correlated-1),c(1:4)]
@@ -103,6 +111,8 @@ CalculateCorrelationsMirnaMrna <- function(expression.file, mirna.file, output.p
 	file.path<-paste(output.path, output.file.name, sep="")
 	write.table(res, file.path, sep="\t", row.names=FALSE, col.names=TRUE, quote=FALSE)
 	print(proc.time() - ptm)
+	
+	return (res)
 }
 
 
@@ -187,7 +197,7 @@ keepBestGeneXMirnaAccordingCorrelationAndAddMirnaDbInfo <- function(genes.x.mirn
 ColapseMirnaXMrna <- function(mirna.X.mRNA.with.predicted.and.validated.path, output.path){
 	mirnaXmrna<-read.table(mirna.X.mRNA.with.predicted.and.validated.path, header=T)
 
-	#It keeps just the ones correlating negatively because it represents that when mirna increases then mrna decreases meaning that mirna is regulating mrna.
+	#It keeps just the ones correlating negatively
 	mirnaXmrnaNegative=mirnaXmrna[mirnaXmrna$Mirna_Mrna_Correlation<0,]
 
 	#It converts NA in the validation_pubmed_id into NO

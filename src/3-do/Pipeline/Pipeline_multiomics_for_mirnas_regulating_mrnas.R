@@ -74,7 +74,15 @@ just.betters.maturemirna.X.mrna.considering.mirna.databases="inputStep3_justBett
 #For doing it, it evaluates the correlation between each row of mirna file (representing the expression for a particular mature mirna) against each mrna expresion line (representing the expression for a particular gene) using Pearson 
 mrna.dif.expr.path<-paste(working.path, mrna.dif.expr.path.file, sep="")
 mirna.dif.expr.path<-paste(working.path, mirna.dif.expr.path.file, sep="")
-CalculateCorrelationsMirnaMrna(mrna.dif.expr.path,mirna.dif.expr.path, working.path, output.file.name=maturemirna.x.mrna.correlation.file.name)
+#Checks if both files has the same samples in the same order. If not, aborts the execution.
+print("Checking if both files has the same samples in the same order...")
+suppressWarnings(checkSamplesFormIRNArnaCorrelation(mrnaExpressionData(), mirnaExpressionData(), 1))
+print("Preparing...")
+print("mrnaExpressionData")
+mrna.dif.expr <- readMrnaExpressionFile(mrna.dif.expr.path)
+print("mirnaExpressionData")
+mirna.dif.expr <- readMirnaExpressionFile(mirna.dif.expr.path)
+CalculateCorrelationsMirnaMrna(mrna.dif.expr,mirna.dif.expr, working.path, output.file.name=maturemirna.x.mrna.correlation.file.name)
 
 ####### STEP2 - For each high correlation mirna X mrna found in step 1, it get just the 30% (configurable) correlations which has got better predicted and/or validated score in mrna databases. This step also adds predicition and validation information for those correlations. The other 70% will be discarded from the analysis .####
 #There are many mirna databases for evaluating prediction and validation. A correlation is considered predicted by a mirna database if this correlation mirnaXmrna is registered in the database. A correlation is considered validated if there is a publication showing the correlation experimentally. The multimir packages offers a function for reading all databases in a single call and keeping the ones with highest correlation score.  
