@@ -19,16 +19,16 @@
 ##############################################SOURCE###############################################################################
 ###################################################################################################################################
 
-# path adonde estan los archivos de entrada
-sourceBaseLocation="D:\\desarrollo\\workspaces\\R\\multiomics\\"
+# path adonde estan los archivos de entrada, se puede cambiar por un path absoluto
+sourceBaseLocation=getwd()
 
-source(paste(sourceBaseLocation, "src/2-load/load_multiomics.R",sep=""), echo=FALSE, encoding="Cp1252")
-source(paste(sourceBaseLocation, "src/3-do/Private/multiomics_private_data_validation.R",sep=""), echo=FALSE, encoding="Cp1252")
-source(paste(sourceBaseLocation, "src/3-do/Private/multiomics_private_multimir_interaction.R",sep=""), echo=FALSE, encoding="Cp1252")
-source(paste(sourceBaseLocation, "src/3-do/API/mirnasRegulatingMrnas/API_multiomics_for_finding_mirnas_regulating_mrnas.R",sep=""), echo=FALSE, encoding="Cp1252")
-source(paste(sourceBaseLocation, "src/3-do/API/survivalGeneByGene/API_multiomics_for_survival_gene_by_gene.R",sep=""), echo=FALSE, encoding="Cp1252")
-source(paste(sourceBaseLocation, "src/3-do/API/survivalGeneByGene/API_multiomics_for_survival_gene_by_gene.R",sep=""), echo=FALSE, encoding="Cp1252")
-source(paste(sourceBaseLocation, "src/survival.entities/matrix_utils.R",sep=""), echo=FALSE, encoding="Cp1252")
+source(paste(sourceBaseLocation, "/src/2-load/load_multiomics.R",sep=""), echo=FALSE, encoding="Cp1252")
+source(paste(sourceBaseLocation, "/src/3-do/Private/multiomics_private_data_validation.R",sep=""), echo=FALSE, encoding="Cp1252")
+source(paste(sourceBaseLocation, "/src/3-do/Private/multiomics_private_multimir_interaction.R",sep=""), echo=FALSE, encoding="Cp1252")
+source(paste(sourceBaseLocation, "/src/3-do/API/mirnasRegulatingMrnas/API_multiomics_for_finding_mirnas_regulating_mrnas.R",sep=""), echo=FALSE, encoding="Cp1252")
+source(paste(sourceBaseLocation, "/src/3-do/API/survivalGeneByGene/API_multiomics_for_survival_gene_by_gene.R",sep=""), echo=FALSE, encoding="Cp1252")
+source(paste(sourceBaseLocation, "/src/3-do/API/survivalGeneByGene/API_multiomics_for_survival_gene_by_gene.R",sep=""), echo=FALSE, encoding="Cp1252")
+source(paste(sourceBaseLocation, "/src/survival.utils/matrix_utils.R",sep=""), echo=FALSE, encoding="Cp1252")
 library("multiMiR")
 
 ##########CONFIG: You should change this 3 variables to set your values##################
@@ -37,7 +37,7 @@ library("multiMiR")
 #working.path="D:/matias/academia/investigacion/medicina personalizada/8-DatosGenomica/2016-09-13---paper multiomics/"
 
 #example
-working.path=source(paste(sourceBaseLocation, "examples/miRnas_regulating_mRnas/",sep=""), echo=FALSE, encoding="Cp1252")
+working.path=paste(sourceBaseLocation, "/examples/miRnas_regulating_mRnas/",sep="")
 
 # The mrna expression data. It is the path of a file with the following format
 #      -Row 1: It has the sample labels
