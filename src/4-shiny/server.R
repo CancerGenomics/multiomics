@@ -5,9 +5,15 @@ shinyServer(function(input, output, session) {
   
   sharedValues <- reactiveValues(fromButton=F,correlations="")
   
-  observeEvent(input$runCalc, { 
-    runCalc()
-    })
+  observeEvent(input$runMRNAMiRNACorrelation, { 
+    runMRNAMiRNACorrelation()
+  })
+
+observeEvent(input$runMRNACNVCorrelation, { 
+			runMRNACNVCorrelation()
+		})
+
+
   observeEvent(input$input$result_rows_selected, {plotCorrelation()})
   
   mrnaExpressionData <- reactive({
@@ -39,7 +45,7 @@ shinyServer(function(input, output, session) {
     return (sharedValues$correlations)
   }), quoted = T)
   
-  runCalc <- function() { 
+  runMRNAMiRNACorrelation <- function() { 
           withProgress(message = 'Please stand by...', 
           detail = "calculating correlation", 
           min=0, max=1, {
@@ -87,7 +93,11 @@ shinyServer(function(input, output, session) {
         line <- lm(Y ~ X)
         abline(line, col="blue")
       }
-    })    
+    })
+
+  runMRNACNVCorrelation <- function(){
+	print("running runMRNACNVCorrelation")
+  }
 
 
 })
