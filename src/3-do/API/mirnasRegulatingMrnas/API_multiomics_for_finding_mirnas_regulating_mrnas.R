@@ -2,9 +2,6 @@
 # Author: Matias
 ###############################################################################
 
-#source("D:/desarrollo/workspaces/R/multiomics/src/survival.utils/survival_utils.R", echo=FALSE, encoding="Cp1252")
-
-
 
 #   expression.file: it is the path of a file with the following format
 #      -Row 1: It has the sample labels
@@ -19,10 +16,17 @@ readMrnaExpressionFile <- function(expression.file, ncol.for.expression.id=1) {
   return (expression)
 }  
 
-#   mirna.file: it is the path of a file with the following format
-#      -Row 1: It has the sample labels
-#	   -Column 1: Mature mirna ID (for example: hsa-miR-22-3p). Note that R is un upper case. This R in uppercase is the way to identify that it is a mature-mirna and not a pre-mirna. The pre-mirna for this mature-mirna is hsa-mir-22. Multimir doesnt work with premirna because the databases it queries, doesnt work with pre-mirna. So, if you pass the pre-mirna (for example hsa-miR-22) multimir does not return anything. So, it is importante that this file contains mature mirna ids. With the accession it also works (MIMAT0004982). These IDs could be find in http://www.mirbase.org/cgi-bin/mirna_entry.pl?acc=MI0005761 
-#	   -Cells has the expression levels of each mirna for each sample. 
+# mirna.file: it is the path of a file with the following format
+#  -Row 1: It has the sample labels
+#  -Column 1: Mature mirna ID (for example: hsa-miR-22-3p). Note that R is un upper case. 
+#             This R in uppercase is the way to identify that it is a mature-mirna and not a pre-mirna. 
+#             The pre-mirna for this mature-mirna is hsa-mir-22. 
+#             Multimir doesnt work with premirna because the databases it queries, doesnt work with pre-mirna. 
+#             So, if you pass the pre-mirna (for example hsa-miR-22) multimir does not return anything. 
+#             So, it is importante that this file contains mature mirna ids. 
+#             With the accession it also works (MIMAT0004982). 
+#             These IDs could be find in http://www.mirbase.org/cgi-bin/mirna_entry.pl?acc=MI0005761 
+#  -Cells has the expression levels of each mirna for each sample. 
 readMirnaExpressionFile <- function(mirna.file, ncol.for.expression.id=1) {
   print("Reading the mirna file...")
   mirna <- na.omit(read.table(mirna.file, header=TRUE, fill=TRUE, sep="\t"))  
@@ -34,32 +38,44 @@ readMirnaExpressionFile <- function(mirna.file, ncol.for.expression.id=1) {
 
 
 #Input
-# out
-# expression matrix obtained with readMirnaExpressionFile function
-# mirna matrix obtained with readMrnaExpressionFile function
-#   output.path: The folder for output file. 
+#  expression: matrix obtained with readMirnaExpressionFile function
+#  mirna: matrix obtained with readMrnaExpressionFile function
+#  output.path: The folder for output file. 
+#  ncol.for.expression.id: It defines hoy many ID columns has got the file. 
+#                          First one will be take into account to identify the gene or mirna; 
+#                          others will be discarded. The default value is 1.
+#  r.minimium: The minimium value for pearson coefficient for considering the 
+#              correlation between a gene and a mirna.
+#  pearsons.method: Pearson's product moment correlation coefficient.
+#                   Possible values c("pearson", "kendall", "spearman"). Default "pearsons"
+#  inc.progress: when running from shiny, increments progress bar during calculation.
 #
-#
-#	ncol.for.expression.id: It defines hoy many ID columns has got the file. First one will be take into account to identify the gene or mirna; others will be discarded. The default value is 1.
-#
-#	r.minimium: The minimium value for pearson coefficient for considering the correlation between a gene and a mirna.
-#
-#
-#Output
+#  Output
 #	It generates a file with 4 columns: Gen - Mirna - Pearson correlation - p-value 
-#	Pearson correlation indicates if there is or not a correlation between mrna expression and mirna expression taking into account all samples. 
-#	If there is a correlation (both expression has similar values in all samples (positive correlation) or so different values in all samples (negative values)). 
-#	But how we define if there are enough similar or enough different to say there are or there are not (positive or negative) correlation? Using statistics. In particular the Pearson method that works exactly for this case: compare two vector of values of the same size to check if there is correlation with statistical significance.	
-#	It will be considered that both vectors correlates if (r>0.7 with p-value<0.05). In this case it would be indicate that this mirna participates in the regulation of this gene.
-#	In general, the correlation will be negative because mirnas inhibes the arnM translation (yes translation).
+#	Pearson correlation indicates if there is or not a correlation between mrna 
+#   expression and mirna expression taking into account all samples. 
+#	If there is a correlation (both expression has similar values in all samples 
+#   (positive correlation) or so different values in all samples (negative values)). 
+#	But how we define if there are enough similar or enough different to say 
+#   there are or there are not (positive or negative) correlation? Using statistics. 
+#   In particular the Pearson method that works exactly for this case: compare 
+#   two vector of values of the same size to check if there is correlation with 
+#   statistical significance.	
+#	It will be considered that both vectors correlates if (r>0.7 with p-value<0.05).
+#   In this case it would be indicate that this mirna participates in the 
+#   regulation of this gene.
+#	In general, the correlation will be negative because mirnas inhibes the 
+#   arnM translation (yes translation).
 #   
 CalculateCorrelationsMirnaMrna <- function(expression, mirna, output.path="~/", 
                                            output.file.name="inputStep2-matureMirnaXmrna.csv",
-                                           r.minimium=0.7,
-										   inc.progress = F){
+                                           r.minimium=0.7, 
+										   pearsons.method = "pearson", 
+                                           inc.progress = F){
 	ptm <- proc.time()
-
 	total.rows=nrow(expression)*nrow(mirna)
+	print(paste("Running pipeline with", r.minimium, 
+				"threshold and pearson's method:", pearsons.method, sep=" "))
 	
 	# The result matix is created
 	res <- matrix(nrow=total.rows,ncol=4)
@@ -89,15 +105,17 @@ CalculateCorrelationsMirnaMrna <- function(expression, mirna, output.path="~/",
 			              " - (hours)", format2Print(remainingTime/60/60)
 			  ))
 			}
-			resultado.pearson<-cor.test(as.numeric(expression.para.ese.gen),as.numeric(mirna.para.ese.gen))
+			resultado.pearson<-cor.test(as.numeric(expression.para.ese.gen),
+					                    as.numeric(mirna.para.ese.gen), 
+										method = pearsons.method)
 			if (!is.na(abs(resultado.pearson$estimate))) {
 				if (abs(resultado.pearson$estimate) > r.minimium) {
-				  newValue<-c(as.character(actual.gen), as.character(actual.mirna), resultado.pearson$estimate, resultado.pearson$p.value)
+				  newValue<-c(as.character(actual.gen), as.character(actual.mirna), 
+							  resultado.pearson$estimate, resultado.pearson$p.value)
 				  res[actual.n.correlated,1:4] <- newValue
-					actual.n.correlated<-actual.n.correlated+1
+				  actual.n.correlated<-actual.n.correlated+1
 				}
 			}
-
 		}
 		
 		if(inc.progress) {
@@ -109,7 +127,8 @@ CalculateCorrelationsMirnaMrna <- function(expression, mirna, output.path="~/",
 
 	#if (!(folder.exists(output.path))) {dir.create(output.path)}
 	file.path<-paste(output.path, output.file.name, sep="")
-	write.table(res, file.path, sep="\t", row.names=FALSE, col.names=TRUE, quote=FALSE)
+	write.table(res, file.path, sep="\t", row.names=FALSE, 
+			    col.names=TRUE, quote=FALSE)
 	print(proc.time() - ptm)
 	
 	return (res)

@@ -47,8 +47,6 @@ working.path=paste(sourceBaseLocation, "/examples/miRnas_regulating_mRnas/",sep=
 #example
 mrna.dif.expr.path.file="mrnas.csv"
 
-
-
 #The mirna expression data. it must have the following format:
 #      -Row 1: It has the sample labels
 #	   -Column 1: Mature mirna ID (for example: hsa-miR-22-3p). Note that R is un upper case. This R in uppercase is the way to identify that it is a mature-mirna and not a pre-mirna. The pre-mirna for this mature-mirna is hsa-mir-22. Multimir doesnt work with premirna because the databases it queries, doesnt work with pre-mirna. So, if you pass the pre-mirna (for example hsa-miR-22) multimir does not return anything. So, it is important that this file contains mature mirna ids. With the accession it also works (MIMAT0004982). These IDs could be find in http://www.mirbase.org/cgi-bin/mirna_entry.pl?acc=MI0005761 
@@ -57,7 +55,6 @@ mrna.dif.expr.path.file="mrnas.csv"
 #example
 mirna.dif.expr.path.file="mirnas.csv"
 ##################END CONFIG###########################################################
-
 
 ###################################OPTIONAL CONFIG#########################################################################################################################
 #The step2 keeps just the best 30% of mirna X mrna correlations according the coorelation score given by mirna databases. You can change this 30% modifying this parameter
@@ -75,14 +72,14 @@ just.betters.maturemirna.X.mrna.considering.mirna.databases="inputStep3_justBett
 mrna.dif.expr.path<-paste(working.path, mrna.dif.expr.path.file, sep="")
 mirna.dif.expr.path<-paste(working.path, mirna.dif.expr.path.file, sep="")
 #Checks if both files has the same samples in the same order. If not, aborts the execution.
-print("Checking if both files has the same samples in the same order...")
-suppressWarnings(checkSamplesFormIRNArnaCorrelation(mrnaExpressionData(), mirnaExpressionData(), 1))
 print("Preparing...")
-print("mrnaExpressionData")
 mrna.dif.expr <- readMrnaExpressionFile(mrna.dif.expr.path)
-print("mirnaExpressionData")
 mirna.dif.expr <- readMirnaExpressionFile(mirna.dif.expr.path)
-CalculateCorrelationsMirnaMrna(mrna.dif.expr,mirna.dif.expr, working.path, output.file.name=maturemirna.x.mrna.correlation.file.name)
+print("Checking if both files has the same samples in the same order...")
+suppressWarnings(checkSamplesFormIRNArnaCorrelation(mrna.dif.expr, mirna.dif.expr, 1))
+CalculateCorrelationsMirnaMrna(mrna.dif.expr,mirna.dif.expr, working.path, 
+                               output.file.name=maturemirna.x.mrna.correlation.file.name, 
+                               pearsons.method = "spearman")
 
 ####### STEP2 - For each high correlation mirna X mrna found in step 1, it get just the 30% (configurable) correlations which has got better predicted and/or validated score in mrna databases. This step also adds predicition and validation information for those correlations. The other 70% will be discarded from the analysis .####
 #There are many mirna databases for evaluating prediction and validation. A correlation is considered predicted by a mirna database if this correlation mirnaXmrna is registered in the database. A correlation is considered validated if there is a publication showing the correlation experimentally. The multimir packages offers a function for reading all databases in a single call and keeping the ones with highest correlation score.  

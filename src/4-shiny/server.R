@@ -21,16 +21,20 @@ shinyServer(function(input, output, session) {
   })
   
   threshold <- reactive({
-    input$runCalc.
     input$thresholdSlider
   })
+
+  pearsonsMethod <- reactive({
+    input$pearsons.method
+  })
+
   
   correlations <- reactive(quote({
     if(sharedValues$fromButton) {
       sharedValues$correlations <- CalculateCorrelationsMirnaMrna(mrnaExpressionData(), mirnaExpressionData(),
-                                   output.path="C:\\_Hernan\\bioplat\\casoGrande\\out\\", 
-                                   output.file.name = paste(input$mrnaFile$name,"outputFile.csv", sep = ""),
-                                   r.minimium = threshold(), inc.progress = T)
+                                   output.path="~/", 
+                                   output.file.name = paste(input$mrnaFile$name,"-outputFile.csv", sep = ""),
+                                   r.minimium = threshold(), inc.progress = T, pearsons.method = pearsonsMethod())
     } 
     return (sharedValues$correlations)
   }), quoted = T)
