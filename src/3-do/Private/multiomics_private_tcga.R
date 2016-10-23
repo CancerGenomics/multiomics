@@ -97,7 +97,7 @@ generateExpressionAndSurvivalDataFromTCGA <- function(expression.file.path, clin
   result<-result[,colSums(is.na(result)) == 0]
   
   #It writes the result
-  write.table(result, output.path, col.names=FALSE, quote=FALSE, row.names=FALSE, sep="\t")
+  write.table(result, output.path, col.names=FALSE, quote=FALSE, row.names=FALSE, sep="\")
 }
 
 

@@ -3,18 +3,7 @@
 ###############################################################################
 
 
-#   expression.file: it is the path of a file with the following format
-#      -Row 1: It has the sample labels
-#	   -Column1: It has the gene symbol (for example: A1BG, A2M)
-#	   -The cells has got the expression level of each gene for each sample
-readMrnaExpressionFile <- function(expression.file, ncol.for.expression.id=1) {
-  print("Reading the mrna file...")
-  expression <- na.omit(read.table(expression.file, header=TRUE,fill=TRUE))
-  print("Sorting the mrna data...")
-  expression <-SortMatrixByColumnName(expression, 1)
-  rownames(expression) <- expression[,1]
-  return (expression)
-}  
+  
 
 # mirna.file: it is the path of a file with the following format
 #  -Row 1: It has the sample labels
@@ -79,7 +68,7 @@ CalculateCorrelationsMirnaMrna <- function(expression, mirna, output.path="~/",
 	
 	# The result matix is created
 	res <- matrix(nrow=total.rows,ncol=4)
-	colnames(res)<-(c("Gene symbol","Marure mirna id", "Mirna-Mrna correlation", "p_value of correlation"))
+	colnames(res)<-(c("Gene symbol","Mature mirna id", "Mirna-Mrna correlation", "p_value of correlation"))
 
 	actual<-1
 	actual.n.correlated<-1
