@@ -5,9 +5,9 @@
 #
 #The row.names is null because the file can have more than once the same gene.
 readCNVFile <- function(cnv.path, ncol.for.expression.id=1) {
-  print("Reading the mrna file...")
+  print("Reading the cnv file...")
   cnv <- na.omit(read.table(cnv.path, header=TRUE,fill=TRUE, row.names = NULL))
-  print("Sorting the mrna data...")
+  print("Sorting the cnv data...")
   cnv <-SortMatrixByColumnName(cnv, 1)
   return (cnv)
 }

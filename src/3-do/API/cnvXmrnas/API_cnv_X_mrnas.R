@@ -8,12 +8,12 @@ CnvXMrnas <- function(mrna, cnv, output.path="~/",
   
   ptm <- proc.time()
   total.rows=nrow(mrna)
-  print(paste("Running pipeline CNv_X_mirnas with", r.minimium, 
+  print(paste("Running pipeline CNv_X_mrnas with", r.minimium, 
               "threshold and pearson's method:", pearsons.method, sep=" "))
   
   # The result matix is created
   res <- matrix(nrow=total.rows,ncol=3)
-  colnames(res)<-(c("Gene symbol","Mirna-Mrna correlation", "p_value of correlation"))
+  colnames(res)<-(c("Gene symbol","CNV-Mrna correlation", "p_value of correlation"))
   
   actual<-1
   actual.n.correlated<-1
@@ -57,7 +57,7 @@ CnvXMrnas <- function(mrna, cnv, output.path="~/",
         }
     }
     if(inc.progress) {
-      incProgress(1/nrow(mirna));
+      incProgress(1/nrow(cnv));
     }	
   }
   
@@ -66,6 +66,7 @@ CnvXMrnas <- function(mrna, cnv, output.path="~/",
   
   #if (!(folder.exists(output.path))) {dir.create(output.path)}
   file.path<-paste(output.path, output.file.name, sep="")
+  print(file.path)
   write.table(res, file.path, sep="\t", row.names=FALSE, 
               col.names=TRUE, quote=FALSE)
   print(proc.time() - ptm)

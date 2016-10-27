@@ -3,16 +3,15 @@ options(shiny.maxRequestSize=500*1024^2)
 
 shinyServer(function(input, output, session) {
   
-  sharedValues <- reactiveValues(fromButton=F,correlations="")
+  sharedValues <- reactiveValues(fromButton=F,correlations="",cnvMrnaCorrelations="")
+  
+  ###########################################################################
+  ########################## MIRNA - MRNA 
+  ###########################################################################
   
   observeEvent(input$runMRNAMiRNACorrelation, { 
     runMRNAMiRNACorrelation()
   })
-
-observeEvent(input$runMRNACNVCorrelation, { 
-			runMRNACNVCorrelation()
-		})
-
 
   observeEvent(input$input$result_rows_selected, {plotCorrelation()})
   
@@ -27,22 +26,23 @@ observeEvent(input$runMRNACNVCorrelation, {
   })
   
   threshold <- reactive({
-    input$thresholdSlider
+	input$thresholdSlider
   })
 
   pearsonsMethod <- reactive({
-    input$pearsons.method
+	input$pearsons.method
   })
 
-  
-  correlations <- reactive(quote({
+ correlations <- reactive(quote({
     if(sharedValues$fromButton) {
-      sharedValues$correlations <- CalculateCorrelationsMirnaMrna(mrnaExpressionData(), mirnaExpressionData(),
-                                   output.path="~/", 
-                                   output.file.name = paste(input$mrnaFile$name,"-outputFile.csv", sep = ""),
-                                   r.minimium = threshold(), inc.progress = T, pearsons.method = pearsonsMethod())
-    } 
-    return (sharedValues$correlations)
+	  sharedValues$correlations <- CalculateCorrelationsMirnaMrna(
+			                       mrnaExpressionData(), mirnaExpressionData(),
+		   						   output.path="~/", 
+								   output.file.name = paste(input$mirnaFile$name,"-",input$mrnaFile$name,"-outputFile.csv", sep = ""),
+								   r.minimium = threshold(), inc.progress = T, 
+								   pearsons.method = pearsonsMethod())
+	} 
+	return (sharedValues$correlations)
   }), quoted = T)
   
   runMRNAMiRNACorrelation <- function() { 
@@ -50,54 +50,113 @@ observeEvent(input$runMRNACNVCorrelation, {
           detail = "calculating correlation", 
           min=0, max=1, {
             
-      if(!is.null(input$mrnaFile) && !is.null(input$mirnaFile)) {
+     if(!is.null(input$mrnaFile) && !is.null(input$mirnaFile)) {
 
-        #Checks if both files has the same samples in the same order. If not, aborts the execution.
-        print("Checking if both files has the same samples in the same order...")
-        suppressWarnings(checkSamplesFormIRNArnaCorrelation(mrnaExpressionData(), mirnaExpressionData(), 1))
-        print("Preparing...")
+       #Checks if both files has the same samples in the same order. If not, aborts the execution.
+       print("Checking if both files has the same samples in the same order...")
+       suppressWarnings(checkSamplesFormIRNArnaCorrelation(mrnaExpressionData(), mirnaExpressionData(), 1))
+       print("Preparing...")
         
-        sharedValues$fromButton <- T
-        output$result <- DT::renderDataTable(correlations(), selection = 'single')
-        #sharedValues$fromButton <- F
+       sharedValues$fromButton <- T
+       output$result <- DT::renderDataTable(correlations(), selection = 'single')
+       #sharedValues$fromButton <- F
         
-        if(nrow(correlations()) > 1) {
-          print("Hay resultados")
-        } else {
-          print("NO hay resultados")
-        }      
-        sharedValues$fromButton <- F
-      } else {
-        print("No hay archivos cargados")
-      }
+       if(nrow(correlations()) > 1) {
+         print("Hay resultados")
+       } else {
+         print("NO hay resultados")
+       }      
+       sharedValues$fromButton <- F
+    } else {
+       print("No hay archivos cargados")
+    }
             
       
-    })
-  } 
+  })
+} 
 
-  output$correlationPlot <- renderPlot({
-      if(!is.null(input$result_rows_selected)){
-        selected.gene <- correlations()[input$result_rows_selected,1]
-        selected.mirna <- correlations()[input$result_rows_selected,2]
-        selected.gene.row <- which(mrnaExpressionData()==selected.gene)
-        selected.mirna.row <- which(mirnaExpressionData()==selected.mirna)
-        #print(nrow(mrnaExpressionData()[selected.gene.row,]))
-        #print(ncol(mrnaExpressionData()[selected.gene.row,]))
-        #print(mirnaExpressionData()[selected.mirna.row,])
-        X <- as.numeric(as.vector(mrnaExpressionData()[selected.gene.row,2:ncol(mrnaExpressionData())]))
-        Y <- as.numeric(as.vector(mirnaExpressionData()[selected.mirna.row,2:ncol(mirnaExpressionData())]))
-        #X<-c(50,8,70,65)
-        #Y<-c(5,4,8,9) 
-        cor.test(X, Y)
-        plot(X, Y, col='Black', pch=1) #col=Group
-        line <- lm(Y ~ X)
-        abline(line, col="blue")
-      }
-    })
+output$correlationPlot <- renderPlot({
+  if(!is.null(input$result_rows_selected)){
+    selected.gene <- correlations()[input$result_rows_selected,1]
+    selected.mirna <- correlations()[input$result_rows_selected,2]
+    selected.gene.row <- which(mrnaExpressionData()==selected.gene)
+    selected.mirna.row <- which(mirnaExpressionData()==selected.mirna)
+    #print(nrow(mrnaExpressionData()[selected.gene.row,]))
+    #print(ncol(mrnaExpressionData()[selected.gene.row,]))
+    #print(mirnaExpressionData()[selected.mirna.row,])
+    X <- as.numeric(as.vector(mrnaExpressionData()[selected.gene.row,2:ncol(mrnaExpressionData())]))
+    Y <- as.numeric(as.vector(mirnaExpressionData()[selected.mirna.row,2:ncol(mirnaExpressionData())]))
+    #X<-c(50,8,70,65)
+    #Y<-c(5,4,8,9) 
+    cor.test(X, Y)
+    plot(X, Y, col='Black', pch=1) #col=Group
+    line <- lm(Y ~ X)
+    abline(line, col="blue")
+  }
+})
+
+
+###########################################################################
+########################## CNV - MRNA 
+###########################################################################
+
+  observeEvent(input$runMRNACNVCorrelation, { 
+	runMRNACNVCorrelation()
+   })
+
+  cnvThreshold <- reactive({
+    input$cnv.thresholdSlider
+  })
+
+  cnvMrnaExpressionData <- reactive({
+	print("mrnaExpressionData")
+	readMrnaExpressionFile(input$cnv.mrnaFile$datapath)
+  })
+
+  cnvExpressionData <- reactive({
+	print("cnvExpressionData")
+	readCNVFile(input$cnv.cnvFile$datapath)
+  })
+
+  cnvPearsonsMethod <- reactive({
+    input$cnv.pearsons.method
+  })
+  
+  cnvMrnaCorrelations <- reactive(quote({
+    if(sharedValues$fromButton) {
+		sharedValues$cnvMrnaCorrelations <- CnvXMrnas(cnvMrnaExpressionData(), cnvExpressionData(), output.path="~/", 
+			                                        output.file.name=paste(input$cnv.mrnaFile$name,"-",input$cnv.cnvFile$name,"-outputFile.csv", sep = ""),
+													r.minimium = cnvThreshold(), inc.progress = T, pearsons.method = cnvPearsonsMethod())
+    }
+    return (sharedValues$cnvMrnaCorrelations)
+  }), quoted = T)
+
 
   runMRNACNVCorrelation <- function(){
-	print("running runMRNACNVCorrelation")
+	  withProgress(message = 'Please stand by...', 
+			  detail = "calculating correlation", 
+			  min=0, max=1, {
+				  
+				  if(!is.null(input$cnv.mrnaFile) && !is.null(input$cnv.cnvFile)) {
+					  
+					  print("Preparing...")
+					  
+					  sharedValues$fromButton <- T
+					  output$MRNACNVResult <- DT::renderDataTable(cnvMrnaCorrelations(), selection = 'single')
+
+					  if(nrow(cnvMrnaCorrelations()) > 1) {
+						  print("Hay resultados")
+					  } else {
+						  print("NO hay resultados")
+					  }      
+					  sharedValues$fromButton <- F
+				  } else {
+					  print("No hay archivos cargados")
+				  }
+				  
+    })
   }
+
 
 
 })

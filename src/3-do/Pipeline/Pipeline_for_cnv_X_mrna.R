@@ -16,7 +16,7 @@ source(paste(sourceBaseLocation, "/src/survival.utils/read_genomic_data_utils.R"
 working.path=paste(sourceBaseLocation, "/examples/cnv_X_mrnas/",sep="")
 mrna.dif.expr.path.file="mrnas.csv"
 cnv.file="cnv.csv"
-the.output.path="d:\\temp\\"
+the.output.path="c:\\_tmp\\"
 
 #YOUR INPUT
 #working.path="D:\\matias\\academia\\investigacion\\medicina personalizada\\8-DatosGenomica\\2016-09-13---paper multiomics\\CNV\\"
@@ -31,11 +31,10 @@ cnv.path<-paste(working.path, cnv.file, sep="")
 print("Preparing...")
 mrna.dif.expr <- readMrnaExpressionFile(mrna.dif.expr.path)
 cnv <- readCNVFile(cnv.path)
-print("Checking if both files has the same samples in the same order...")
 
 CnvXMrnas(mrna.dif.expr, cnv, output.path=the.output.path,
                       output.file.name="cnvXMrna.csv",
-                      r.minimium=0.7, 
+                      r.minimium=0.2, 
                       pearsons.method = "pearson", 
                       inc.progress = F)
 
