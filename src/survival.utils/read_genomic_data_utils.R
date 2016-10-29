@@ -9,6 +9,7 @@ readCNVFile <- function(cnv.path, ncol.for.expression.id=1) {
   cnv <- na.omit(read.table(cnv.path, header=TRUE,fill=TRUE, row.names = NULL))
   print("Sorting the cnv data...")
   cnv <-SortMatrixByColumnName(cnv, 1)
+  
   return (cnv)
 }
 

@@ -11,6 +11,7 @@ CnvXMrnas <- function(mrna, cnv, output.path="~/",
   print(paste("Running pipeline CNv_X_mrnas with", r.minimium, 
               "threshold and pearson's method:", pearsons.method, sep=" "))
   
+  
   # The result matix is created
   res <- matrix(nrow=total.rows,ncol=3)
   colnames(res)<-(c("Gene symbol","CNV-Mrna correlation", "p_value of correlation"))
