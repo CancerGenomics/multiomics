@@ -2,7 +2,7 @@ shinyUI(
   
   #fluidPage(
   navbarPage("multiOmics",
-    tabPanel("mRNA-miRNA Correlation",    
+    tabPanel("mRNA-miRNA pipeline",    
 			  
       sidebarLayout(
       
@@ -10,9 +10,9 @@ shinyUI(
           #titlePanel("multiOmics"),
           fileInput("mrnaFile", accept=c("text/csv"), label=h4("mRNA profile")),
           fileInput("mirnaFile",accept=c("text/csv"), label=h4("miRNA profile")),
-          sliderInput("thresholdSlider", label=h4("Threshold"), 
+          sliderInput("thresholdSlider", label=h4("Correlation coefficient"), 
 				      min=0, max=1, value=0.7, step=0.05),
-		  radioButtons("pearsons.method", label = h4("Pearson's method"),
+		  radioButtons("pearsons.method", label = h4("Correlation test"),
 				       choices = c("Pearson" = "pearson", "Spearman" = "spearman", "Kendall" = "kendall"), 
 				       selected = "spearman"),		
 		  # directoryInput('outputDir', label = 'Select a directory for the output', value = '~'),
@@ -25,16 +25,16 @@ shinyUI(
         )
       )
     ),
-    tabPanel("mRNA-CNV Correlation",    
+    tabPanel("mRNA-CNV pipeline",    
       sidebarLayout(
 					
         sidebarPanel(
 		  #titlePanel("multiOmics"),
           fileInput("cnv.mrnaFile", accept=c("text/csv"), label=h4("mRNA profile")),
-		  fileInput("cvv.cnvFile",accept=c("text/csv"), label=h4("CNV profile")),
-          sliderInput("cnv.thresholdSlider", label=h4("Threshold"), 
+		  fileInput("cnv.cnvFile",accept=c("text/csv"), label=h4("CNV profile")),
+          sliderInput("cnv.thresholdSlider", label=h4("Correlation coefficient"), 
                       min=0, max=1, value=0.7, step=0.05),
-          radioButtons("cnv.pearsons.method", label = h4("Pearson's method"),
+          radioButtons("cnv.pearsons.method", label = h4("Correlation test"),
                        choices = c("Pearson" = "pearson", "Spearman" = "spearman", "Kendall" = "kendall"), 
                        selected = "spearman"),		
           actionButton("runMRNACNVCorrelation", "Run pipeline")
