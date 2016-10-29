@@ -12,7 +12,6 @@ source(paste(sourceBaseLocation, "/src/survival.utils/matrix_utils.R",sep=""), e
 source(paste(sourceBaseLocation, "/src/survival.utils/read_genomic_data_utils.R",sep=""), echo=FALSE, encoding="Cp1252")
 
 
-
 ###########CONFIG#################
 #INPUT FOR example
 working.path=paste(sourceBaseLocation, "/examples/cnv_X_mrnas/",sep="")
