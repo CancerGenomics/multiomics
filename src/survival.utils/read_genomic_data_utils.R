@@ -26,3 +26,39 @@ readMrnaExpressionFile <- function(expression.file, ncol.for.expression.id=1) {
   rownames(expression) <- expression[,1]
   return (expression)
 }
+
+
+#Ejemplo de cohort: TCGA Uterine Carcinosarcoma (UCS)
+#Ejemplo de dataset: TCGA/TCGA.UCS.sampleMap/RPPA
+#Prefijo del xenahub: https://tcga.xenahubs.net/download/
+#URL resultante: se debe sacar hasta la primera barra. Es decir que seria: https://tcga.xenahubs.net/download/TCGA.UCS.sampleMap/RPPA
+#TENER EN CUENTA QUE ESTA FUNCION SOPORTA SOLO DATASETS QUE PROVENGAN DEL HUB DE TCGA (https://xenabrowser.net/datapages/?host=https://tcga.xenahubs.net)
+getUrlFromTCGAXenaHub <- function(dataset){
+  prefix<-"https://tcga.xenahubs.net/download/"
+  url.parts<-unlist(strsplit(dataset, '/'))
+  url.sufix<-url.parts[2]
+  if (length(url.parts)>=3){
+    for (x in 3:length(url.parts)) {
+      url.sufix<-paste(url.sufix, url.parts[x],sep="/")
+    }
+  }
+  url<-paste(prefix, url.sufix, sep="")
+}
+
+
+generateAllURLSFromXenaHub(cohort.name, dataset){
+  cohorts.names<-cohorts(XenaHub(hosts = "https://tcga.xenahubs.net"))
+  for (i in 1:length(cohorts.names)) {
+    datasets<-datasets(XenaHub(cohorts=cohorts.names[i]))
+    url.parts<-unlist(strsplit(datasets[1], '/'))
+    url.sufix<-url.parts[2]
+    if (length(url.parts)>=3){
+      for (x in 3:length(url.parts)) {
+        url.sufix<-paste(url.sufix, url.parts[x],sep="/")
+      }
+    }
+    print(paste("https://tcga.xenahubs.net/download/",  url.sufix, sep=""))
+  }
+}
+
+

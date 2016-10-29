@@ -17,7 +17,7 @@ source(paste(sourceBaseLocation, "/src/survival.utils/read_genomic_data_utils.R"
 working.path=paste(sourceBaseLocation, "/examples/cnv_X_mrnas/",sep="")
 mrna.dif.expr.path.file="mrnas.csv"
 cnv.file="cnv.csv"
-the.output.path="c:\\_tmp\\"
+the.output.path="d:\\temp\\"
 
 #YOUR INPUT
 #working.path="D:\\matias\\academia\\investigacion\\medicina personalizada\\8-DatosGenomica\\2016-09-13---paper multiomics\\CNV\\"
