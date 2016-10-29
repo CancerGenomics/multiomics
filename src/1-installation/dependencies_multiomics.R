@@ -16,5 +16,7 @@ source("http://bioconductor.org/biocLite.R")
 biocLite("ctc")
 biocLite("impute")
 biocLite("survcomp")
-
+biocLite("org.Hs.eg.db")
+biocLite("devtools")
+biocLite("mtmorgan/xenar")
 

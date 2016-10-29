@@ -12,8 +12,8 @@ CnvXMrnas <- function(mrna, cnv, output.path="~/",
               "threshold and pearson's method:", pearsons.method, sep=" "))
   
   # The result matix is created
-  res <- matrix(nrow=total.rows,ncol=3)
-  colnames(res)<-(c("Gene symbol","Mirna-Mrna correlation", "p_value of correlation"))
+  res <- matrix(nrow=total.rows,ncol=4)
+  colnames(res)<-(c("Gene symbol","Location", "Mirna-Mrna correlation", "p_value of correlation"))
   
   actual<-1
   actual.n.correlated<-1
@@ -49,9 +49,10 @@ CnvXMrnas <- function(mrna, cnv, output.path="~/",
                                     method = pearsons.method)
         if (!is.na(abs(resultado.pearson$estimate))) {
           if (abs(resultado.pearson$estimate) > r.minimium) {
-            newValue<-c(as.character(actual.gen),
+            location<-getGeneLocation(actual.gen);
+            newValue<-c(as.character(actual.gen), location,
                         resultado.pearson$estimate, resultado.pearson$p.value)
-            res[actual.n.correlated,1:3] <- newValue
+            res[actual.n.correlated,1:4] <- newValue
             actual.n.correlated<-actual.n.correlated+1
           }
         }
@@ -62,7 +63,7 @@ CnvXMrnas <- function(mrna, cnv, output.path="~/",
   }
   
   # deleting useless and unused rows
-  res <- res[c(1:actual.n.correlated-1),c(1:3)]
+  res <- res[c(1:actual.n.correlated-1),c(1:4)]
   
   #if (!(folder.exists(output.path))) {dir.create(output.path)}
   file.path<-paste(output.path, output.file.name, sep="")

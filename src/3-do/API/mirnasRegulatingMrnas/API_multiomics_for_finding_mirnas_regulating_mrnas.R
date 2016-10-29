@@ -68,7 +68,7 @@ CalculateCorrelationsMirnaMrna <- function(expression, mirna, output.path="~/",
 	
 	# The result matix is created
 	res <- matrix(nrow=total.rows,ncol=4)
-	colnames(res)<-(c("Gene symbol","Mature mirna id", "Mirna-Mrna correlation", "p_value of correlation"))
+	colnames(res)<-(c("Gene symbol","Mature mirna id", "CNV-Mrna correlation", "p_value of correlation"))
 
 	actual<-1
 	actual.n.correlated<-1
