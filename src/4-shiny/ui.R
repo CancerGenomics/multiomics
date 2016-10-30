@@ -9,6 +9,16 @@ shinyUI(
         sidebarPanel(
           #titlePanel("multiOmics"),
           fileInput("mrnaFile", accept=c("text/csv"), label=h4("mRNA profile")),
+          
+          actionButton("mRNAXenaLookup", "Look up mRNA"),
+		      bsModal("mrnaXenaSelector", "Xena connector", "", size = "large",
+		      selectInput("mRNACohorts","XenaHub available cohorts",NULL),
+		      selectInput("mRNACohortDatasets","Cohort datasets",NULL),
+				  #textOutput("textnew"),
+				  actionButton("mRNAXenaRDownload", "Download selected dataset"),
+				  actionButton("mRNAXenaRCancel", "Cancel")
+          ),
+  
           fileInput("mirnaFile",accept=c("text/csv"), label=h4("miRNA profile")),
           sliderInput("thresholdSlider", label=h4("Correlation coefficient"), 
 				      min=0, max=1, value=0.7, step=0.05),

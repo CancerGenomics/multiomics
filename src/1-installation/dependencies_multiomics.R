@@ -11,6 +11,10 @@ install.packages(multimirFile, repos=NULL, type="source")
 install.packages("GGally")
 install.packages("Hmisc")
 
+install.packages("shiny")
+install.packages("DT")
+install.packages("shinyBS")
+
 install.packages("heatmap.plus")
 source("http://bioconductor.org/biocLite.R")
 biocLite("ctc")

@@ -46,7 +46,7 @@ getUrlFromTCGAXenaHub <- function(dataset){
 }
 
 
-generateAllURLSFromXenaHub(cohort.name, dataset){
+generateAllURLSFromXenaHub <- function(){
   cohorts.names<-cohorts(XenaHub(hosts = "https://tcga.xenahubs.net"))
   for (i in 1:length(cohorts.names)) {
     datasets<-datasets(XenaHub(cohorts=cohorts.names[i]))
@@ -59,6 +59,18 @@ generateAllURLSFromXenaHub(cohort.name, dataset){
     }
     print(paste("https://tcga.xenahubs.net/download/",  url.sufix, sep=""))
   }
+}
+
+
+generateAllURLSFromXenaHub2 <- function(){
+	cohorts.names<-cohorts(XenaHub(hosts = "https://tcga.xenahubs.net"))
+	for (i in 1:length(cohorts.names)) {
+		ds<-datasets(XenaHub(cohorts=cohorts.names[i]))
+		for (j in 1:length(ds)) {
+		  url <- getUrlFromTCGAXenaHub(ds[j])
+		  print(url)
+		}
+	}
 }
 
 

@@ -13,7 +13,39 @@ shinyServer(function(input, output, session) {
     runMRNAMiRNACorrelation()
   })
 
-  observeEvent(input$input$result_rows_selected, {plotCorrelation()})
+  mrnaCohortsData <- reactive({
+    print("Connecting to XenaHub...")
+    cohorts(XenaHub())
+  })
+  
+  observeEvent(input$mRNAXenaLookup, { 
+	  updateSelectInput(session, "mRNACohorts","XenaHub available cohorts", choices = mrnaCohortsData())
+	  toggleModal(session,"mrnaXenaSelector")
+  })  
+  
+  observeEvent(input$mRNACohorts, {
+    print(input$mRNACohorts)
+    if(input$mRNACohorts != ""){
+      print(paste("Searching datesets for", input$mRNACohorts, sep=" "))
+      ds <- datasets(XenaHub(cohorts = input$mRNACohorts))
+      print(ds)
+      updateSelectInput(session, "mRNACohortDatasets","Cohort datasets", choices = ds)
+    }
+  })   
+  
+  observeEvent(input$mRNAXenaRDownload, {
+    withProgress(message = 'Please stand by...', 
+                 detail = "Downloading file", 
+                 min=0, max=1, {    
+    if(input$mRNACohorts != "" && input$mRNACohortDatasets != ""){
+      print(paste("Download file for datesets for", input$mRNACohorts, input$mRNACohortDatasets, sep=" "))
+      url <- getUrlFromTCGAXenaHub(input$mRNACohortDatasets)
+      download.file(url = url, destfile = "~/sas")
+      
+    }
+    })
+  })    
+  
   
   mrnaExpressionData <- reactive({
     print("mrnaExpressionData")
