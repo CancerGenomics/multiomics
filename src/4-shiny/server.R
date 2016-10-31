@@ -14,23 +14,30 @@ shinyServer(function(input, output, session) {
   })
 
   mrnaCohortsData <- reactive({
+    withProgress(message = 'Please stand by...', 
+                 detail = "Looking for cohorts on XenaHub", 
+                 min=0, max=1, {    
     print("Connecting to XenaHub...")
-    cohorts(XenaHub())
+    cohorts(XenaHub(hosts = "https://tcga.xenahubs.net"))
+    })  
   })
   
   observeEvent(input$mRNAXenaLookup, { 
-	  updateSelectInput(session, "mRNACohorts","XenaHub available cohorts", choices = mrnaCohortsData())
+                   updateSelectInput(session, "mRNACohorts","XenaHub available cohorts", choices = mrnaCohortsData())
 	  toggleModal(session,"mrnaXenaSelector")
   })  
   
   observeEvent(input$mRNACohorts, {
-    print(input$mRNACohorts)
-    if(input$mRNACohorts != ""){
-      print(paste("Searching datesets for", input$mRNACohorts, sep=" "))
-      ds <- datasets(XenaHub(cohorts = input$mRNACohorts))
-      print(ds)
-      updateSelectInput(session, "mRNACohortDatasets","Cohort datasets", choices = ds)
-    }
+    withProgress(message = 'Please stand by...', 
+                 detail = "Getting datasets", 
+                 min=0, max=1, {    
+                   if(input$mRNACohorts != "" && input$mRNACohorts != "(unassigned)"){
+        print(paste("Searching datesets for", input$mRNACohorts, sep=" "))
+        ds <- datasets(XenaHub(cohorts = input$mRNACohorts))
+        #print(ds)
+        updateSelectInput(session, "mRNACohortDatasets","Cohort datasets", choices = ds)
+      }
+    })   
   })   
   
   observeEvent(input$mRNAXenaRDownload, {
