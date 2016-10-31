@@ -22,5 +22,6 @@ biocLite("impute")
 biocLite("survcomp")
 biocLite("org.Hs.eg.db")
 biocLite("devtools")
+# if you're behind proxy see: http://stackoverflow.com/questions/16740256/error-installing-packages-from-github
 biocLite("mtmorgan/xenar")
 
