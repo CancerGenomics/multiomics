@@ -19,6 +19,7 @@ shinyServer(function(input, output, session) {
                  min=0, max=1, {    
     print("Connecting to XenaHub...")
     cohorts(XenaHub(hosts = "https://tcga.xenahubs.net"))
+    #cohorts(XenaHub())
     })  
   })
   
@@ -51,8 +52,33 @@ shinyServer(function(input, output, session) {
       
     }
     })
-  })    
+  })
   
+  downloadFile <- reactive({
+    if(input$mRNACohorts != "" && input$mRNACohortDatasets != ""){
+      print(paste("Download file for datesets for", input$mRNACohorts, input$mRNACohortDatasets, sep=" "))
+      url <- getUrlFromTCGAXenaHub(input$mRNACohortDatasets)
+      print(url)
+      destinaitionFile <- "~/sas"
+      download.file(url = url, destfile = destinaitionFile)
+      print("downloaded")
+      read.csv(destinaitionFile)
+    }
+    
+  })
+
+  output$downloadData <- downloadHandler(
+    filename = function() { 
+      paste(input$mRNACohortDatasets, ".csv", sep="")
+    },
+    content = function(file) {
+  	  if(input$mRNACohorts != "" && input$mRNACohortDatasets != ""){
+	      print(file)
+        write.csv(downloadFile(), file)
+        print("wroted")
+      }
+    }
+  )
   
   mrnaExpressionData <- reactive({
     print("mrnaExpressionData")
@@ -120,13 +146,8 @@ output$correlationPlot <- renderPlot({
     selected.mirna <- correlations()[input$result_rows_selected,2]
     selected.gene.row <- which(mrnaExpressionData()==selected.gene)
     selected.mirna.row <- which(mirnaExpressionData()==selected.mirna)
-    #print(nrow(mrnaExpressionData()[selected.gene.row,]))
-    #print(ncol(mrnaExpressionData()[selected.gene.row,]))
-    #print(mirnaExpressionData()[selected.mirna.row,])
     X <- as.numeric(as.vector(mrnaExpressionData()[selected.gene.row,2:ncol(mrnaExpressionData())]))
     Y <- as.numeric(as.vector(mirnaExpressionData()[selected.mirna.row,2:ncol(mirnaExpressionData())]))
-    #X<-c(50,8,70,65)
-    #Y<-c(5,4,8,9) 
     cor.test(X, Y)
     plot(X, Y, col='Black', pch=1) #col=Group
     line <- lm(Y ~ X)
