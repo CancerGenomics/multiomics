@@ -1,7 +1,7 @@
 # source('directoryInput.R')
 library("shiny")
 library("DT")
-library("shinyBS")
+#library("shinyBS")
 library("shinyjs")
 
 library("org.Hs.eg.db")

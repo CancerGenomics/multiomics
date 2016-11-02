@@ -13,7 +13,7 @@ install.packages("Hmisc")
 
 install.packages("shiny")
 install.packages("DT")
-install.packages("shinyBS")
+#install.packages("shinyBS")
 install.packages("shinyjs")
 
 install.packages("heatmap.plus")
