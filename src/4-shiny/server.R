@@ -6,80 +6,13 @@ shinyServer(function(input, output, session) {
   sharedValues <- reactiveValues(fromButton=F,correlations="",cnvMrnaCorrelations="")
   
   ###########################################################################
-  ########################## MIRNA - MRNA 
+  ########################## MIRNA - MRNA PIPELINE TAB
   ###########################################################################
   
   observeEvent(input$runMRNAMiRNACorrelation, { 
     runMRNAMiRNACorrelation()
   })
 
-  mrnaCohortsData <- reactive({
-    withProgress(message = 'Please stand by...', 
-                 detail = "Looking for cohorts on XenaHub", 
-                 min=0, max=1, {    
-    print("Connecting to XenaHub...")
-    cohorts(XenaHub(hosts = "https://tcga.xenahubs.net"))
-    #cohorts(XenaHub())
-    })  
-  })
-  
-  observeEvent(input$mRNAXenaLookup, { 
-                   updateSelectInput(session, "mRNACohorts","XenaHub available cohorts", choices = mrnaCohortsData())
-	  toggleModal(session,"mrnaXenaSelector")
-  })  
-  
-  observeEvent(input$mRNACohorts, {
-    withProgress(message = 'Please stand by...', 
-                 detail = "Getting datasets", 
-                 min=0, max=1, {    
-                   if(input$mRNACohorts != "" && input$mRNACohorts != "(unassigned)"){
-        print(paste("Searching datesets for", input$mRNACohorts, sep=" "))
-        ds <- datasets(XenaHub(cohorts = input$mRNACohorts))
-        #print(ds)
-        updateSelectInput(session, "mRNACohortDatasets","Cohort datasets", choices = ds)
-      }
-    })   
-  })   
-  
-  observeEvent(input$mRNAXenaRDownload, {
-    withProgress(message = 'Please stand by...', 
-                 detail = "Downloading file", 
-                 min=0, max=1, {    
-    if(input$mRNACohorts != "" && input$mRNACohortDatasets != ""){
-      print(paste("Download file for datesets for", input$mRNACohorts, input$mRNACohortDatasets, sep=" "))
-      url <- getUrlFromTCGAXenaHub(input$mRNACohortDatasets)
-      download.file(url = url, destfile = "~/sas")
-      
-    }
-    })
-  })
-  
-  downloadFile <- reactive({
-    if(input$mRNACohorts != "" && input$mRNACohortDatasets != ""){
-      print(paste("Download file for datesets for", input$mRNACohorts, input$mRNACohortDatasets, sep=" "))
-      url <- getUrlFromTCGAXenaHub(input$mRNACohortDatasets)
-      print(url)
-      destinaitionFile <- "~/sas"
-      download.file(url = url, destfile = destinaitionFile)
-      print("downloaded")
-      read.csv(destinaitionFile)
-    }
-    
-  })
-
-  output$downloadData <- downloadHandler(
-    filename = function() { 
-      paste(input$mRNACohortDatasets, ".csv", sep="")
-    },
-    content = function(file) {
-  	  if(input$mRNACohorts != "" && input$mRNACohortDatasets != ""){
-	      print(file)
-        write.csv(downloadFile(), file)
-        print("wroted")
-      }
-    }
-  )
-  
   mrnaExpressionData <- reactive({
     print("mrnaExpressionData")
     readMrnaExpressionFile(input$mrnaFile$datapath)
@@ -157,7 +90,7 @@ output$correlationPlot <- renderPlot({
 
 
 ###########################################################################
-########################## CNV - MRNA 
+########################## CNV - MRNA PIPELINE TAB
 ###########################################################################
 
   observeEvent(input$runMRNACNVCorrelation, { 
@@ -217,6 +150,96 @@ output$correlationPlot <- renderPlot({
     })
   }
 
+  
+  ###########################################################################
+  ########################## XENA HUB CONNECTOR TAB
+  ###########################################################################
+  
+  mrnaCohortsData <- reactive({
+    withProgress(message = 'Connectig with Xena...', 
+                 detail = "Getting cohorts", 
+                 min=0, max=1, {    
+                   print("Connecting to XenaHub...")
+                   cohorts(XenaHub(hosts = "https://tcga.xenahubs.net"))
+                   #cohorts(XenaHub())
+                 })  
+  })
+  
+  observeEvent(input$connectToXenaHub, { 
+    updateSelectInput(session, "xenaCohorts","XenaHub available cohorts", choices = mrnaCohortsData())
+    #toggleModal(session,"mrnaXenaSelector")
+  })  
+  
+  observeEvent(input$xenaCohorts, {
+    withProgress(message = 'Connectig with Xena...', 
+                 detail = "Getting datasets", 
+                 min=0, max=1, {    
+                   if(input$xenaCohorts != "" ){
+                     #print(input$xenaCohorts)
+                     if(input$xenaCohorts != "(unassigned)"){
+                       print(paste("Searching datesets for", input$xenaCohorts, sep=" "))
+                       ds <- datasets(XenaHub(cohorts = input$xenaCohorts))
+                       updateSelectInput(session, "xenaCohortDatasets","Cohort datasets", choices = ds)
+                       shinyjs::show("xenaCohortDatasets")
+                     } else {
+                       ds <- c("")
+                       updateSelectInput(session, "xenaCohortDatasets","Cohort datasets", choices = ds)
+                       shinyjs::hide("xenaCohortDatasets")
+                     }
+                   }
+                 })   
+  })   
+  
+  observeEvent(input$xenaCohortDatasets, {  
+    print("Update datasets")
+    print(input$xenaCohortDatasets)
+    temp <- getUrlFromTCGAXenaHub(input$xenaCohortDatasets)
+    print(temp)
+    output$url <- renderText(temp)
+    updateTextInput(session, inputId = "link", value = temp)
+    update
+    #show("downloadLink")
+  })
+  
+  output$downloadLinkOutput <- renderUI({
+    if((!is.null(input$xenaCohortDatasets)) && (input$xenaCohortDatasets != "")){
+      print(input$xenaCohortDatasets)
+      tagList(
+        tags$a(id="downloadLink",
+               tags$i(class="fa fa-download"),
+               "Download selected datasets",href=getUrlFromTCGAXenaHub(input$xenaCohortDatasets), target="_blank", 
+               class="btn btn-default shiny-download-link"
+               )
+      )
+    } else {
+      tagList()
+    }
+  })  
 
+#  downloadFile <- reactive({
+#    withProgress(message = 'Connectig with Xena...', 
+#                 detail = "Downloading file", 
+#                 min=0, max=1, {    
+#      if(input$xenaCohorts != "" && input$xenaCohortDatasets != ""){
+#        print(paste("Download file for datesets for", input$xenaCohorts, input$xenaCohortDatasets, sep=" "))
+#        url <- getUrlFromTCGAXenaHub(input$xenaCohortDatasets)
+#        print(url)
+#        download.file(url = url, destfile = tempfile())
+#      }
+#    })
+#  })
+  
+#  output$downloadData <- downloadHandler(
+#    filename = function() { 
+#      paste(input$xenaCohortDatasets, ".csv", sep="")
+#    },
+#    content = function(file) {
+#      if(input$xenaCohorts != "" && input$xenaCohortDatasets != ""){
+#        print(file)
+#        write.csv(downloadFile(), file)
+#      }
+#    }
+#  )
+  
 
 })
