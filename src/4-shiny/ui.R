@@ -27,6 +27,9 @@ shinyUI(
         ),
         mainPanel(
           DT::dataTableOutput('result'),
+          tags$div(id="downloadMrnaMirnaResultDiv",
+              shinyjs::hidden(downloadButton("downloadMrnaMirnaResult", "Download csv"))),
+
           plotOutput('correlationPlot')
         )
       )
@@ -46,7 +49,10 @@ shinyUI(
           actionButton("runMRNACNVCorrelation", "Run pipeline")
         ),
         mainPanel(
-          DT::dataTableOutput('MRNACNVResult')
+          DT::dataTableOutput('MRNACNVResult'),
+          tags$div(id="downloadMrnaCNVResultDiv",
+                   shinyjs::hidden(downloadButton("downloadMrnaCNVResult", "Download csv")))
+          
         )
       )
     ),

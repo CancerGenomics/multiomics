@@ -48,7 +48,7 @@ shinyServer(function(input, output, session) {
           detail = "calculating correlation", 
           min=0, max=1, {
             
-     if(!is.null(input$mrnaFile) && !is.null(input$mirnaFile)) {
+    if(!is.null(input$mrnaFile) && !is.null(input$mirnaFile)) {
 
        #Checks if both files has the same samples in the same order. If not, aborts the execution.
        print("Checking if both files has the same samples in the same order...")
@@ -56,37 +56,44 @@ shinyServer(function(input, output, session) {
        print("Preparing...")
         
        sharedValues$fromButton <- T
-       output$result <- DT::renderDataTable(correlations(), selection = 'single')
-       #sharedValues$fromButton <- F
-        
+
        if(nrow(correlations()) > 1) {
          print("Hay resultados")
+         output$result <- DT::renderDataTable(correlations(), selection = 'single')
+         shinyjs::show(id = "downloadMrnaMirnaResult")
        } else {
          print("NO hay resultados")
+         shinyjs::hide(id = "downloadMrnaMirnaResult")
        }      
        sharedValues$fromButton <- F
     } else {
        print("No hay archivos cargados")
     }
-            
-      
   })
-} 
+  } 
+  
+  output$downloadMrnaMirnaResult <- downloadHandler(
+    filename = function() { 
+      paste(input$mirnaFile$name,"-",input$mrnaFile$name,"-outputFile.csv", sep = "")
+    },
+    content = function(file) {
+      write.csv(correlations(), file)
+    })  
 
-output$correlationPlot <- renderPlot({
-  if(!is.null(input$result_rows_selected)){
-    selected.gene <- correlations()[input$result_rows_selected,1]
-    selected.mirna <- correlations()[input$result_rows_selected,2]
-    selected.gene.row <- which(mrnaExpressionData()==selected.gene)
-    selected.mirna.row <- which(mirnaExpressionData()==selected.mirna)
-    X <- as.numeric(as.vector(mrnaExpressionData()[selected.gene.row,2:ncol(mrnaExpressionData())]))
-    Y <- as.numeric(as.vector(mirnaExpressionData()[selected.mirna.row,2:ncol(mirnaExpressionData())]))
-    cor.test(X, Y)
-    plot(X, Y, col='Black', pch=1) #col=Group
-    line <- lm(Y ~ X)
-    abline(line, col="blue")
-  }
-})
+  output$correlationPlot <- renderPlot({
+    if(!is.null(input$result_rows_selected)){
+      selected.gene <- correlations()[input$result_rows_selected,1]
+      selected.mirna <- correlations()[input$result_rows_selected,2]
+      selected.gene.row <- which(mrnaExpressionData()==selected.gene)
+      selected.mirna.row <- which(mirnaExpressionData()==selected.mirna)
+      X <- as.numeric(as.vector(mrnaExpressionData()[selected.gene.row,2:ncol(mrnaExpressionData())]))
+      Y <- as.numeric(as.vector(mirnaExpressionData()[selected.mirna.row,2:ncol(mirnaExpressionData())]))
+      cor.test(X, Y)
+      plot(X, Y, col='Black', pch=1) #col=Group
+      line <- lm(Y ~ X)
+      abline(line, col="blue")
+    }
+  })
 
 
 ###########################################################################
@@ -135,12 +142,14 @@ output$correlationPlot <- renderPlot({
 					  print("Preparing...")
 					  
 					  sharedValues$fromButton <- T
-					  output$MRNACNVResult <- DT::renderDataTable(cnvMrnaCorrelations(), selection = 'single')
 
 					  if(nrow(cnvMrnaCorrelations()) > 1) {
+					    output$MRNACNVResult <- DT::renderDataTable(cnvMrnaCorrelations(), selection = 'single')
+					    shinyjs::show(id = "downloadMrnaCNVResult")
 						  print("Hay resultados")
 					  } else {
 						  print("NO hay resultados")
+					    shinyjs::hide(id = "downloadMrnaCNVResult")
 					  }      
 					  sharedValues$fromButton <- F
 				  } else {
@@ -149,6 +158,14 @@ output$correlationPlot <- renderPlot({
 				  
     })
   }
+  
+  output$downloadMrnaCNVResult <- downloadHandler(
+    filename = function() { 
+      paste(input$cnv.cnvFile$name,"-",input$cnv.cnvFile$name,"-outputFile.csv", sep = "")
+    },
+    content = function(file) {
+      write.csv(cnvMrnaCorrelations(), file)
+    })   
 
   
   ###########################################################################
