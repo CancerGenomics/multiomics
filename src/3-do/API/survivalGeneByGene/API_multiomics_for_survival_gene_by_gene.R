@@ -43,7 +43,7 @@
 #   -rownames(a): genes names
 #   -colnames(a): geneName, coxph.coef, coxph.log.rank.p.value, wald.test.score, wald.test.p.value, survDiff G-RHO score, survDiff G-RHO p-value, Concordance index
 #   -For each gene: geneName, coxph.coef, coxph.log.rank.p.value, wald.test.score, wald.test.p.value, survDiff G-RHO score, survDiff G-RHO p-value, Concordance index
-getPrognosticStatistic<-function(expression, number.of.clusters, maximium.p.value.accepted=0.05, groupin.FUN='multiomics.cut2', clinical.file.path, clinical.survival.column.name, clinical.event.column.name, minimium.number.of.samples.in.a.group=10){
+getPrognosticStatistic<-function(expression, number.of.clusters, groupin.FUN='multiomics.cut2', clinical.file.path, clinical.survival.column.name, clinical.event.column.name, minimium.number.of.samples.in.a.group=10){
   expression.with.survival.file.path<-"multiomics.temp.exprWithSurv.csv"
   do.generateExpressionAndSurvivalDataFromTCGA(expression, clinical.file.path, clinical.survival.column.name, clinical.event.column.name,expression.with.survival.file.path)
   result<-calculate.statistics.gene.by.gene(expression.with.survival.file.path, number.of.clusters=2, maximum.p.value.accepted=0.05, grouping.FUN=multiomics.cut2, print.surv.diff=TRUE, print.concordance.index=TRUE, print.coxph=TRUE, gene.names.to.evaluate=NULL, minimium.number.of.samples.in.a.group=10)

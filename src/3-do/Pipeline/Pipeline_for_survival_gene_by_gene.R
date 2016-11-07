@@ -50,7 +50,7 @@ clinical.file.path<-paste(sourceBaseLocation, "examples\\survival_gene_by_gene\\
 clinical.survival.column.name="OVERALL_SURVIVAL"
 clinical.event.column.name="overall_survival_indicator"
 expression <- read.table(expression.file.path, sep="\t", header=TRUE, na.strings=c("", "NA"),stringsAsFactors=FALSE)
-result<-getPrognosticStatistics(expression, number.of.clusters, maximium.p.value.accepted=0.05, groupin.FUN='multiomics.cut2', clinical.file.path, clinical.survival.column.name, clinical.event.column.name, minimium.number.of.samples.in.a.group=10)
+result<-getPrognosticStatistic(expression, number.of.clusters, groupin.FUN='multiomics.cut2', clinical.file.path, clinical.survival.column.name, clinical.event.column.name, minimium.number.of.samples.in.a.group=10)
 ##########################################################################################################################################################
 
 
