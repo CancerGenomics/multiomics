@@ -101,8 +101,8 @@ shinyServer(function(input, output, session) {
 ###########################################################################
 
   observeEvent(input$runMRNACNVCorrelation, { 
-	runMRNACNVCorrelation()
-   })
+	  runMRNACNVCorrelation()
+  })
 
   cnvThreshold <- reactive({
     input$cnv.thresholdSlider
@@ -165,8 +165,26 @@ shinyServer(function(input, output, session) {
     },
     content = function(file) {
       write.csv(cnvMrnaCorrelations(), file)
-    })   
-
+    }) 
+  
+  ###########################################################################
+  ########################## METHYLATION - MRNA PIPELINE TAB
+  ###########################################################################
+  
+  observeEvent(input$runMRNAMethylationCorrelation, { 
+    runMRNAMethylationCorrelation()
+  })  
+  
+  runMRNAMethylationCorrelation <- function(){
+    withProgress(message = 'Please stand by...', 
+                 detail = "calculating correlation", 
+                 min=0, max=1, {
+                   
+      print("Implementar!")
+                   
+    })    
+  }
+  
   
   ###########################################################################
   ########################## XENA HUB CONNECTOR TAB
@@ -232,31 +250,5 @@ shinyServer(function(input, output, session) {
       tagList()
     }
   })  
-
-#  downloadFile <- reactive({
-#    withProgress(message = 'Connectig with Xena...', 
-#                 detail = "Downloading file", 
-#                 min=0, max=1, {    
-#      if(input$xenaCohorts != "" && input$xenaCohortDatasets != ""){
-#        print(paste("Download file for datesets for", input$xenaCohorts, input$xenaCohortDatasets, sep=" "))
-#        url <- getUrlFromTCGAXenaHub(input$xenaCohortDatasets)
-#        print(url)
-#        download.file(url = url, destfile = tempfile())
-#      }
-#    })
-#  })
-  
-#  output$downloadData <- downloadHandler(
-#    filename = function() { 
-#      paste(input$xenaCohortDatasets, ".csv", sep="")
-#    },
-#    content = function(file) {
-#      if(input$xenaCohorts != "" && input$xenaCohortDatasets != ""){
-#        print(file)
-#        write.csv(downloadFile(), file)
-#      }
-#    }
-#  )
-  
 
 })

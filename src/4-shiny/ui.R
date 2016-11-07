@@ -38,7 +38,6 @@ shinyUI(
       sidebarLayout(
 					
         sidebarPanel(
-		  #titlePanel("multiOmics"),
           fileInput("cnv.mrnaFile", accept=c("text/csv"), label=h4("mRNA profile")),
 		      fileInput("cnv.cnvFile",accept=c("text/csv"), label=h4("CNV profile")),
           sliderInput("cnv.thresholdSlider", label=h4("Correlation coefficient"), 
@@ -56,7 +55,27 @@ shinyUI(
         )
       )
     ),
-      
+    tabPanel("mRNA-methylation pipeline",    
+             sidebarLayout(
+               
+               sidebarPanel(
+                 fileInput("meth.mrnaFile", accept=c("text/csv"), label=h4("mRNA profile")),
+                 fileInput("meth.methFile",accept=c("text/csv"), label=h4("methylation profile")),
+                 sliderInput("meth.thresholdSlider", label=h4("Correlation coefficient"), 
+                             min=0.3, max=1, value=0.7, step=0.05),
+                 radioButtons("meth.pearsons.method", label = h4("Correlation test"),
+                              choices = c("Pearson" = "pearson", "Spearman" = "spearman", "Kendall" = "kendall"), 
+                              selected = "pearson"),		
+                 actionButton("runMRNAMethylationCorrelation", "Run pipeline")
+               ),
+               mainPanel(
+                 DT::dataTableOutput('MRNAMethylationResult'),
+                 tags$div(id="downloadMrnaMethylationResultDiv",
+                          shinyjs::hidden(downloadButton("downloadMrnaMethylationResult", "Download csv")))
+                 
+               )
+             )
+    ),
     tabPanel("TCGA Xena Hub",
       
       tags$div(class="row ",
