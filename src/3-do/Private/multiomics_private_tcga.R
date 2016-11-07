@@ -3,17 +3,21 @@
 # Author: Matias
 ###############################################################################
 
-
-
-
-#It gets as input the mrna file (in tcga format), the clincal data file (in tcga format, that is clinical data as columns and samples as rows), the survival column name and the event column name and it generates a file combining expression data and clincal data.
+#It executes do.generateExpressionAndSurvivalDataFromTCGA but it receives the expression.file.path instead of the data.frame read. Also, it reads the result to a file.
+#Please see the documentation of do.generateExpressionAndSurvivalDataFromTCGA
+generateExpressionAndSurvivalDataFromTCGA <-function(expression.file.path, clinical.file.path, clinical.survival.column.name, clinical.event.column.name, output.path){  
+  expression <- (read.table(expression.file.path, sep="\t", header=TRUE, na.strings=c("", "NA"),stringsAsFactors=FALSE))
+  do.generateExpressionAndSurvivalDataFromTCGA (expression, clinical.file.path, clinical.survival.column.name, clinical.event.column.name) 
+}
+  
+#It gets a dataframe with the mrna expression data, the clincal data file (in tcga format, that is clinical data as columns and samples as rows), the survival column name and the event column name and it generates a file combining expression data and clincal data.
 #Some considerations
 #	The samples that has not got survival and/or event will be discarded; it will not be in the final result.
 #	The difference with the function joinExpressionAndAllClinicalDataFromTCGA is that this function extracts just the survival and event column. The joinExpressionAndAllClinicalDataFromTCGA function writes all the attributes.
 #
 #
 #Input
-#   expression.file.path: It is the file path of the expression data file in TCGA format. It must respect the following format.
+#   expression.data.frame: It is the file path of the expression data file in TCGA format. It must respect the following format.
 #      -Row 1: Sample labels
 #	   -From Row 2: Expression data
 #	   -Column 1: Gene symbol (ejemplo: A1BG, A2M) except in row 1, 2 and 3 that are the labels for the rows descripted below.
@@ -50,11 +54,9 @@
 #	   -From Row 4: expression data 
 #	   -Column 1: Gene symbol (ejemplo: A1BG, A2M) except in row 1, 2 and 3 that are the labels for the rows descripted below.
 #	All the samples which has NA for the columns event or survival will be eliminated and they will not be i
-#   
-generateExpressionAndSurvivalDataFromTCGA <- function(expression.file.path, clinical.file.path, clinical.survival.column.name, clinical.event.column.name, output.path){
-  
-  #It reads expression file. When reading the "-" are changed by "." that is why it is changed again to "-".
-  expression <- (read.table(expression.file.path, sep="\t", header=TRUE, na.strings=c("", "NA"),stringsAsFactors=FALSE))
+#  
+do.generateExpressionAndSurvivalDataFromTCGA <- function(expression, clinical.file.path, clinical.survival.column.name, clinical.event.column.name, output.path){  
+  #expression <- (read.table(expression.file.path, sep="\t", header=TRUE, na.strings=c("", "NA"),stringsAsFactors=FALSE))
   colnames(expression)<-gsub("\\.", "-", colnames(expression))
   rownames(expression) <- expression[,1]
   
@@ -97,7 +99,9 @@ generateExpressionAndSurvivalDataFromTCGA <- function(expression.file.path, clin
   result<-result[,colSums(is.na(result)) == 0]
   
   #It writes the result
-  write.table(result, output.path, col.names=FALSE, quote=FALSE, row.names=FALSE, sep="\")
+  write.table(result, output.path, col.names=FALSE, quote=FALSE, append = FALSE, row.names=FALSE, sep="\t")
+  
+  result
 }
 
 
@@ -143,10 +147,9 @@ generateExpressionAndSurvivalDataFromTCGA <- function(expression.file.path, clin
 #	   -Row2 - Row n: clinical data (assuming there are n-1 clincal attributes) 
 #	   -From Row n+1: expression data 
 #	   -Column 1: Gene symbol (ejemplo: A1BG, A2M) except in row 1, 2 and 3 that are the labels for the rows descripted below.
-#   
 joinExpressionAndAllClinicalDataFromTCGA <- function(expression.file.path, clinical.file.path, output.path){
   
-  #It reads expression file. When reading the "-" are changed by "." that is why it is changed again to "-".
+  #It reads expression file. When reading the "-" are changed by "." that is why it is changed again to "-"
   expression <- (read.table(expression.file.path, sep="\t", header=TRUE, na.strings=c("", "NA"),stringsAsFactors=FALSE))
   colnames(expression)<-gsub("\\.", "-", colnames(expression))
   rownames(expression) <- expression[,1]

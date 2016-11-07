@@ -16,6 +16,7 @@ readExpressionXSurvivalFromTypicalFile <- function(expression.file.path){
 
 #ptm <- proc.time()
 	the.original.data.frame<-read.table(expression.file.path, header=FALSE)
+
 #print(paste("reading table: ", (proc.time() - ptm)["elapsed"]))	
 
 #ptm <- proc.time()

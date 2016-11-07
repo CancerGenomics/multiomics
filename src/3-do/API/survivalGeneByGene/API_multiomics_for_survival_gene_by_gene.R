@@ -3,6 +3,10 @@
 ###############################################################################
 
 
+
+
+
+
 ######################################API#############################################
 ######################################API#############################################
 ######################################API#############################################
@@ -16,7 +20,36 @@
 
 
 
-
+#It receives
+#  expression: dataframe with expression data.
+#  number.of.clusters: number of clusters for calculating logrank and concordance
+#  grouping.fun: the function for grouping. It can be: multiomics.kmeans or multiomics.cut2
+#  clinical.survival.column.name: COlumn name for survival time
+#  clinical.event.column.name: column name for survival event 
+#  clinical.file.path: clinical.file.path: It is the file in TCGA format. It must follow this format:
+#    -Row 1: Clinical data column name
+#	   -Column 1: Sample labels (it should be the same than the row 1 of expression.file
+#	   -Column 1: The cells will have the values of each sample in each clinical data.
+#	   -Example: 
+#				sampleID	AJCC_Stage_nature2012	OS_Time_nature2012	OS_event_nature2012
+#				TCGA-A1-A0SB-01	Stage I	259	0
+#				TCGA-A1-A0SD-01	Stage IIA	437	0
+#				TCGA-A1-A0SE-01	Stage I	1320	0
+#				TCGA-A1-A0SF-01	Stage IIA	1463	0
+#				TCGA-A1-A0SG-01	Stage IIB	433	0
+#
+#
+#It returns a matrix with the following format:
+#   -rownames(a): genes names
+#   -colnames(a): geneName, coxph.coef, coxph.log.rank.p.value, wald.test.score, wald.test.p.value, survDiff G-RHO score, survDiff G-RHO p-value, Concordance index
+#   -For each gene: geneName, coxph.coef, coxph.log.rank.p.value, wald.test.score, wald.test.p.value, survDiff G-RHO score, survDiff G-RHO p-value, Concordance index
+getPrognosticStatistic<-function(expression, number.of.clusters, maximium.p.value.accepted=0.05, groupin.FUN='multiomics.cut2', clinical.file.path, clinical.survival.column.name, clinical.event.column.name, minimium.number.of.samples.in.a.group=10){
+  expression.with.survival.file.path<-"multiomics.temp.exprWithSurv.csv"
+  do.generateExpressionAndSurvivalDataFromTCGA(expression, clinical.file.path, clinical.survival.column.name, clinical.event.column.name,expression.with.survival.file.path)
+  result<-calculate.statistics.gene.by.gene(expression.with.survival.file.path, number.of.clusters=2, maximum.p.value.accepted=0.05, grouping.FUN=multiomics.cut2, print.surv.diff=TRUE, print.concordance.index=TRUE, print.coxph=TRUE, gene.names.to.evaluate=NULL, minimium.number.of.samples.in.a.group=10)
+  rownames(result)<-result[,1]
+  result[,c(1,2,6,7,8,9,10,11)]
+}
 
 
 
@@ -461,8 +494,18 @@ drawLegends<-function(groups, theLegend, title){
 	
 }
 
+#It writes down the result in a file
 do.multiomics.to.spreadsheet.gene.by.gene <- function(expression.with.survival.file.path, number.of.clusters, output.file.path, maximum.p.value.accepted=0.05, grouping.FUN, print.surv.diff=TRUE, print.concordance.index=TRUE, print.coxph=TRUE, gene.names.to.evaluate=NULL, minimium.number.of.samples.in.a.group=10){
-	library(survival)
+  expression.x.survival.object<-readExpressionXSurvivalFromTypicalFile(expression.with.survival.file.path)
+  result<-calculate.statistics.gene.by.gene(expression.x.survival.object, number.of.clusters, maximum.p.value.accepted=0.05, grouping.FUN, print.surv.diff=TRUE, print.concordance.index=TRUE, print.coxph=TRUE, gene.names.to.evaluate=NULL, minimium.number.of.samples.in.a.group=10)
+  #Create the output folder for the csv file, if the folder doesnt exists	
+  createFolderIfDoesntExist(output.file.path)
+  write.table(result, output.file.path,  row.names=FALSE, sep="\t", quote=FALSE)
+}
+
+#It returns a matrix
+calculate.statistics.gene.by.gene <- function(expression.with.survival.file.path, number.of.clusters=2, maximum.p.value.accepted=0.05, grouping.FUN, print.surv.diff=TRUE, print.concordance.index=TRUE, print.coxph=TRUE, gene.names.to.evaluate=NULL, minimium.number.of.samples.in.a.group=10){
+  library(survival)
 	print("multiomics.to.spreadsheet.gene.by.gene")
 	
 	#Constants
@@ -482,8 +525,6 @@ do.multiomics.to.spreadsheet.gene.by.gene <- function(expression.with.survival.f
 	#Shared Environment with error functions
 	res.env<-new.env()
 	
-	#Create the output folder for the csv file, if the folder doesnt exists	
-	createFolderIfDoesntExist(output.file.path)
 	
 	#It reads the file and creates an expressionXSruvivalObject containing the expression and the clinical data
 	expression.x.survival.object<-readExpressionXSurvivalFromTypicalFile(expression.with.survival.file.path)
@@ -497,7 +538,7 @@ do.multiomics.to.spreadsheet.gene.by.gene <- function(expression.with.survival.f
 	
 	#It defines the columns for the output file, considering the user parameters
 	colnames<-c("gene.name")
-	if (print.coxph)colnames<-append(colnames, c("coxph.coef", "coxph.exp.coef", "coxph.Rsquare", "coxph.concordance","coxph.log.rank.p.value", "wald.test.p.value" )) 
+	if (print.coxph)colnames<-append(colnames, c("coxph.coef", "coxph.exp.coef", "coxph.Rsquare", "coxph.concordance","coxph.log.rank.p.value", "wald.test.score", "wald.test.p.value" )) 
 	if (print.surv.diff) colnames<-append(colnames, c(COL_SURVDIFF, COL_SURVDIFF_P_VALUE))
 	if (print.concordance.index) colnames<-append(colnames, c("Concordance index"))
 	colnames<-append(colnames, c("result"))
@@ -528,7 +569,7 @@ do.multiomics.to.spreadsheet.gene.by.gene <- function(expression.with.survival.f
 								if (print.coxph){ 
 									multiomics.coxph.object<-multiomics.coxph.for.one.gene(gen=gene.name, expression.x.survival.object@time, expression.x.survival.object@event, expression.vector)
 									#newrow<-append(newrow, c(multiomics.coxph.object@coxph.test.score,multiomics.coxph.object@coxph.test.p.value, multiomics.coxph.object@wald.test.score, multiomics.coxph.object@wald.test.p.value))
-									newrow<-append(newrow, c(multiomics.coxph.object@coxph.coef, multiomics.coxph.object@coxph.exp.coef, multiomics.coxph.object@coxph.Rsquare, multiomics.coxph.object@coxph.concordance,multiomics.coxph.object@coxph.log.rank.p.value, multiomics.coxph.object@wald.test.p.value))
+									newrow<-append(newrow, c(multiomics.coxph.object@coxph.coef, multiomics.coxph.object@coxph.exp.coef, multiomics.coxph.object@coxph.Rsquare, multiomics.coxph.object@coxph.concordance,multiomics.coxph.object@coxph.log.rank.p.value, multiomics.coxph.object@wald.test.score ,multiomics.coxph.object@wald.test.p.value))
 								}
 							},error=function(e){stop(formatErrorMessage(error.type=ERROR.COXPH, error.detail=e$message))})
 					
@@ -591,7 +632,8 @@ do.multiomics.to.spreadsheet.gene.by.gene <- function(expression.with.survival.f
 	}  
 	#remover NAS
 	res.env$mat<- orderMatrixRows(res.env$mat, decr = F, cols = COL_SURVDIFF)
-	write.table(res.env$mat, output.file.path,  row.names=FALSE, sep="\t", quote=FALSE)
+	
+	
 }
 
 

@@ -43,8 +43,15 @@ source(paste(sourceBaseLocation, "src/survival.entities/PotentialGene.R",sep="")
 source(paste(sourceBaseLocation, "src/survival.entities/ValidationResult.R",sep=""), echo=FALSE, encoding="Cp1252")
 
 
-
-
+##################EXAMPLE OF getPrognosticStatistics################################################################################
+sourceBaseLocation="D:\\desarrollo\\workspaces\\R\\multiomics\\"
+expression.file.path<-paste(sourceBaseLocation, "examples\\survival_gene_by_gene\\input\\input1_expressionMatrix", sep="")
+clinical.file.path<-paste(sourceBaseLocation, "examples\\survival_gene_by_gene\\input\\input2_clinicalData.tsv", sep="")
+clinical.survival.column.name="OVERALL_SURVIVAL"
+clinical.event.column.name="overall_survival_indicator"
+expression <- read.table(expression.file.path, sep="\t", header=TRUE, na.strings=c("", "NA"),stringsAsFactors=FALSE)
+result<-getPrognosticStatistics(expression, number.of.clusters, maximium.p.value.accepted=0.05, groupin.FUN='multiomics.cut2', clinical.file.path, clinical.survival.column.name, clinical.event.column.name, minimium.number.of.samples.in.a.group=10)
+##########################################################################################################################################################
 
 
 

@@ -5,7 +5,7 @@
 library("survival")
 
 setClass("CoxphResult",
-		representation(gen="character", coxph.coef="numeric", coxph.exp.coef="numeric", coxph.Rsquare="numeric", coxph.concordance="numeric", coxph.log.rank.p.value="numeric",  wald.test.p.value="numeric"))
+		representation(gen="character", coxph.coef="numeric", coxph.exp.coef="numeric", coxph.Rsquare="numeric", coxph.concordance="numeric", coxph.log.rank.p.value="numeric", wald.test.score="numeric",  wald.test.p.value="numeric"))
 
 example<-new("CoxphResult", coxph.coef=1, coxph.exp.coef=2, coxph.Rsquare=3, coxph.concordance=4, coxph.log.rank.p.value=5,  wald.test.p.value=6)
 
@@ -60,10 +60,10 @@ create.multiomics.coxph <- function(gen.name.or.gene.pair.name, coxph){
 
 	#score<-summary(coxph)$sctest[1]
 	#the.coefficients<-coxph$coefficients
-	#wald.test<-summary(coxph)$waldtest[1]
+	wald.test<-summary(coxph)$waldtest[1]
 	
 	
-	result<-new("CoxphResult", gen=gen.name.or.gene.pair.name, coxph.coef=coef, coxph.exp.coef=expcoef, coxph.Rsquare=rsq, coxph.concordance=concordance, coxph.log.rank.p.value=log.rank.p.value,  wald.test.p.value=waldtest_p_value)
+	result<-new("CoxphResult", gen=gen.name.or.gene.pair.name, coxph.coef=coef, coxph.exp.coef=expcoef, coxph.Rsquare=rsq, coxph.concordance=concordance, coxph.log.rank.p.value=log.rank.p.value,  wald.test.score=wald.test, wald.test.p.value=waldtest_p_value)
 	#result<-new("CoxphResult", gen=gen.name.or.gene.pair.name, coefficients=the.coefficients, coxph.test.score=score, coxph.test.p.value=score_p_value, wald.test.score=wald.test, wald.test.p.value=waldtest_p_value)
 	return (result)
 }
