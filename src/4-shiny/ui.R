@@ -17,10 +17,10 @@ shinyUI(
           fileInput("mrnaFile", accept=c("text/csv"), label=h4("mRNA profile")),
           fileInput("mirnaFile",accept=c("text/csv"), label=h4("miRNA profile")),
           sliderInput("thresholdSlider", label=h4("Correlation coefficient"), 
-				      min=0, max=1, value=0.7, step=0.05),
+				      min=0.3, max=1, value=0.7, step=0.05),
 		      radioButtons("pearsons.method", label = h4("Correlation test"),
 				       choices = c("Pearson" = "pearson", "Spearman" = "spearman", "Kendall" = "kendall"), 
-				       selected = "spearman"),		
+				       selected = "pearson"),		
 		        # directoryInput('outputDir', label = 'Select a directory for the output', value = '~'),
             # textInput('outputFileName', label = 'Output file name', value = 'inputStep2-matureMirnaXmrna.csv'),
           actionButton("runMRNAMiRNACorrelation", "Run pipeline")
@@ -42,10 +42,10 @@ shinyUI(
           fileInput("cnv.mrnaFile", accept=c("text/csv"), label=h4("mRNA profile")),
 		      fileInput("cnv.cnvFile",accept=c("text/csv"), label=h4("CNV profile")),
           sliderInput("cnv.thresholdSlider", label=h4("Correlation coefficient"), 
-                      min=0, max=1, value=0.7, step=0.05),
+                      min=0.3, max=1, value=0.7, step=0.05),
           radioButtons("cnv.pearsons.method", label = h4("Correlation test"),
                        choices = c("Pearson" = "pearson", "Spearman" = "spearman", "Kendall" = "kendall"), 
-                       selected = "spearman"),		
+                       selected = "pearson"),		
           actionButton("runMRNACNVCorrelation", "Run pipeline")
         ),
         mainPanel(
@@ -56,7 +56,8 @@ shinyUI(
         )
       )
     ),
-    tabPanel("TCGA from Xena",
+      
+    tabPanel("TCGA Xena Hub",
       
       tags$div(class="row ",
                  tags$form(class="well",
@@ -66,9 +67,8 @@ shinyUI(
         #border-radius: 5px;
         #margin: 20px" ,
         
-      h4("Look for TCGA cohorts in Xena"),
       tags$br(),
-      actionButton("connectToXenaHub", "Look for TCGA cohorts in Xena"),
+      actionButton("connectToXenaHub", "Looks for TCGA cohorts"),
       tags$br(),tags$br(),tags$br(),
 		  fluidPage(
        fluidRow(

@@ -86,10 +86,10 @@ shinyServer(function(input, output, session) {
       selected.mirna <- correlations()[input$result_rows_selected,2]
       selected.gene.row <- which(mrnaExpressionData()==selected.gene)
       selected.mirna.row <- which(mirnaExpressionData()==selected.mirna)
-      X <- as.numeric(as.vector(mrnaExpressionData()[selected.gene.row,2:ncol(mrnaExpressionData())]))
-      Y <- as.numeric(as.vector(mirnaExpressionData()[selected.mirna.row,2:ncol(mirnaExpressionData())]))
+      X <- as.numeric(as.vector(mirnaExpressionData()[selected.mirna.row,2:ncol(mirnaExpressionData())]))
+      Y <- as.numeric(as.vector(mrnaExpressionData()[selected.gene.row,2:ncol(mrnaExpressionData())]))
       cor.test(X, Y)
-      plot(X, Y, col='Black', pch=1) #col=Group
+      plot(X, Y, xlab=selected.mirna, ylab=selected.gene, main='miRNA vs. mRNA correlation plot', col='Black', pch=21, frame.plot=TRUE) #col=Group
       line <- lm(Y ~ X)
       abline(line, col="blue")
     }

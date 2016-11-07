@@ -14,7 +14,7 @@ CnvXMrnas <- function(mrna, cnv, output.path="~/",
   
   # The result matix is created
   res <- matrix(nrow=total.rows,ncol=4)
-  colnames(res)<-(c("Gene symbol","Location", "CNV-Mrna correlation", "p_value of correlation"))
+  colnames(res)<-(c("Gene Symbol","Location", "CNV-mRNA correlation", "p-value"))
   
   actual<-1
   actual.n.correlated<-1
