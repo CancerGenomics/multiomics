@@ -3,14 +3,45 @@ options(shiny.maxRequestSize=500*1024^2)
 
 shinyServer(function(input, output, session) {
   
-  sharedValues <- reactiveValues(fromButton=F,correlations="",cnvMrnaCorrelations="")
+  sharedValues <- reactiveValues(fromButton=F,correlations="",correlationsStep2="",cnvMrnaCorrelations="")
   
   ###########################################################################
   ########################## MIRNA - MRNA PIPELINE TAB
   ###########################################################################
   
   observeEvent(input$runMRNAMiRNACorrelation, { 
-    runMRNAMiRNACorrelation()
+    if(!is.null(input$mrnaFile) && !is.null(input$mirnaFile)) {
+      
+      sharedValues$fromButton <- T
+      
+      runMRNAMiRNACorrelation()
+      
+      #chequear si quiere correr el step 2 y mandar a correr
+      if(input$miRNA.runMultimir) {
+        print("running with step 2")
+        runMultimirAnalisys()
+        
+        print("antes del render")
+        
+        output$result <- DT::renderDataTable(sharedValues$correlationsStep2, selection = 'single')
+        
+      } else {
+        print("running only step 1")
+        if(nrow(correlations()) > 1) {
+          print("Hay resultados")
+          output$result <- DT::renderDataTable(correlations(), selection = 'single')
+          shinyjs::show(id = "downloadMrnaMirnaResult")
+        } else {
+          print("NO hay resultados")
+          shinyjs::hide(id = "downloadMrnaMirnaResult")
+        }      
+      }
+      sharedValues$fromButton <- F      
+      
+    } else {
+      print("No hay archivos cargados")
+    }
+    
   })
 
   mrnaExpressionData <- reactive({
@@ -39,8 +70,8 @@ shinyServer(function(input, output, session) {
 								   output.file.name = paste(input$mirnaFile$name,"-",input$mrnaFile$name,"-outputFile.csv", sep = ""),
 								   r.minimium = threshold(), inc.progress = T, 
 								   pearsons.method = pearsonsMethod())
-	} 
-	return (sharedValues$correlations)
+ 	  } 
+	  return (sharedValues$correlations)
   }), quoted = T)
   
   runMRNAMiRNACorrelation <- function() { 
@@ -48,29 +79,38 @@ shinyServer(function(input, output, session) {
           detail = "calculating correlation", 
           min=0, max=1, {
             
-    if(!is.null(input$mrnaFile) && !is.null(input$mirnaFile)) {
-
        #Checks if both files has the same samples in the same order. If not, aborts the execution.
        print("Checking if both files has the same samples in the same order...")
        suppressWarnings(checkSamplesFormIRNArnaCorrelation(mrnaExpressionData(), mirnaExpressionData(), 1))
        print("Preparing...")
+       correlations()
         
-       sharedValues$fromButton <- T
-
-       if(nrow(correlations()) > 1) {
-         print("Hay resultados")
-         output$result <- DT::renderDataTable(correlations(), selection = 'single')
-         shinyjs::show(id = "downloadMrnaMirnaResult")
-       } else {
-         print("NO hay resultados")
-         shinyjs::hide(id = "downloadMrnaMirnaResult")
-       }      
-       sharedValues$fromButton <- F
-    } else {
-       print("No hay archivos cargados")
-    }
   })
   } 
+  
+  runMultimirAnalisys <- function() { 
+	  withProgress(message = 'Please stand by...', 
+			           detail = "Searching in miRNA databases...", 
+			           min=0, max=1, {
+				  
+			output.file.name = paste(input$mirnaFile$name,"-",input$mrnaFile$name,"-multiMiR-outputFile.csv", sep = "")    
+			print(output.file.name)
+      step2Res <- keepBestGeneXMirnaAccordingCorrelationAndAddMirnaDbInfo(correlations(),output.path="~/",
+                                                              output.file.name, predicted.cut.off=10
+                                                              )
+      print("Finish multimir analisys")
+      print(nrow(step2Res))
+      collapsed.output.file.name = paste(input$mirnaFile$name,"-",input$mrnaFile$name,"-multiMiR-collapsed-outputFile.csv", sep = "")    
+      collapsedResult <- ColapseMirnaXMrna(data.frame(step2Res), output.path = "~/", output.file = collapsed.output.file.name)
+      print("Finish collapsing")
+      
+      # nombre de olumnas, está desordenado 
+      # Mirna databases","Database predicted score", "validation pubmed id")~"Gen symbol"+"Mature miRNA id"+"MiRNA-mRNA correlation"+"p_value"
+
+      sharedValues$correlationsStep2 <- collapsedResult
+      
+	})
+  }   
   
   output$downloadMrnaMirnaResult <- downloadHandler(
     filename = function() { 

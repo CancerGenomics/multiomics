@@ -21,8 +21,12 @@ shinyUI(
 		      radioButtons("pearsons.method", label = h4("Correlation test"),
 				       choices = c("Pearson" = "pearson", "Spearman" = "spearman", "Kendall" = "kendall"), 
 				       selected = "pearson"),		
-		        # directoryInput('outputDir', label = 'Select a directory for the output', value = '~'),
-            # textInput('outputFileName', label = 'Output file name', value = 'inputStep2-matureMirnaXmrna.csv'),
+	        h4(id="asas2","MultiMiR"),
+	        checkboxInput("miRNA.runMultimir",p(id="multimirTooltipText","Recover miRNA-mRNA target interactions through multiMiR")),
+		      bsTooltip("multimirTooltipText",
+		                "Recover miRNA-mRNA target interactions through the multiMiR reource that includes 11 validated/predicted miRNA–target databases (e.g.: miRecords, miRTar-Base, miRanda, etc.)", 
+		                placement = "right",options = list(container = "body")),
+		      
           actionButton("runMRNAMiRNACorrelation", "Run pipeline")
         ),
         mainPanel(

@@ -68,7 +68,9 @@ CalculateCorrelationsMirnaMrna <- function(expression, mirna, output.path="~/",
 	
 	# The result matix is created
 	res <- matrix(nrow=total.rows,ncol=4)
-	colnames(res)<-(c("Gene Symbol","Mature miRNA", "miRNA-mRNA correlation", "p-value"))
+	colnames(res)<-(c("Gen_symbol","mature_mirna_id","Mirna_Mrna_Correlation","p_value_Of_Mirna_Mrna_Correlation"))
+	
+	
 
 	actual<-1
 	actual.n.correlated<-1
@@ -142,8 +144,9 @@ CalculateCorrelationsMirnaMrna <- function(expression, mirna, output.path="~/",
 #		mirna_database: mirna database. Possible values are: diana_microt, elmmo,  microcosm,  miranda,  mirdb,  pictar,  pita,  targetscan ,  mirecords,  mirtarbase,  tarbase, mir2disease,  pharmaco_mir,  phenomir
 #		database_predicted_score: it is an socre for the prediction but take into account that it is not standarized. So, each database uses differente ranges.
 #		validation_pubmed_id: it will be completed just if this correlation was validated (that is that was experimentally validated and was described in a paper).
-keepBestGeneXMirnaAccordingCorrelationAndAddMirnaDbInfo <- function(genes.x.mirnas.path, output.path, output.file="inputStep3-mirnaXmRNAWithPredictedAndValidated.csv", predicted.cut.off=30){
-	genes.x.mirnas<-read.table(genes.x.mirnas.path, header=TRUE)
+keepBestGeneXMirnaAccordingCorrelationAndAddMirnaDbInfo <- function(genes.x.mirnas, output.path, output.file="inputStep3-mirnaXmRNAWithPredictedAndValidated.csv", predicted.cut.off=30){
+  
+  print("Running multiMiR analisys")
 	
 	mirnas<-genes.x.mirnas[,2]
 	mirnas<-unique(as.character(mirnas))
@@ -165,6 +168,8 @@ keepBestGeneXMirnaAccordingCorrelationAndAddMirnaDbInfo <- function(genes.x.mirn
 	colnames(result)<-c("Gen_symbol","mature_mirna_id","Mirna_Mrna_Correlation","p_value_Of_Mirna_Mrna_Correlation","mirna_database","database_predicted_score", "validation_pubmed_id")
 	csvOutputFile<-paste(output.path, output.file, sep="")
 	write.table(result, csvOutputFile, sep="\t",row.names=FALSE)
+	
+	return (result)
 }
 
 
@@ -202,27 +207,41 @@ keepBestGeneXMirnaAccordingCorrelationAndAddMirnaDbInfo <- function(genes.x.mirn
 #   will be colapsed into 
 #		MIR1292	hsa-miR-1292-5p	MIMAT0005943	ESRRG	-0.747206480568877	2,52E+07	NO_PUB	diana_microt, pita
 #
-ColapseMirnaXMrna <- function(mirna.X.mRNA.with.predicted.and.validated.path, output.path){
-	mirnaXmrna<-read.table(mirna.X.mRNA.with.predicted.and.validated.path, header=T)
+ColapseMirnaXMrna <- function(mirnaXmrna, output.path, output.file = "pipelineOutput-mirnaXmRNAWithPredictedAndValidatedColapsed.csv"){
+  
+  if(nrow(mirnaXmrna) > 0) {
 
-	#It keeps just the ones correlating negatively
-	mirnaXmrnaNegative=mirnaXmrna[mirnaXmrna$Mirna_Mrna_Correlation<0,]
+  	#It keeps just the ones correlating negatively
+	  mirnaXmrnaNegative=mirnaXmrna[as.numeric(as.character(mirnaXmrna$Mirna_Mrna_Correlation))<0,]
+	  print(paste("Luego del filtro por negativo",nrow(mirnaXmrnaNegative)))
 
-	#It converts NA in the validation_pubmed_id into NO
-	mirnaXmrnaNegative$validation_pubmed_id <- as.character(mirnaXmrnaNegative$validation_pubmed_id)
-	mirnaXmrnaNegative$mirna_database <- as.character(mirnaXmrnaNegative$mirna_database)
-	mirnaXmrnaNegative$validation_pubmed_id[is.na(mirnaXmrnaNegative$validation_pubmed_id)] <- "NO"
+	  #It converts NA in the validation_pubmed_id into NO
+	  mirnaXmrnaNegative$validation_pubmed_id <- as.character(mirnaXmrnaNegative$validation_pubmed_id)
+	  mirnaXmrnaNegative$mirna_database <- as.character(mirnaXmrnaNegative$mirna_database)
+	  mirnaXmrnaNegative$validation_pubmed_id[is.na(mirnaXmrnaNegative$validation_pubmed_id)] <- "NO"
 	
-	#It collapses all the rows with the same mirna and mrna.
-	result <- aggregate(cbind(mirna_database,database_predicted_score, validation_pubmed_id)~Gen_symbol+mature_mirna_id+Mirna_Mrna_Correlation+p_value_Of_Mirna_Mrna_Correlation,paste,collapse=",",data=mirnaXmrnaNegative, na.action=na.pass)
+	  #It collapses all the rows with the same mirna and mrna.
+	  result <- aggregate(cbind(mirna_database,database_predicted_score, validation_pubmed_id)
+	                      ~Gen_symbol+mature_mirna_id+Mirna_Mrna_Correlation+p_value_Of_Mirna_Mrna_Correlation,
+	                      paste, collapse=",", data=mirnaXmrnaNegative, na.action=na.pass)
+	  print(paste("Luego del agregate",nrow(result)))
 	    
 	
-	#It ordes by mrna and then by mirna
-	result  <- result[order(result$Gen_symbol, result$mature_mirna_id),] 
+	  #It ordes by mrna and then by mirna
+	  result  <- result[order(result$Gen_symbol, result$mature_mirna_id),] 
+	  print(paste("Luego del ordenamiento",nrow(result)))
+	
+  	#Write output
+  	csvOutputFile<-paste(output.path, output.file, sep="")
+	  write.table(result, csvOutputFile, sep="\t",row.names=FALSE,quote=FALSE)
+	  
 
-	#Write output
-	csvOutputFile<-paste(output.path, "\\pipelineOutput-mirnaXmRNAWithPredictedAndValidatedColapsed.csv", sep="")
-	write.table(result, csvOutputFile, sep="\t",row.names=FALSE,quote=FALSE)
+  } else {
+    print("No hay datos en el input, no se ejecuta el algoritmo de colapsamiento")
+    result <- matrix()
+  }
+	
+	return (as.matrix(result))
 }
 
 # Formats a number with 2 decimal places

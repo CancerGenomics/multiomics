@@ -78,15 +78,22 @@ mrna.dif.expr <- readMrnaExpressionFile(mrna.dif.expr.path)
 mirna.dif.expr <- readMirnaExpressionFile(mirna.dif.expr.path)
 print("Checking if both files has the same samples in the same order...")
 suppressWarnings(checkSamplesFormIRNArnaCorrelation(mrna.dif.expr, mirna.dif.expr, 1))
-CalculateCorrelationsMirnaMrna(mrna.dif.expr,mirna.dif.expr, working.path, 
-                               output.file.name=maturemirna.x.mrna.correlation.file.name, 
-                               pearsons.method = "spearman")
+calculated <- CalculateCorrelationsMirnaMrna(mrna.dif.expr,mirna.dif.expr, working.path, 
+                               output.file.name=maturemirna.x.mrna.correlation.file.name,
+                               r.minimium=0.8)
+
+
 
 ####### STEP2 - For each high correlation mirna X mrna found in step 1, it get just the 30% (configurable) correlations which has got better predicted and/or validated score in mrna databases. This step also adds predicition and validation information for those correlations. The other 70% will be discarded from the analysis .####
 #There are many mirna databases for evaluating prediction and validation. A correlation is considered predicted by a mirna database if this correlation mirnaXmrna is registered in the database. A correlation is considered validated if there is a publication showing the correlation experimentally. The multimir packages offers a function for reading all databases in a single call and keeping the ones with highest correlation score.  
 #The added predicted information is mirna_database, Mirna_Mrna_Correlation, p_value_Of_Mirna_Mrna_Correlation, database_predicted_score. And for the ones that were also validated it adds the pubmedId.  
 mirnaxrna.path<-paste(working.path, maturemirna.x.mrna.correlation.file.name, sep="")
-keepBestGeneXMirnaAccordingCorrelationAndAddMirnaDbInfo(mirnaxrna.path, working.path, output.file=just.betters.maturemirna.X.mrna.considering.mirna.databases, predicted.cut.off=my.predicted.cut.off)
+genes.x.mirnas.path <- paste(working.path,maturemirna.x.mrna.correlation.file.name, sep="")
+genes.x.mirnas<-read.table(genes.x.mirnas.path, header=TRUE)
+genes.x.mirnas <- calculated
+best <- keepBestGeneXMirnaAccordingCorrelationAndAddMirnaDbInfo(genes.x.mirnas, working.path, 
+                                                        output.file=just.betters.maturemirna.X.mrna.considering.mirna.databases,
+                                                        predicted.cut.off=my.predicted.cut.off)
 
 
 ####### STEP3 - At this point you have multiple lines for the same pair mrna-mirna because of the multiple databases that predict and/or validate this pair. Assuming that both lines were in the best 30% correlation score ####### 
@@ -98,7 +105,9 @@ keepBestGeneXMirnaAccordingCorrelationAndAddMirnaDbInfo(mirnaxrna.path, working.
 #		MIR1292	hsa-miR-1292-5p	MIMAT0005943	ESRRG	-0.747206480568877	2,52E+07	NO_PUB	diana_microt, pita
 #
 just.betters.maturemirna.X.mrna.considering.mirna.databases.path<-paste(working.path, just.betters.maturemirna.X.mrna.considering.mirna.databases, sep="")
-ColapseMirnaXMrna(just.betters.maturemirna.X.mrna.considering.mirna.databases.path, working.path)
+mirnaXmrna <- read.table(just.betters.maturemirna.X.mrna.considering.mirna.databases.path, header=T)
+mirnaXmrna <- best
+collapsed <- ColapseMirnaXMrna(mirnaXmrna, working.path)
 
 
 
