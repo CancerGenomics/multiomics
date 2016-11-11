@@ -13,29 +13,36 @@ shinyServer(function(input, output, session) {
     if(!is.null(input$mrnaFile) && !is.null(input$mirnaFile)) {
       
       sharedValues$fromButton <- T
-      
+      sharedValues$correlationsStep2 <- matrix()
+        
       runMRNAMiRNACorrelation()
       
       #chequear si quiere correr el step 2 y mandar a correr
       if(input$miRNA.runMultimir) {
         print("running with step 2")
         runMultimirAnalisys()
-        
-        print("antes del render")
-        
+        colnames(sharedValues$correlationsStep2) <- c("Gene","Mature miRNA","miRNA-mRNA correlation","p-value","miRNA db","Predicted score","PubMed ID")
         output$result <- DT::renderDataTable(sharedValues$correlationsStep2, selection = 'single')
-        
       } else {
         print("running only step 1")
-        if(nrow(correlations()) > 1) {
-          print("Hay resultados")
-          output$result <- DT::renderDataTable(correlations(), selection = 'single')
-          shinyjs::show(id = "downloadMrnaMirnaResult")
-        } else {
-          print("NO hay resultados")
-          shinyjs::hide(id = "downloadMrnaMirnaResult")
-        }      
+        colnames(sharedValues$correlations) <- c("Gene","Mature miRNA","miRNA-mRNA correlation","p-value")
+        output$result <- DT::renderDataTable(sharedValues$correlations, selection = 'single')
       }
+	  
+	  if(!input$miRNA.runMultimir) {
+	    if(nrow(sharedValues$correlations) > 0) {
+		    shinyjs::show(id = "downloadMrnaMirnaResult")
+	    } else {
+		    shinyjs::hide(id = "downloadMrnaMirnaResult")
+		}
+	  } else{
+		  if(nrow(sharedValues$correlationsStep2) > 0) {
+			  shinyjs::show(id = "downloadMrnaMirnaResult")
+		  } else {
+			  shinyjs::hide(id = "downloadMrnaMirnaResult")
+		  }
+	  }
+	  
       sharedValues$fromButton <- F      
       
     } else {
@@ -95,7 +102,7 @@ shinyServer(function(input, output, session) {
 				  
 			output.file.name = paste(input$mirnaFile$name,"-",input$mrnaFile$name,"-multiMiR-outputFile.csv", sep = "")    
 			print(output.file.name)
-      step2Res <- keepBestGeneXMirnaAccordingCorrelationAndAddMirnaDbInfo(correlations(),output.path="~/",
+      step2Res <- keepBestGeneXMirnaAccordingCorrelationAndAddMirnaDbInfo(sharedValues$correlations,output.path="~/",
                                                               output.file.name, predicted.cut.off=10
                                                               )
       print("Finish multimir analisys")
@@ -104,9 +111,6 @@ shinyServer(function(input, output, session) {
       collapsedResult <- ColapseMirnaXMrna(data.frame(step2Res), output.path = "~/", output.file = collapsed.output.file.name)
       print("Finish collapsing")
       
-      # nombre de olumnas, está desordenado 
-      # Mirna databases","Database predicted score", "validation pubmed id")~"Gen symbol"+"Mature miRNA id"+"MiRNA-mRNA correlation"+"p_value"
-
       sharedValues$correlationsStep2 <- collapsedResult
       
 	})
@@ -114,10 +118,18 @@ shinyServer(function(input, output, session) {
   
   output$downloadMrnaMirnaResult <- downloadHandler(
     filename = function() { 
-      paste(input$mirnaFile$name,"-",input$mrnaFile$name,"-outputFile.csv", sep = "")
+      if(input$miRNA.runMultimir) {
+        paste(input$mirnaFile$name,"-",input$mrnaFile$name,"-multiMiR-collapsed-outputFile.csv", sep = "")
+      } else {
+        paste(input$mirnaFile$name,"-",input$mrnaFile$name,"-outputFile.csv", sep = "")
+      }
     },
     content = function(file) {
-      write.csv(correlations(), file)
+      if(input$miRNA.runMultimir) {
+        write.csv(sharedValues$correlationsStep2, file)
+      } else {
+        write.csv(sharedValues$correlations, file)
+      }
     })  
 
   output$correlationPlot <- renderPlot({
