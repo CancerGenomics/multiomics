@@ -34,7 +34,8 @@ shinyUI(
           tags$div(id="downloadMrnaMirnaResultDiv",
               shinyjs::hidden(downloadButton("downloadMrnaMirnaResult", "Download csv"))),
 
-          plotOutput('correlationPlot')
+          plotOutput('correlationPlot'),
+          plotOutput('correlationSurvival')
         )
       )
     ),
