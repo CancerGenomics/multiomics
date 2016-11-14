@@ -16,6 +16,7 @@ shinyUI(
           #titlePanel("multiOmics"),
           fileInput("mrnaFile", accept=c("text/csv"), label=h4("mRNA profile")),
           fileInput("mirnaFile",accept=c("text/csv"), label=h4("miRNA profile")),
+          fileInput("mirna.survivalFile", label=h4("survival profile")),
           sliderInput("thresholdSlider", label=h4("Correlation coefficient"), 
 				      min=0.3, max=1, value=0.7, step=0.05),
 		      radioButtons("pearsons.method", label = h4("Correlation test"),
@@ -45,7 +46,8 @@ shinyUI(
         sidebarPanel(
           fileInput("cnv.mrnaFile", accept=c("text/csv"), label=h4("mRNA profile")),
 		      fileInput("cnv.cnvFile",accept=c("text/csv"), label=h4("CNV profile")),
-          sliderInput("cnv.thresholdSlider", label=h4("Correlation coefficient"), 
+		      fileInput("cnv.survivalFile", label=h4("survival profile")),
+		      sliderInput("cnv.thresholdSlider", label=h4("Correlation coefficient"), 
                       min=0.3, max=1, value=0.7, step=0.05),
           radioButtons("cnv.pearsons.method", label = h4("Correlation test"),
                        choices = c("Pearson" = "pearson", "Spearman" = "spearman", "Kendall" = "kendall"), 
@@ -66,6 +68,7 @@ shinyUI(
                sidebarPanel(
                  fileInput("meth.mrnaFile", accept=c("text/csv"), label=h4("mRNA profile")),
                  fileInput("meth.methFile",accept=c("text/csv"), label=h4("Methylation profile")),
+                 fileInput("meth.survivalFile", label=h4("survival profile")),
                  sliderInput("meth.thresholdSlider", label=h4("Correlation coefficient"), 
                              min=0.3, max=1, value=0.7, step=0.05),
                  radioButtons("meth.pearsons.method", label = h4("Correlation test"),
@@ -84,36 +87,28 @@ shinyUI(
     tabPanel("TCGA Xena Hub",
       
       tags$div(class="row ",
-                 tags$form(class="well",
-                           tags$div(class="form-group shiny-input-container",
-        #style = "background-color: #eeeeee; 
-        #              border: 1px solid #dddddd;
-        #border-radius: 5px;
-        #margin: 20px" ,
-        
-      tags$br(),
-      actionButton("connectToXenaHub", "Looks for TCGA cohorts"),
-      tags$br(),tags$br(),tags$br(),
-		  fluidPage(
-       fluidRow(
-          column(4,
-            #bsModal("mrnaXenaSelector", "Xena connector", "", size = "large",
-            selectInput("xenaCohorts","XenaHub available cohorts",NULL, size = 30, selectize = F)
-          ),
-          column(4,
-            hidden(selectInput("xenaCohortDatasets","Selected cohort datasets",NULL, size = 30, selectize = F))
-          )
-        ),
-        #downloadButton("downloadData", "Download selected dataset"),
-        uiOutput("downloadLinkOutput")
+                
+        tags$form(class="well",
+          tags$div(class="form-group shiny-input-container",
 
-        #onclick(id = "downloadData3", expr = "window.open(document.getElementById('link').value);")
-        #shinyjs::runjs("window.open(document.getElementById('link').value);")
-        
-        #),
-      ) 
-    ))
-    ))
-  )
+            tags$br(),
+            actionButton("connectToXenaHub", "Looks for TCGA cohorts"),
+            tags$br(),tags$br(),tags$br(),
+		        fluidPage(
+              fluidRow(
+                column(4,
+                  selectInput("xenaCohorts","XenaHub available cohorts",NULL, size = 30, selectize = F)
+                ),
+                column(4,
+                  hidden(selectInput("xenaCohortDatasets","Selected cohort datasets",NULL, size = 30, selectize = F))
+                )
+              ),
+              uiOutput("downloadLinkOutput")
+            ) 
+          )
+        )
+      )
+    )
+    )
   )
 )

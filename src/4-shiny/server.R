@@ -27,6 +27,19 @@ shinyServer(function(input, output, session) {
         print("running only step 1")
         colnames(sharedValues$correlations) <- c("Gene","Mature miRNA","miRNA-mRNA correlation","p-value")
         output$result <- DT::renderDataTable(sharedValues$correlations, selection = 'single')
+        
+        if(!is.null(input$mirna.survivalFile)) {
+          print("Calculando valor pronostico")
+          print(input$mirna.survivalFile$datapath)
+          number.of.clusters=2
+          clinical.survival.column.name="OVERALL_SURVIVAL"
+          clinical.event.column.name="overall_survival_indicator"
+          progResult <- getPrognosticStatistic(mrnaExpressionData(), number.of.clusters, groupin.FUN=multiomics.cut2, 
+                                               input$mirna.survivalFile$datapath, clinical.survival.column.name, 
+                                               clinical.event.column.name, minimium.number.of.samples.in.a.group=10)
+          print(progResult)
+        }
+        
       }
 	  
 	  if(!input$miRNA.runMultimir) {
@@ -154,9 +167,6 @@ shinyServer(function(input, output, session) {
     
     if(!is.null(input$result_rows_selected)){
 
-      #La dejamos acá?
-      library(survival)
-      
       selected.gene <- correlations()[input$result_rows_selected,1]
       selected.gene.row <- which(mrnaExpressionData()==selected.gene)
       expression.vector <- as.numeric(as.vector(mrnaExpressionData()[selected.gene.row,2:ncol(mrnaExpressionData())]))

@@ -27,26 +27,28 @@
 #source("D:/desarrollo/workspaces/R/multiomics/3-do/API/API_multiomics_for_survival_gene_by_gene.R", echo=FALSE, encoding="Cp1252")
 #source("D:/desarrollo/workspaces/R/BioplatUtils/matrix_utils.R", echo=FALSE, encoding="Cp1252")
 # path adonde estan los archivos de entrada
-sourceBaseLocation="D:\\desarrollo\\workspaces\\R\\multiomics\\"
-source(paste(sourceBaseLocation, "src/3-do/API/survivalGeneByGene/API_multiomics_for_survival_gene_by_gene.R",sep=""), echo=FALSE, encoding="Cp1252")# path for the input files
-source(paste(sourceBaseLocation, "src/survival.utils/matrix_utils.R",sep=""), echo=FALSE, encoding="Cp1252")
-source(paste(sourceBaseLocation, "src/survival.utils/expression_grouping_functions.R",sep=""), echo=FALSE, encoding="Cp1252")
-source(paste(sourceBaseLocation, "src/survival.utils/survival_utils.R",sep=""), echo=FALSE, encoding="Cp1252")
-source(paste(sourceBaseLocation, "src/survival.utils/general_utils.R",sep=""), echo=FALSE, encoding="Cp1252")
-source(paste(sourceBaseLocation, "src/3-do/Private/multiomics_private_tcga.R",sep=""), echo=FALSE, encoding="Cp1252")
-source(paste(sourceBaseLocation, "src/survival.utils/file_utils.R",sep=""), echo=FALSE, encoding="Cp1252")
-source(paste(sourceBaseLocation, "src/survival.entities/SurvdiffEntity.R",sep=""), echo=FALSE, encoding="Cp1252")
-source(paste(sourceBaseLocation, "src/survival.entities/ConcordanceIndexEntity.R",sep=""), echo=FALSE, encoding="Cp1252")
-source(paste(sourceBaseLocation, "src/survival.entities/CoxphEntity.R",sep=""), echo=FALSE, encoding="Cp1252")
-source(paste(sourceBaseLocation, "src/survival.entities/ExpressionXSurvivalEntity.R",sep=""), echo=FALSE, encoding="Cp1252")
-source(paste(sourceBaseLocation, "src/survival.entities/PotentialGene.R",sep=""), echo=FALSE, encoding="Cp1252")
-source(paste(sourceBaseLocation, "src/survival.entities/ValidationResult.R",sep=""), echo=FALSE, encoding="Cp1252")
+sourceBaseLocation=getwd()
+source(paste(sourceBaseLocation, "/src/3-do/API/survivalGeneByGene/API_multiomics_for_survival_gene_by_gene.R",sep=""), echo=FALSE, encoding="Cp1252")# path for the input files
+source(paste(sourceBaseLocation, "/src/survival.utils/matrix_utils.R",sep=""), echo=FALSE, encoding="Cp1252")
+source(paste(sourceBaseLocation, "/src/survival.utils/expression_grouping_functions.R",sep=""), echo=FALSE, encoding="Cp1252")
+source(paste(sourceBaseLocation, "/src/survival.utils/survival_utils.R",sep=""), echo=FALSE, encoding="Cp1252")
+source(paste(sourceBaseLocation, "/src/survival.utils/general_utils.R",sep=""), echo=FALSE, encoding="Cp1252")
+source(paste(sourceBaseLocation, "/src/3-do/Private/multiomics_private_tcga.R",sep=""), echo=FALSE, encoding="Cp1252")
+source(paste(sourceBaseLocation, "/src/survival.utils/file_utils.R",sep=""), echo=FALSE, encoding="Cp1252")
+source(paste(sourceBaseLocation, "/src/survival.entities/SurvdiffEntity.R",sep=""), echo=FALSE, encoding="Cp1252")
+source(paste(sourceBaseLocation, "/src/survival.entities/ConcordanceIndexEntity.R",sep=""), echo=FALSE, encoding="Cp1252")
+source(paste(sourceBaseLocation, "/src/survival.entities/CoxphEntity.R",sep=""), echo=FALSE, encoding="Cp1252")
+source(paste(sourceBaseLocation, "/src/survival.entities/ExpressionXSurvivalEntity.R",sep=""), echo=FALSE, encoding="Cp1252")
+source(paste(sourceBaseLocation, "/src/survival.entities/PotentialGene.R",sep=""), echo=FALSE, encoding="Cp1252")
+source(paste(sourceBaseLocation, "/src/survival.entities/ValidationResult.R",sep=""), echo=FALSE, encoding="Cp1252")
 
 
 ##################EXAMPLE OF getPrognosticStatistics################################################################################
-sourceBaseLocation="D:\\desarrollo\\workspaces\\R\\multiomics\\"
-expression.file.path<-paste(sourceBaseLocation, "examples\\survival_gene_by_gene\\input\\input1_expressionMatrix", sep="")
-clinical.file.path<-paste(sourceBaseLocation, "examples\\survival_gene_by_gene\\input\\input2_clinicalData.tsv", sep="")
+sourceBaseLocation=getwd()
+#expression.file.path<-paste(sourceBaseLocation, "/examples\\survival_gene_by_gene\\input\\input1_expressionMatrix.csv", sep="")
+#clinical.file.path<-paste(sourceBaseLocation, "/examples\\survival_gene_by_gene\\input\\input2_clinicalData.tsv", sep="")
+expression.file.path<-paste(sourceBaseLocation, "/examples/miRnas_regulating_mRnas/mrnas.csv", sep="")
+clinical.file.path<-paste(sourceBaseLocation, "/examples/miRnas_regulating_mRnas/clinical_data.tsv", sep="")
 clinical.survival.column.name="OVERALL_SURVIVAL"
 clinical.event.column.name="overall_survival_indicator"
 expression <- read.table(expression.file.path, sep="\t", header=TRUE, na.strings=c("", "NA"),stringsAsFactors=FALSE)
