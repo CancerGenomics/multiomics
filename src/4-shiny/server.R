@@ -22,40 +22,51 @@ shinyServer(function(input, output, session) {
         print("running with step 2")
         runMultimirAnalisys()
         colnames(sharedValues$correlationsStep2) <- c("Gene","Mature miRNA","miRNA-mRNA correlation","p-value","miRNA db","Predicted score","PubMed ID")
-        output$result <- DT::renderDataTable(sharedValues$correlationsStep2, selection = 'single')
+        matrix.to.render <- sharedValues$correlationsStep2
       } else {
         print("running only step 1")
         colnames(sharedValues$correlations) <- c("Gene","Mature miRNA","miRNA-mRNA correlation","p-value")
-        output$result <- DT::renderDataTable(sharedValues$correlations, selection = 'single')
+        matrix.to.render <- sharedValues$correlations
+      }
+
+      # must add clinical data to the matrix to render
+      if(!is.null(input$mirna.survivalFile)) {
+        number.of.clusters=1
+        clinical.survival.column.name="OVERALL_SURVIVAL"
+        clinical.event.column.name="overall_survival_indicator"
+        progResult <- getPrognosticStatistic(mrnaExpressionData(), number.of.clusters, groupin.FUN=multiomics.cut2, 
+                                             input$mirna.survivalFile$datapath, clinical.survival.column.name, 
+                                             clinical.event.column.name, minimium.number.of.samples.in.a.group=10)
+
+        # creating a matrix to bind to the actual result        
+        tmp <- matrix(nrow = nrow(sharedValues$correlations), ncol = ncol(progResult)-1 )
+        # add new colnames to show
+        colnames(tmp) <- colnames(progResult)[2:ncol(progResult)]
+        matrix.to.render <- cbind(sharedValues$correlations,tmp)
         
-        if(!is.null(input$mirna.survivalFile)) {
-          print("Calculando valor pronostico")
-          print(input$mirna.survivalFile$datapath)
-          number.of.clusters=2
-          clinical.survival.column.name="OVERALL_SURVIVAL"
-          clinical.event.column.name="overall_survival_indicator"
-          progResult <- getPrognosticStatistic(mrnaExpressionData(), number.of.clusters, groupin.FUN=multiomics.cut2, 
-                                               input$mirna.survivalFile$datapath, clinical.survival.column.name, 
-                                               clinical.event.column.name, minimium.number.of.samples.in.a.group=10)
-          print(progResult)
+        # loop into the matrix to plot looking for the corresponding values per gen
+        for (i in 1:nrow(matrix.to.render)) {
+          # actual gen from row i
+          gen <- matrix.to.render[i,1]
+          # values corresponding to actual gen to add columns
+          row <- which(progResult[,1] == gen)
+          # adding columns for actual gen row
+          matrix.to.render[i,(ncol(sharedValues$correlations) +1):ncol(matrix.to.render)] <- progResult[row,2:ncol(progResult)]
         }
         
-      }
+      }      
+      
+      # render the matrix with corresponding values
+      output$result <- DT::renderDataTable(matrix.to.render, selection = 'single')
 	  
-	  if(!input$miRNA.runMultimir) {
-	    if(nrow(sharedValues$correlations) > 0) {
-		    shinyjs::show(id = "downloadMrnaMirnaResult")
-	    } else {
-		    shinyjs::hide(id = "downloadMrnaMirnaResult")
-		}
-	  } else{
-		  if(nrow(sharedValues$correlationsStep2) > 0) {
-			  shinyjs::show(id = "downloadMrnaMirnaResult")
-		  } else {
-			  shinyjs::hide(id = "downloadMrnaMirnaResult")
-		  }
-	  }
-	  
+  	  if(!input$miRNA.runMultimir) {
+	      if(nrow(matrix.to.render) > 0) {
+		      shinyjs::show(id = "downloadMrnaMirnaResult")
+	      } else {
+  		    shinyjs::hide(id = "downloadMrnaMirnaResult")
+	      }
+	    }
+
       sharedValues$fromButton <- F      
       
     } else {

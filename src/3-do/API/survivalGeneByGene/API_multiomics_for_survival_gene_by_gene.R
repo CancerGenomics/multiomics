@@ -47,7 +47,6 @@ getPrognosticStatistic<-function(expression, number.of.clusters, groupin.FUN='mu
   expression.with.survival.file.path<-"multiomics.temp.exprWithSurv.csv"
   do.generateExpressionAndSurvivalDataFromTCGA(expression, clinical.file.path, clinical.survival.column.name, clinical.event.column.name,expression.with.survival.file.path)
   result<-calculate.statistics.gene.by.gene(expression.with.survival.file.path, number.of.clusters=2, maximum.p.value.accepted=0.05, grouping.FUN=multiomics.cut2, print.surv.diff=TRUE, print.concordance.index=TRUE, print.coxph=TRUE, gene.names.to.evaluate=NULL, minimium.number.of.samples.in.a.group=10)
-  rownames(result)<-result[,1]
   result[,c(1,2,6,7,8,9,10,11)]
 }
 

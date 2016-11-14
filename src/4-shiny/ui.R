@@ -16,7 +16,11 @@ shinyUI(
           #titlePanel("multiOmics"),
           fileInput("mrnaFile", accept=c("text/csv"), label=h4("mRNA profile")),
           fileInput("mirnaFile",accept=c("text/csv"), label=h4("miRNA profile")),
-          fileInput("mirna.survivalFile", label=h4("survival profile")),
+          tags$fieldset(class="form-group shiny-input-container input-group",
+                        tags$legend(h4("clinical data")),
+                        fileInput("mirna.survivalFile", label="")
+                        #selectInput("mm",label="lab",choices = c(1,2,3))
+          ),
           sliderInput("thresholdSlider", label=h4("Correlation coefficient"), 
 				      min=0.3, max=1, value=0.7, step=0.05),
 		      radioButtons("pearsons.method", label = h4("Correlation test"),
@@ -46,7 +50,7 @@ shinyUI(
         sidebarPanel(
           fileInput("cnv.mrnaFile", accept=c("text/csv"), label=h4("mRNA profile")),
 		      fileInput("cnv.cnvFile",accept=c("text/csv"), label=h4("CNV profile")),
-		      fileInput("cnv.survivalFile", label=h4("survival profile")),
+		      fileInput("cnv.survivalFile", label=h4("clinical data")),
 		      sliderInput("cnv.thresholdSlider", label=h4("Correlation coefficient"), 
                       min=0.3, max=1, value=0.7, step=0.05),
           radioButtons("cnv.pearsons.method", label = h4("Correlation test"),
@@ -68,7 +72,7 @@ shinyUI(
                sidebarPanel(
                  fileInput("meth.mrnaFile", accept=c("text/csv"), label=h4("mRNA profile")),
                  fileInput("meth.methFile",accept=c("text/csv"), label=h4("Methylation profile")),
-                 fileInput("meth.survivalFile", label=h4("survival profile")),
+                 fileInput("meth.survivalFile", label=h4("clinical data")),
                  sliderInput("meth.thresholdSlider", label=h4("Correlation coefficient"), 
                              min=0.3, max=1, value=0.7, step=0.05),
                  radioButtons("meth.pearsons.method", label = h4("Correlation test"),
