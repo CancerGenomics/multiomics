@@ -18,8 +18,9 @@ shinyUI(
           fileInput("mirnaFile",accept=c("text/csv"), label=h4("miRNA profile")),
           tags$fieldset(class="form-group shiny-input-container input-group",
                         tags$legend(h4("clinical data")),
-                        fileInput("mirna.survivalFile", label="")
-                        #selectInput("mm",label="lab",choices = c(1,2,3))
+                        fileInput("mirna.survivalFile", label="File"),
+                        hidden(selectInput("mirna.survival.column.name","Survival column name",NULL)),
+                        hidden(selectInput("mirna.event.column.name","Event column name",NULL))
           ),
           sliderInput("thresholdSlider", label=h4("Correlation coefficient"), 
 				      min=0.3, max=1, value=0.7, step=0.05),

@@ -32,11 +32,9 @@ shinyServer(function(input, output, session) {
       # must add clinical data to the matrix to render
       if(!is.null(input$mirna.survivalFile)) {
         number.of.clusters=1
-        clinical.survival.column.name="OVERALL_SURVIVAL"
-        clinical.event.column.name="overall_survival_indicator"
         progResult <- getPrognosticStatistic(mrnaExpressionData(), number.of.clusters, groupin.FUN=multiomics.cut2, 
-                                             input$mirna.survivalFile$datapath, clinical.survival.column.name, 
-                                             clinical.event.column.name, minimium.number.of.samples.in.a.group=10)
+                                             input$mirna.survivalFile$datapath, input$mirna.survival.column.name , 
+                                             input$mirna.event.column.name, minimium.number.of.samples.in.a.group=10)
 
         # creating a matrix to bind to the actual result        
         tmp <- matrix(nrow = nrow(sharedValues$correlations), ncol = ncol(progResult)-1 )
@@ -53,7 +51,6 @@ shinyServer(function(input, output, session) {
           # adding columns for actual gen row
           matrix.to.render[i,(ncol(sharedValues$correlations) +1):ncol(matrix.to.render)] <- progResult[row,2:ncol(progResult)]
         }
-        
       }      
       
       # render the matrix with corresponding values
@@ -86,7 +83,7 @@ shinyServer(function(input, output, session) {
   })
   
   threshold <- reactive({
-	input$thresholdSlider
+  	input$thresholdSlider
   })
 
   pearsonsMethod <- reactive({
@@ -138,7 +135,16 @@ shinyServer(function(input, output, session) {
       sharedValues$correlationsStep2 <- collapsedResult
       
 	})
-  }   
+  }  
+  
+  observeEvent(input$mirna.survivalFile,{
+    clinical.data <- na.omit(read.table(input$mirna.survivalFile$datapath, nrows = 1, header=TRUE,fill=TRUE))
+    updateSelectInput(session,"mirna.survival.column.name", choices = colnames(clinical.data))
+    shinyjs::show("mirna.survival.column.name")
+    updateSelectInput(session,"mirna.event.column.name", choices = colnames(clinical.data))
+    shinyjs::show("mirna.event.column.name")
+
+  })
   
   output$downloadMrnaMirnaResult <- downloadHandler(
     filename = function() { 
