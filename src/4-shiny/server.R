@@ -3,7 +3,7 @@ options(shiny.maxRequestSize=500*1024^2)
 
 shinyServer(function(input, output, session) {
   
-  sharedValues <- reactiveValues(fromButton=F,correlations="",correlationsStep2="",cnvMrnaCorrelations="")
+  sharedValues <- reactiveValues(fromButton=F,correlations="",correlationsStep2="", mirna.matrix.to.render="",cnvMrnaCorrelations="")
   
   ###########################################################################
   ########################## MIRNA - MRNA PIPELINE TAB
@@ -22,11 +22,11 @@ shinyServer(function(input, output, session) {
         print("running with step 2")
         runMultimirAnalisys()
         colnames(sharedValues$correlationsStep2) <- c("Gene","Mature miRNA","miRNA-mRNA correlation","p-value","miRNA db","Predicted score","PubMed ID")
-        matrix.to.render <- sharedValues$correlationsStep2
+        sharedValues$mirna.matrix.to.render <- sharedValues$correlationsStep2
       } else {
         print("running only step 1")
         colnames(sharedValues$correlations) <- c("Gene","Mature miRNA","miRNA-mRNA correlation","p-value")
-        matrix.to.render <- sharedValues$correlations
+        sharedValues$mirna.matrix.to.render <- sharedValues$correlations
       }
 
       # must add clinical data to the matrix to render
@@ -36,28 +36,40 @@ shinyServer(function(input, output, session) {
                                              input$mirna.survivalFile$datapath, input$mirna.survival.column.name , 
                                              input$mirna.event.column.name, minimium.number.of.samples.in.a.group=10)
 
-        # creating a matrix to bind to the actual result        
-        tmp <- matrix(nrow = nrow(sharedValues$correlations), ncol = ncol(progResult)-1 )
+        
+        if(input$miRNA.runMultimir) {
+          colnames(sharedValues$correlationsStep2) <- c("Gene","Mature miRNA","miRNA-mRNA correlation","p-value","miRNA db","Predicted score","PubMed ID")
+          # creating a matrix to bind to the actual result        
+          tmp <- matrix(nrow = nrow(sharedValues$correlationsStep2), ncol = ncol(progResult)-1 )
+          actual.result <- sharedValues$correlationsStep2
+        } else {
+          colnames(sharedValues$correlations) <- c("Gene","Mature miRNA","miRNA-mRNA correlation","p-value")
+          # creating a matrix to bind to the actual result        
+          tmp <- matrix(nrow = nrow(sharedValues$correlations), ncol = ncol(progResult)-1 )
+          actual.result <- sharedValues$correlations
+        }
+        
         # add new colnames to show
         colnames(tmp) <- colnames(progResult)[2:ncol(progResult)]
-        matrix.to.render <- cbind(sharedValues$correlations,tmp)
+        sharedValues$mirna.matrix.to.render <- cbind(actual.result,tmp)
         
         # loop into the matrix to plot looking for the corresponding values per gen
-        for (i in 1:nrow(matrix.to.render)) {
+        for (i in 1:nrow(sharedValues$mirna.matrix.to.render)) {
           # actual gen from row i
-          gen <- matrix.to.render[i,1]
+          gen <- sharedValues$mirna.matrix.to.render[i,1]
           # values corresponding to actual gen to add columns
           row <- which(progResult[,1] == gen)
           # adding columns for actual gen row
-          matrix.to.render[i,(ncol(sharedValues$correlations) +1):ncol(matrix.to.render)] <- progResult[row,2:ncol(progResult)]
+          sharedValues$mirna.matrix.to.render[i,(ncol(actual.result) +1):ncol(sharedValues$mirna.matrix.to.render)] <- progResult[row,2:ncol(progResult)]
         }
       }      
       
+        
       # render the matrix with corresponding values
-      output$result <- DT::renderDataTable(matrix.to.render, selection = 'single')
+      output$result <- DT::renderDataTable(sharedValues$mirna.matrix.to.render, selection = 'single')
 	  
   	  if(!input$miRNA.runMultimir) {
-	      if(nrow(matrix.to.render) > 0) {
+	      if(nrow(sharedValues$mirna.matrix.to.render) > 0) {
 		      shinyjs::show(id = "downloadMrnaMirnaResult")
 	      } else {
   		    shinyjs::hide(id = "downloadMrnaMirnaResult")
@@ -155,11 +167,7 @@ shinyServer(function(input, output, session) {
       }
     },
     content = function(file) {
-      if(input$miRNA.runMultimir) {
-        write.csv(sharedValues$correlationsStep2, file)
-      } else {
-        write.csv(sharedValues$correlations, file)
-      }
+      write.csv(sharedValues$mirna.matrix.to.render, file)
     })  
 
   output$correlationPlot <- renderPlot({
