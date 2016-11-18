@@ -13,26 +13,27 @@ shinyUI(
       sidebarLayout(
       
         sidebarPanel(
-          #titlePanel("multiOmics"),
           fileInput("mrnaFile", accept=c("text/csv"), label=h4("mRNA profile")),
+          tags$hr(),
           fileInput("mirnaFile",accept=c("text/csv"), label=h4("miRNA profile")),
-          tags$fieldset(class="form-group shiny-input-container input-group",
-                        tags$legend(h4("clinical data")),
-                        fileInput("mirna.survivalFile", label="File"),
-                        hidden(selectInput("mirna.survival.column.name","Survival column name",NULL)),
-                        hidden(selectInput("mirna.event.column.name","Event column name",NULL))
-          ),
+          tags$hr(),
+          fileInput("mirna.survivalFile", label=h4("Follow-up data")),
+          hidden(selectInput("mirna.survival.column.name","Survival column name",NULL)),
+          hidden(selectInput("mirna.event.column.name","Event column name",NULL)),
+          tags$hr(),
           sliderInput("thresholdSlider", label=h4("Correlation coefficient"), 
 				      min=0.3, max=1, value=0.7, step=0.05),
-		      radioButtons("pearsons.method", label = h4("Correlation test"),
+          tags$hr(),
+          radioButtons("pearsons.method", label = h4("Correlation test"),
 				       choices = c("Pearson" = "pearson", "Spearman" = "spearman", "Kendall" = "kendall"), 
 				       selected = "pearson"),		
-	        h4(id="asas2","multiMiR"),
+		      tags$hr(),
+		      h4(id="asas2","multiMiR"),
 	        checkboxInput("miRNA.runMultimir",p(id="multimirTooltipText","miRNA-target interaction")),
 		      bsTooltip("multimirTooltipText",
 		                "Recover miRNA-mRNA target interactions through the multiMiR reource that includes 11 validated/predicted miRNA–target databases (e.g.: miRecords, miRTar-Base, miRanda, etc.)", 
 		                placement = "right",options = list(container = "body")),
-		      
+		      tags$hr(),
           actionButton("runMRNAMiRNACorrelation", "Run pipeline")
         ),
         mainPanel(
