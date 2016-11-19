@@ -51,13 +51,20 @@ shinyUI(
 					
         sidebarPanel(
           fileInput("cnv.mrnaFile", accept=c("text/csv"), label=h4("mRNA profile")),
-		      fileInput("cnv.cnvFile",accept=c("text/csv"), label=h4("CNV profile")),
-		      fileInput("cnv.survivalFile", label=h4("clinical data")),
-		      sliderInput("cnv.thresholdSlider", label=h4("Correlation coefficient"), 
-                      min=0.3, max=1, value=0.7, step=0.05),
+          tags$hr(),
+          fileInput("cnv.cnvFile",accept=c("text/csv"), label=h4("CNV profile")),
+          tags$hr(),
+          fileInput("cnv.survivalFile", label=h4("Follow-up data")),
+          hidden(selectInput("cnv.survival.column.name","Survival column name",NULL)),
+          hidden(selectInput("cnv.event.column.name","Event column name",NULL)),
+          tags$hr(),
+          sliderInput("cnv.thresholdSlider", label=h4("Correlation coefficient"), 
+                      min=0, max=1, value=0.7, step=0.05),
+          tags$hr(),
           radioButtons("cnv.pearsons.method", label = h4("Correlation test"),
                        choices = c("Pearson" = "pearson", "Spearman" = "spearman", "Kendall" = "kendall"), 
                        selected = "pearson"),		
+          tags$hr(),
           actionButton("runMRNACNVCorrelation", "Run pipeline")
         ),
         mainPanel(

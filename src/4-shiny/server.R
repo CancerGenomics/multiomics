@@ -3,7 +3,9 @@ options(shiny.maxRequestSize=500*1024^2)
 
 shinyServer(function(input, output, session) {
   
-  sharedValues <- reactiveValues(fromButton=F,correlations="",correlationsStep2="", mirna.matrix.to.render="",cnvMrnaCorrelations="")
+  sharedValues <- reactiveValues(fromButton=F,correlations="",correlationsStep2="",
+                                 mirna.matrix.to.render="",cnvMrnaCorrelations="",
+                                 cnv.matrix.to.render="")
   
   ###########################################################################
   ########################## MIRNA - MRNA PIPELINE TAB
@@ -210,7 +212,6 @@ shinyServer(function(input, output, session) {
       number.of.clusters<-2
       grouping.FUN<-multiomics.cut2
 
-      
       tryCatch({
         #Grouping
         tryCatch(
@@ -283,9 +284,37 @@ shinyServer(function(input, output, session) {
 					  print("Preparing...")
 					  
 					  sharedValues$fromButton <- T
+					  cnvMrnaCorrelations()
+					  sharedValues$cnv.matrix.to.render <- sharedValues$cnvMrnaCorrelations
 					  
-					  if(nrow(cnvMrnaCorrelations()) > 0) {
-					    output$MRNACNVResult <- DT::renderDataTable(cnvMrnaCorrelations(), selection = 'single')
+					  if(!is.null(input$cnv.survivalFile)) {
+					    number.of.clusters=1
+						print(cnvMrnaExpressionData())
+					    progResult <- getPrognosticStatistic(cnvMrnaExpressionData(), number.of.clusters, groupin.FUN=multiomics.cut2, 
+					                                         input$cnv.survivalFile$datapath, input$cnv.survival.column.name , 
+					                                         input$cnv.event.column.name, minimium.number.of.samples.in.a.group=10)
+					    colnames(sharedValues$cnvMrnaCorrelations) <- c("Gene","Location","CNV-mRNA correlation","p-value")
+					    # creating a matrix to bind to the actual result        
+					    tmp <- matrix(nrow = nrow(sharedValues$cnvMrnaCorrelations), ncol = ncol(progResult)-1 )
+					    actual.result <- sharedValues$cnvMrnaCorrelations
+					    
+					    # add new colnames to show
+					    colnames(tmp) <- colnames(progResult)[2:ncol(progResult)]
+					    sharedValues$cnv.matrix.to.render <- cbind(actual.result,tmp)
+					    
+					    # loop into the matrix to plot looking for the corresponding values per gen
+					    for (i in 1:nrow(sharedValues$cnv.matrix.to.render)) {
+					      # actual gen from row i
+					      gen <- sharedValues$cnv.matrix.to.render[i,1]
+					      # values corresponding to actual gen to add columns
+					      row <- which(progResult[,1] == gen)
+					      # adding columns for actual gen row
+					      sharedValues$cnv.matrix.to.render[i,(ncol(actual.result) +1):ncol(sharedValues$cnv.matrix.to.render)] <- progResult[row,2:ncol(progResult)]
+					    }					    
+					  }
+					  
+					  if(nrow(sharedValues$cnv.matrix.to.render) > 0) {
+					    output$MRNACNVResult <- DT::renderDataTable(sharedValues$cnv.matrix.to.render, selection = 'single')
 					    shinyjs::show(id = "downloadMrnaCNVResult")
 						  print("Hay resultados")
 					  } else {
@@ -305,8 +334,17 @@ shinyServer(function(input, output, session) {
       paste(input$cnv.cnvFile$name,"-",input$cnv.cnvFile$name,"-outputFile.csv", sep = "")
     },
     content = function(file) {
-      write.csv(cnvMrnaCorrelations(), file)
+      write.csv(sharedValues$cnv.matrix.to.render, file)
     }) 
+  
+  observeEvent(input$cnv.survivalFile,{
+    clinical.data <- na.omit(read.table(input$cnv.survivalFile$datapath, nrows = 1, header=TRUE,fill=TRUE))
+    updateSelectInput(session,"cnv.survival.column.name", choices = colnames(clinical.data))
+    shinyjs::show("cnv.survival.column.name")
+    updateSelectInput(session,"cnv.event.column.name", choices = colnames(clinical.data))
+    shinyjs::show("cnv.event.column.name")
+    
+  })  
   
   ###########################################################################
   ########################## METHYLATION - MRNA PIPELINE TAB
