@@ -70,8 +70,10 @@ shinyUI(
         mainPanel(
           DT::dataTableOutput('MRNACNVResult'),
           tags$div(id="downloadMrnaCNVResultDiv",
-                   shinyjs::hidden(downloadButton("downloadMrnaCNVResult", "Download csv")))
+                   shinyjs::hidden(downloadButton("downloadMrnaCNVResult", "Download csv"))),
           
+          plotOutput('cnv.correlationPlot'),
+          plotOutput('cnv.correlationSurvival')
         )
       )
     ),
