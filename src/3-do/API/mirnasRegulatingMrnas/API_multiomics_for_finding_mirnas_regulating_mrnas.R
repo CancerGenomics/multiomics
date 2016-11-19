@@ -122,7 +122,7 @@ CalculateCorrelationsMirnaMrna <- function(expression, mirna, output.path="~/",
 			    col.names=TRUE, quote=FALSE)
 	print(proc.time() - ptm)
 	
-	return (res)
+	return (convertVectorToMatrix(res))
 }
 
 

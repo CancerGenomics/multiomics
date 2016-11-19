@@ -30,3 +30,10 @@ orderMatrixRows <- function(mat, decr = F, cols = NULL){
 	return (mat[order(as.numeric(mat[,cols]),decreasing = FALSE, na.last = TRUE), ])
 
 }
+
+convertVectorToMatrix <- function(suspectedVector) {
+  if(is.vector(suspectedVector)){
+    suspectedVector  <- t(as.matrix(suspectedVector))
+  }  
+  return (suspectedVector)
+}
