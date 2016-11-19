@@ -266,8 +266,8 @@ shinyServer(function(input, output, session) {
   cnvMrnaCorrelations <- reactive(quote({
     if(sharedValues$fromButton) {
 		sharedValues$cnvMrnaCorrelations <- CnvXMrnas(cnvMrnaExpressionData(), cnvExpressionData(), output.path="~/", 
-			                                        output.file.name=paste(input$cnv.mrnaFile$name,"-",input$cnv.cnvFile$name,"-outputFile.csv", sep = ""),
-													r.minimium = cnvThreshold(), inc.progress = T, pearsons.method = cnvPearsonsMethod())
+		                                              output.file.name=paste(input$cnv.mrnaFile$name,"-",input$cnv.cnvFile$name,"-outputFile.csv", sep = ""),
+		  			                                     	r.minimium = cnvThreshold(), inc.progress = T, pearsons.method = cnvPearsonsMethod())
     }
     return (sharedValues$cnvMrnaCorrelations)
   }), quoted = T)
@@ -283,8 +283,8 @@ shinyServer(function(input, output, session) {
 					  print("Preparing...")
 					  
 					  sharedValues$fromButton <- T
-
-					  if(nrow(cnvMrnaCorrelations()) > 1) {
+					  
+					  if(nrow(cnvMrnaCorrelations()) > 0) {
 					    output$MRNACNVResult <- DT::renderDataTable(cnvMrnaCorrelations(), selection = 'single')
 					    shinyjs::show(id = "downloadMrnaCNVResult")
 						  print("Hay resultados")
