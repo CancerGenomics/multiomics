@@ -346,21 +346,21 @@ shinyServer(function(input, output, session) {
     
   })  
   
-  # output$cnv.correlationPlot <- renderPlot({
-  #   if(!is.null(input$MRNACNVResult_rows_selected)){
-  #     selected.gene <- cnvMrnaCorrelations()[input$MRNACNVResult_rows_selected,1]
-  #     selected.gene.row <- which(cnvMrnaExpressionData()==selected.gene)
-  #     selected.cnv.row <- which(cnvExpressionData()==selected.gene)
-  #     X <- as.numeric(as.vector(cnvExpressionData()[selected.cnv.row,2:ncol(cnvExpressionData())]))
-  #     Y <- as.numeric(as.vector(cnvMrnaExpressionData()[selected.gene.row,2:ncol(cnvMrnaExpressionData())]))
-  #     cor.test(X, Y)
-  #     plot(X, Y, xlab=selected.gene, ylab=selected.gene, main='CNV vs. mRNA correlation plot', col='Black', pch=21, frame.plot=TRUE) #col=Group
-  #     line <- lm(Y ~ X)
-  #     abline(line, col="blue")
-  #   }
-  # })
-  # 
-  # 
+  output$cnv.correlationPlot <- renderPlot({
+    if(!is.null(input$MRNACNVResult_rows_selected)){
+      selected.gene <- cnvMrnaCorrelations()[input$MRNACNVResult_rows_selected,1]
+      selected.gene.row <- which(cnvMrnaExpressionData()==selected.gene)
+      selected.cnv.row <- which(cnvExpressionData()==selected.gene)
+      X <- as.numeric(as.vector(cnvExpressionData()[selected.cnv.row,2:ncol(cnvExpressionData())]))
+      Y <- as.numeric(as.vector(cnvMrnaExpressionData()[selected.gene.row,2:ncol(cnvMrnaExpressionData())]))
+      cor.test(X, Y)
+      plot(X, Y, xlab=selected.gene, ylab=selected.gene, main='CNV vs. mRNA correlation plot', col='Black', pch=21, frame.plot=TRUE) #col=Group
+      line <- lm(Y ~ X)
+      abline(line, col="blue")
+    }
+  })
+
+
   # output$cnv.correlationSurvival <- renderPlot({
   #   ERROR.GROUPING="ERROR.GROUPING"
   #   ERROR.EXECUTING.SURV.FIT.FOR.PLOTTING="ERROR.EXECUTING.SURVFIT.FOR.PLOTTING"

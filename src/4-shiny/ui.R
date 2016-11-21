@@ -82,13 +82,18 @@ shinyUI(
                
                sidebarPanel(
                  fileInput("meth.mrnaFile", accept=c("text/csv"), label=h4("mRNA profile")),
+                 tags$hr(),
                  fileInput("meth.methFile",accept=c("text/csv"), label=h4("Methylation profile")),
-                 fileInput("meth.survivalFile", label=h4("clinical data")),
+                 tags$hr(),
+                 fileInput("meth.survivalFile", label=h4("Follow-up data")),
+                 tags$hr(),
                  sliderInput("meth.thresholdSlider", label=h4("Correlation coefficient"), 
                              min=0.3, max=1, value=0.7, step=0.05),
+                 tags$hr(),
                  radioButtons("meth.pearsons.method", label = h4("Correlation test"),
                               choices = c("Pearson" = "pearson", "Spearman" = "spearman", "Kendall" = "kendall"), 
                               selected = "pearson"),		
+                 tags$hr(),
                  actionButton("runMRNAMethylationCorrelation", "Run pipeline")
                ),
                mainPanel(
