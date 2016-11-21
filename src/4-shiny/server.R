@@ -191,26 +191,29 @@ shinyServer(function(input, output, session) {
   output$correlationSurvival <- renderPlot({
     ERROR.GROUPING="ERROR.GROUPING"
     ERROR.EXECUTING.SURV.FIT.FOR.PLOTTING="ERROR.EXECUTING.SURVFIT.FOR.PLOTTING"
-    
-    if(!is.null(input$result_rows_selected)){
+
+    if(!is.null(input$mirna.survivalFile) && !is.null(input$result_rows_selected)){
 
       selected.gene <- correlations()[input$result_rows_selected,1]
       selected.gene.row <- which(mrnaExpressionData()==selected.gene)
       expression.vector <- as.numeric(as.vector(mrnaExpressionData()[selected.gene.row,2:ncol(mrnaExpressionData())]))
-
-      ######ENGANCHAR CON LA GUI####
-      #time<-read.time()
-      #event<-read.event()
-      #number.of.clusters<-read.number.of.clusters()
-      #grouping.FUN<-read.grouping.fun()
-      #minimium.number.of.samples.in.a.group<-read.minimium.number.of.samples.in.a.group()
       
-      #####ELIMINAR ESTE HARDCODEO UNA VEZ ENGANCHADO########
-      minimium.number.of.samples.in.a.group<-1
-      event<-c(0,1,0,1,0,1,0,1,0,0,0,0,1,1,1,0,1,1,1,1,0,0,0,1,0,1,0,0,1,1,1,0,0,0,0)
-      time<-c(0.00000,22.17659,181.25670,36.43532,105.62630,64.98563,123.53180,46.88296,133.88090,94.48871,121.65910,211.90970,31.29960,66.04920,31.43040,210.89120,27.48600,17.83984,44.84400,46.19302,153.19920,155.95890,181.61810,24.77207,169.52770,112.88710,65.83984,220.09030,32.49281,32.51520,95.14560,49.41360,66.66119,153.16630,158.09450)
+      mirna.survival.matrix <- read.table(input$mirna.survivalFile$datapath, header = T)
+      survival.name.col <- which(colnames(mirna.survival.matrix)==input$mirna.survival.column.name)
+      survival.event.col <- which(colnames(mirna.survival.matrix)==input$mirna.event.column.name)
+
+      ######ENGANCHAR CON LA GUI Y ELIMINAR HARCODEO ####
+      #number.of.clusters<-read.number.of.clusters()
       number.of.clusters<-2
+      #grouping.FUN<-read.grouping.fun()
       grouping.FUN<-multiomics.cut2
+      #minimium.number.of.samples.in.a.group<-read.minimium.number.of.samples.in.a.group()
+      minimium.number.of.samples.in.a.group<-1
+
+      time<-as.vector(mirna.survival.matrix[,survival.name.col])
+      event<-as.vector(mirna.survival.matrix[,survival.event.col])
+      #event<-c(0,1,0,1,0,1,0,1,0,0,0,0,1,1,1,0,1,1,1,1,0,0,0,1,0,1,0,0,1,1,1,0,0,0,0)
+      #time<-c(0.00000,22.17659,181.25670,36.43532,105.62630,64.98563,123.53180,46.88296,133.88090,94.48871,121.65910,211.90970,31.29960,66.04920,31.43040,210.89120,27.48600,17.83984,44.84400,46.19302,153.19920,155.95890,181.61810,24.77207,169.52770,112.88710,65.83984,220.09030,32.49281,32.51520,95.14560,49.41360,66.66119,153.16630,158.09450)
 
       tryCatch({
         #Grouping
