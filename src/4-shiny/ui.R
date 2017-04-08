@@ -111,19 +111,24 @@ shinyUI(
         tags$form(class="well",
           tags$div(class="form-group shiny-input-container",
 
-            tags$br(),
-            actionButton("connectToXenaHub", "Looks for TCGA cohorts"),
-            tags$br(),tags$br(),tags$br(),
-		        fluidPage(
+            fluidPage(
               fluidRow(
-                column(4,
-                  selectInput("xenaCohorts","XenaHub available cohorts",NULL, size = 30, selectize = F)
+                column(5,
+                   actionButton("connectToXenaHub", "Looks for TCGA cohorts")
                 ),
                 column(4,
-                  hidden(selectInput("xenaCohortDatasets","Selected cohort datasets",NULL, size = 30, selectize = F))
+                       uiOutput("downloadLinkOutput")
                 )
               ),
-              uiOutput("downloadLinkOutput")
+              fluidRow(column(12,tags$br())),
+              fluidRow(
+                column(5,
+                  selectInput("xenaCohorts","XenaHub available cohorts",NULL, size = 30, selectize = F)
+                ),
+                column(6,
+                  hidden(selectInput("xenaCohortDatasets","Selected cohort datasets",NULL, size = 30,selectize = F))
+                )
+              )
             ) 
           )
         )
