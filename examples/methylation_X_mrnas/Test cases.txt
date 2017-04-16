@@ -1,0 +1,9 @@
+1-Gene (HPSE) with three cgs (cg25428494, cg13508557,cg27076525). Two of them (cg25428494, cg13508557) correlates with HPSE. The last one (cg27076525) doesnt. That is why you will see just two rows fot HPSE in the result file.
+
+2-Gene (SOGA1) in mrna file that is not present in the methylation platform file. It does not appear in the result file.
+
+3-A gene (AUTS2) mapped in the methylation platform file to a cg to which doesnt correlate (cg17027195); and with a cg (cg13508557) that is also related with other gene (HPSE) and correlates. cg13508557 will appear twice in the result file (related with HPSE and with AUTS2).
+
+4-AUTS2 is also related in the platform file with a cg that is not in the methylation platform file (cgNotExistInMethFile). There is no error and the combination doesn't appear in the result file.
+
+5-There are genes in the platform files that are not used. There are no errors.
