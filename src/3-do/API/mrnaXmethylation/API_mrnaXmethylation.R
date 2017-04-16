@@ -95,4 +95,3 @@ get.cgs.for.this.genes <- function(actual.gen,meth.platform){
     as.character((meth.platform[meth.platform$gene == actual.gen,])[,2])
 } 
 
-

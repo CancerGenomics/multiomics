@@ -1,6 +1,6 @@
 #If the CNV has got repeated genes, it will use the first row in the order.
 
-methXMrnas <- function(mrna, meth, meth.to.gene, output.path="~/", 
+CnvXMrnas <- function(mrna, meth, meth.to.gene, output.path="~/", 
                                                      output.file.name="methXMrna.csv",
                                                      r.minimium=0.7, 
                                                      pearsons.method = "pearson", 
@@ -75,3 +75,8 @@ methXMrnas <- function(mrna, meth, meth.to.gene, output.path="~/",
   return (convertVectorToMatrix(res))
   
 }
+
+
+
+
+
