@@ -5,7 +5,8 @@ shinyServer(function(input, output, session) {
   
   sharedValues <- reactiveValues(fromButton=F,correlations="",correlationsStep2="",
                                  mirna.matrix.to.render="",cnvMrnaCorrelations="",
-                                 cnv.matrix.to.render="")
+                                 cnv.matrix.to.render="", meth.matrix.to.render="",
+                                 methMrnaCorrelations="")
   
   ###########################################################################
   ########################## MIRNA - MRNA PIPELINE TAB
@@ -417,6 +418,44 @@ shinyServer(function(input, output, session) {
   ########################## METHYLATION - MRNA PIPELINE TAB
   ###########################################################################
   
+  
+  methMrnaCorrelations <- reactive(quote({
+    if(sharedValues$fromButton) {
+      
+      #mrna<-read.table("D:\\desarrollo\\workspaces\\R\\multiomics\\examples\\methylation_X_mrnas\\mrnas.csv", header = TRUE)
+      #meth<-read.table("D:\\desarrollo\\workspaces\\R\\multiomics\\examples\\methylation_X_mrnas\\meth.csv", header = TRUE)
+      sharedValues$methMrnaCorrelations <- methXMrnas(methMrnaExpressionData(), methExpressionData(), methPlatform() , output.path="~/",
+                                                      output.file.name=paste(input$meth.mrnaFile$name,"-",input$meth.methFile$name,"-outputFile.csv", sep = ""),           
+                                                      r.minimium = methThreshold(), 
+                                                      pearsons.method = methPearsonsMethod(), 
+                                                      inc.progress = T)
+    }
+    return (sharedValues$methMrnaCorrelations)
+  }), quoted = T)  
+  
+  methPlatform <- reactive({
+    return(getMethylationPlatformTable(input$meth.platform.select))
+  })  
+  
+  methThreshold <- reactive({
+    input$meth.thresholdSlider
+  })
+  
+  methMrnaExpressionData <- reactive({
+    print("mrnaExpressionData")
+    readMrnaExpressionFile(input$meth.mrnaFile$datapath)
+  })
+  
+  methExpressionData <- reactive({
+    print("methExpressionData")
+    readMethylationFile(input$meth.methFile$datapath)
+  })
+  
+  methPearsonsMethod <- reactive({
+    input$meth.pearsons.method
+  })
+
+  
   observeEvent(input$runMRNAMethylationCorrelation, { 
     runMRNAMethylationCorrelation()
   })  
@@ -426,8 +465,29 @@ shinyServer(function(input, output, session) {
                  detail = "calculating correlation", 
                  min=0, max=1, {
                    
-      print("Implementar!")
+      if(!is.null(input$meth.mrnaFile) && !is.null(input$meth.methFile)) {
+                     
+        print("Preparing...")
+                     
+        sharedValues$fromButton <- T
+        methMrnaCorrelations()
+        sharedValues$meth.matrix.to.render <- sharedValues$methMrnaCorrelations
+                     
                    
+        if(nrow(sharedValues$meth.matrix.to.render) > 0) {
+          output$MRNAMethResult <- DT::renderDataTable(sharedValues$meth.matrix.to.render, selection = 'single')
+          shinyjs::show(id = "downloadMrnaMethResult")
+          print("Hay resultados")
+        } else {
+          print("NO hay resultados")
+          shinyjs::hide(id = "downloadMrnaMethResult")
+        }
+        
+        sharedValues$fromButton <- F
+      } else {
+        print("No hay archivos cargados")
+      }
+
     })    
   }
   

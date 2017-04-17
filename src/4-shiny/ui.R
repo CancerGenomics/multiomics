@@ -85,7 +85,8 @@ shinyUI(
                  tags$hr(),
                  fileInput("meth.methFile",accept=c("text/csv"), label=h4("Methylation profile")),
                  tags$hr(),
-                 fileInput("meth.survivalFile", label=h4("Follow-up data")),
+                 # TODO habría que tomar los choices de las plataformas disponibles en getMethylationPlatformNames()
+                 selectInput("meth.platform.select", label = h4("Platform"), choices = c("HumanMethylation450 BeadChip")),
                  tags$hr(),
                  sliderInput("meth.thresholdSlider", label=h4("Correlation coefficient"), 
                              min=0.3, max=1, value=0.7, step=0.05),
@@ -97,7 +98,7 @@ shinyUI(
                  actionButton("runMRNAMethylationCorrelation", "Run pipeline")
                ),
                mainPanel(
-                 DT::dataTableOutput('MRNAMethylationResult'),
+                 DT::dataTableOutput('MRNAMethResult'),
                  tags$div(id="downloadMrnaMethylationResultDiv",
                           shinyjs::hidden(downloadButton("downloadMrnaMethylationResult", "Download csv")))
                  

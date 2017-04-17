@@ -74,3 +74,10 @@ generateAllURLSFromXenaHub2 <- function(){
 }
 
 
+readMethylationFile <- function(meth.path, ncol.for.expression.id=1) {
+  
+  print("Reading methylation file...")
+  meth <- na.omit(read.table(meth.path, header=TRUE,fill=TRUE, row.names = NULL))
+
+  return (meth)
+}
