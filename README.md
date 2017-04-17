@@ -1,6 +1,8 @@
-# miRna-mRna analysis
+# R miRna-mRna analysis  
 
-## installation
+## required packages installation 
+
+Before running multiOmics, run this R scripts in order to install the required dependencies:
 
 install.packages("XML")    
 install.packages("RCurl")    
@@ -23,23 +25,24 @@ biocLite("mtmorgan/xenar")
 
 ## running behind proxy
 
-multiOmics indirectly uses RCurl ahd httr libraries for accessing internet. You must configure the following:  
+multiOmics indirectly uses RCurl ahd httr libraries for accessing internet. 
+You must run the following scripts for configuring proxy connections:  
 
 set proxy configuration here  
 myProxyHost <- "set proxy host here"   
 myProxyPort <- set proxy port here  
 
- # RCurl configuration   
+### RCurl configuration   
 opts <- list(proxy=myProxyHost, proxyport=myProxyPort)  
 options(RCurlOptions = opts)  
 library("RCurl")  
- # test connection  
+### test connection  
 getURL("http://www.google.com")  
   
- # httr configuration  
+### httr configuration  
 library("httr")  
 set_config(use_proxy(url=myProxyHost,port=myProxyPort))  
- # test connection  
+### test connection  
 GET("http://www.google.com")  
 
 
@@ -49,4 +52,4 @@ multiOmics provides a visual shiny application.
 In order to run this application, from RStudio you can execute (after installing required packages):  
 
 library("shiny")  
-runGitHub("multiomics", "cancergenomics", subdir = "src/4-shiny/", ref = "multiomics-0.0.2-beta.1")    
+runGitHub("multiomics", "cancergenomics", subdir = "src/4-shiny/", ref = "multiomics-0.0.2-beta.2")    
