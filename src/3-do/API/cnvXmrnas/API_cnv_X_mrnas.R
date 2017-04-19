@@ -1,7 +1,7 @@
 #If the CNV has got repeated genes, it will use the first row in the order.
 
-CnvXMrnas <- function(mrna, meth, meth.to.gene, output.path="~/", 
-                                                     output.file.name="methXMrna.csv",
+CnvXMrnas <- function(mrna, cnv, output.path="~/", 
+                                                     output.file.name="cnvXMrna.csv",
                                                      r.minimium=0.7, 
                                                      pearsons.method = "pearson", 
                                                      inc.progress = F){
