@@ -2,7 +2,7 @@
 # retorna una matriz con toda la info de las plataformas disponibles
 getMethylationPlatforms <- function() {
   platforms <- matrix(nrow = 1,ncol = 2)
-  platforms[1,] <- c("HumanMethylation450 BeadChip",paste0(getwd(),"/../../examples/methylation_X_mrnas/cg-gene.txt"))
+  platforms[1,] <- c("HumanMethylation450 BeadChip",paste0(getwd(),"/../../resources/methilation.platforms/illuminaMethyl450_hg19_GPL16305.multiomicsFormat"))
   return(platforms)
 }
 
@@ -15,5 +15,5 @@ getMethylationPlatformNames <- function() {
 getMethylationPlatformTable <- function(meth.platform) {
   platforms <- getMethylationPlatforms()
   index <- which(platforms == meth.platform)
-  return(read.table(platforms[index,2], header = TRUE))
+  return(read.table(platforms[index,2], header = TRUE, sep="\t"))
 }
