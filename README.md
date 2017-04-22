@@ -52,4 +52,4 @@ multiOmics provides a visual shiny application.
 In order to run this application, from RStudio you can execute (after installing required packages):  
 
 library("shiny")  
-runGitHub("multiomics", "cancergenomics", subdir = "src/4-shiny/", ref = "multiomics-0.0.2-beta.4")    
+runGitHub("multiomics", "cancergenomics", subdir = "src/4-shiny/", ref = "multiomics-0.0.2-beta.5")    
