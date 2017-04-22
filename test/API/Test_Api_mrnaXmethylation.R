@@ -6,7 +6,7 @@
     #HPSE	4q21.3	cg25428494	-0.711446450679181	1.6598986905973e-06
     #HPSE	4q21.3	cg13508557	-0.802838430583129	6.54656276791991e-09
     #AUTS2	7q11.22	cg17027195	-0.802838430583129	6.54656276791991e-09
-meth.platform<-read.table("D:\\desarrollo\\workspaces\\R\\multiomics\\resources\\methilation.platforms\\illuminaMethyl450_hg19_GPL16304.multiomicsFormat", header = TRUE, sep="\t")
+meth.platform<-read.table("D:\\desarrollo\\workspaces\\R\\multiomics\\resources\\methilation.platforms\\illuminaMethyl450_hg19_GPL16304.txt", header = TRUE, sep="\t")
 do.test(meth.platform)
 
 
