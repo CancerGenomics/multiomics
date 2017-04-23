@@ -335,7 +335,7 @@ shinyServer(function(input, output, session) {
   
   output$downloadMrnaCNVResult <- downloadHandler(
     filename = function() { 
-      paste(input$cnv.cnvFile$name,"-",input$cnv.cnvFile$name,"-outputFile.csv", sep = "")
+      paste(input$cnv.cnvFile$name,"-",input$cnv.mrnaFile$name,"-outputFile.csv", sep = "")
     },
     content = function(file) {
       write.csv(sharedValues$cnv.matrix.to.render, file)
@@ -422,8 +422,6 @@ shinyServer(function(input, output, session) {
   methMrnaCorrelations <- reactive(quote({
     if(sharedValues$fromButton) {
       
-      #mrna<-read.table("D:\\desarrollo\\workspaces\\R\\multiomics\\examples\\methylation_X_mrnas\\mrnas.csv", header = TRUE)
-      #meth<-read.table("D:\\desarrollo\\workspaces\\R\\multiomics\\examples\\methylation_X_mrnas\\meth.csv", header = TRUE)
       sharedValues$methMrnaCorrelations <- methXMrnas(methMrnaExpressionData(), methExpressionData(), methPlatform() , output.path="~/",
                                                       output.file.name=paste(input$meth.mrnaFile$name,"-",input$meth.methFile$name,"-outputFile.csv", sep = ""),           
                                                       r.minimium = methThreshold(), 
@@ -442,12 +440,10 @@ shinyServer(function(input, output, session) {
   })
   
   methMrnaExpressionData <- reactive({
-    print("mrnaExpressionData")
     readMrnaExpressionFile(input$meth.mrnaFile$datapath)
   })
   
   methExpressionData <- reactive({
-    print("methExpressionData")
     readMethylationFile(input$meth.methFile$datapath)
   })
   
@@ -482,7 +478,6 @@ shinyServer(function(input, output, session) {
           print("NO hay resultados")
           shinyjs::hide(id = "downloadMrnaMethResult")
         }
-        
         sharedValues$fromButton <- F
       } else {
         print("No hay archivos cargados")
@@ -490,6 +485,29 @@ shinyServer(function(input, output, session) {
 
     })    
   }
+  
+  output$downloadMrnaMethResult <- downloadHandler(
+    filename = function() { 
+      paste(input$meth.methFile$name,"-",input$meth.mrnaFile$name,"-outputFile.csv", sep = "")
+    },
+    content = function(file) {
+      write.csv(sharedValues$meth.matrix.to.render, file)
+    })   
+  
+  output$meth.correlationPlot <- renderPlot({
+    if(!is.null(input$MRNAMethResult_rows_selected)){
+      selected.gene <- methMrnaCorrelations()[input$MRNAMethResult_rows_selected,1]
+      selected.meth <- methMrnaCorrelations()[input$MRNAMethResult_rows_selected,3]
+      selected.gene.row <- which(methMrnaExpressionData()==selected.gene)
+      selected.meth.row <- which(methExpressionData()==selected.meth)
+      X <- as.numeric(as.vector(methExpressionData()[selected.meth.row,2:ncol(methExpressionData())]))
+      Y <- as.numeric(as.vector(methMrnaExpressionData()[selected.gene.row,2:ncol(methMrnaExpressionData())]))
+      cor.test(X, Y)
+      plot(X, Y, xlab=selected.gene, ylab=selected.gene, main='Methylation vs. mRNA correlation plot', col='Black', pch=21, frame.plot=TRUE) #col=Group
+      line <- lm(Y ~ X)
+      abline(line, col="blue")
+    }
+  })
   
   
   ###########################################################################
@@ -508,7 +526,6 @@ shinyServer(function(input, output, session) {
   
   observeEvent(input$connectToXenaHub, { 
     updateSelectInput(session, "xenaCohorts","XenaHub available cohorts", choices = mrnaCohortsData())
-    #toggleModal(session,"mrnaXenaSelector")
   })  
   
   observeEvent(input$xenaCohorts, {

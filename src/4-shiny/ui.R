@@ -14,20 +14,15 @@ shinyUI(
       
         sidebarPanel(
           fileInput("mrnaFile", accept=c("text/csv"), label=h4("mRNA profile")),
-          tags$hr(),
           fileInput("mirnaFile",accept=c("text/csv"), label=h4("miRNA profile")),
-          tags$hr(),
           fileInput("mirna.survivalFile", label=h4("Follow-up data")),
           hidden(selectInput("mirna.survival.column.name","Survival column name",NULL)),
           hidden(selectInput("mirna.event.column.name","Event column name",NULL)),
-          tags$hr(),
           sliderInput("thresholdSlider", label=h4("Correlation coefficient"), 
 				      min=0.3, max=1, value=0.7, step=0.05),
-          tags$hr(),
           radioButtons("pearsons.method", label = h4("Correlation test"),
 				       choices = c("Pearson" = "pearson", "Spearman" = "spearman", "Kendall" = "kendall"), 
 				       selected = "pearson"),		
-		      tags$hr(),
 		      h4(id="asas2","multiMiR"),
 	        checkboxInput("miRNA.runMultimir",p(id="multimirTooltipText","miRNA-target interaction")),
 		      bsTooltip("multimirTooltipText",
@@ -51,16 +46,12 @@ shinyUI(
 					
         sidebarPanel(
           fileInput("cnv.mrnaFile", accept=c("text/csv"), label=h4("mRNA profile")),
-          tags$hr(),
           fileInput("cnv.cnvFile",accept=c("text/csv"), label=h4("CNV profile")),
-          tags$hr(),
           fileInput("cnv.survivalFile", label=h4("Follow-up data")),
           hidden(selectInput("cnv.survival.column.name","Survival column name",NULL)),
           hidden(selectInput("cnv.event.column.name","Event column name",NULL)),
-          tags$hr(),
           sliderInput("cnv.thresholdSlider", label=h4("Correlation coefficient"), 
                       min=0, max=1, value=0.7, step=0.05),
-          tags$hr(),
           radioButtons("cnv.pearsons.method", label = h4("Correlation test"),
                        choices = c("Pearson" = "pearson", "Spearman" = "spearman", "Kendall" = "kendall"), 
                        selected = "pearson"),		
@@ -82,15 +73,11 @@ shinyUI(
                
                sidebarPanel(
                  fileInput("meth.mrnaFile", accept=c("text/csv"), label=h4("mRNA profile")),
-                 tags$hr(),
                  fileInput("meth.methFile",accept=c("text/csv"), label=h4("Methylation profile")),
-                 tags$hr(),
-                 # TODO habría que tomar los choices de las plataformas disponibles en getMethylationPlatformNames()
+                 # TODO habria que tomar los choices de las plataformas disponibles en getMethylationPlatformNames()
                  selectInput("meth.platform.select", label = h4("Platform"), choices = c("HumanMethylation450 BeadChip")),
-                 tags$hr(),
                  sliderInput("meth.thresholdSlider", label=h4("Correlation coefficient"), 
                              min=0.3, max=1, value=0.7, step=0.05),
-                 tags$hr(),
                  radioButtons("meth.pearsons.method", label = h4("Correlation test"),
                               choices = c("Pearson" = "pearson", "Spearman" = "spearman", "Kendall" = "kendall"), 
                               selected = "pearson"),		
@@ -100,7 +87,11 @@ shinyUI(
                mainPanel(
                  DT::dataTableOutput('MRNAMethResult'),
                  tags$div(id="downloadMrnaMethylationResultDiv",
-                          shinyjs::hidden(downloadButton("downloadMrnaMethylationResult", "Download csv")))
+                          shinyjs::hidden(downloadButton("downloadMrnaMethResult", "Download csv"))),
+
+                 plotOutput('meth.correlationPlot'),
+                 plotOutput('meth.correlationSurvival')
+                 
                  
                )
              )
