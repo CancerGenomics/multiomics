@@ -19,11 +19,15 @@ readCNVFile <- function(cnv.path, ncol.for.expression.id=1) {
 #	   -Column1: It has the gene symbol (for example: A1BG, A2M)
 #	   -The cells has got the expression level of each gene for each sample
 readMrnaExpressionFile <- function(expression.file, ncol.for.expression.id=1) {
+  
   print("Reading the mrna file...")
-  expression <- na.omit(read.table(expression.file, header=TRUE,fill=TRUE))
+  expression <- na.omit(read.table(expression.file, header=TRUE,fill=TRUE, row.names = NULL))
+  unique.names<-make.unique(as.character(expression[,1]),  sep = "_")
+  rownames(expression)<-unique.names
+  #expression<-expression[,2:ncol(expression)]
   print("Sorting the mrna data...")
   expression <-SortMatrixByColumnName(expression, 1)
-  rownames(expression) <- expression[,1]
+  #rownames(expression) <- expression[,1]
   return (expression)
 }
 
