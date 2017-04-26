@@ -56,4 +56,4 @@ runGitHub("multiomics", "cancergenomics", subdir = "src/4-shiny/", ref = "multio
 
 ## Running cases studies for each pipeline
 
-mRNA, CNV and DNA methylation data matrix are provided under the [example] (/examples/) folder to test each multiOmics pipeline.
+mRNA, CNV and DNA methylation data matrix are provided under the [example](/examples/) folder to test each multiOmics pipeline.
