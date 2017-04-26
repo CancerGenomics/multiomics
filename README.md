@@ -52,4 +52,8 @@ multiOmics provides a visual shiny application.
 In order to run this application, from RStudio you can execute (after installing required packages):  
 
 library("shiny")  
-runGitHub("multiomics", "cancergenomics", subdir = "src/4-shiny/", ref = "multiomics-0.0.2-beta.8")    
+runGitHub("multiomics", "cancergenomics", subdir = "src/4-shiny/", ref = "multiomics-0.0.2-beta.9")
+
+## Running cases studies for each pipeline
+
+mRNA, CNV and DNA methylation data matrix are provided under the [example] (/examples/) folder to test each multiOmics pipeline.
