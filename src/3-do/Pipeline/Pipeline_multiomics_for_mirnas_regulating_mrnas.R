@@ -38,7 +38,7 @@ library("multiMiR")
 #working.path="D:/matias/academia/investigacion/medicina personalizada/8-DatosGenomica/2016-09-13---paper multiomics/"
 
 #example
-working.path=paste(sourceBaseLocation, "/examples/miRnas_regulating_mRnas/",sep="")
+working.path=paste(sourceBaseLocation, "/test/examples/miRnas_regulating_mRnas/",sep="")
 
 # The mrna expression data. It is the path of a file with the following format
 #      -Row 1: It has the sample labels

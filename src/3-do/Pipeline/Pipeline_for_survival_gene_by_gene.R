@@ -45,10 +45,8 @@ source(paste(sourceBaseLocation, "/src/survival.entities/ValidationResult.R",sep
 
 ##################EXAMPLE OF getPrognosticStatistics################################################################################
 sourceBaseLocation=getwd()
-#expression.file.path<-paste(sourceBaseLocation, "/examples\\survival_gene_by_gene\\input\\input1_expressionMatrix.csv", sep="")
-#clinical.file.path<-paste(sourceBaseLocation, "/examples\\survival_gene_by_gene\\input\\input2_clinicalData.tsv", sep="")
-expression.file.path<-paste(sourceBaseLocation, "/examples/miRnas_regulating_mRnas/mrnas.csv", sep="")
-clinical.file.path<-paste(sourceBaseLocation, "/examples/miRnas_regulating_mRnas/clinical_data.tsv", sep="")
+expression.file.path<-paste(sourceBaseLocation, "/test/examples/miRnas_regulating_mRnas/mrnas.csv", sep="")
+clinical.file.path<-paste(sourceBaseLocation, "/test/examples/miRnas_regulating_mRnas/clinical_data.tsv", sep="")
 clinical.survival.column.name="OVERALL_SURVIVAL"
 clinical.event.column.name="overall_survival_indicator"
 expression <- read.table(expression.file.path, sep="\t", header=TRUE, na.strings=c("", "NA"),stringsAsFactors=FALSE)
@@ -64,7 +62,7 @@ result<-getPrognosticStatistic(expression, number.of.clusters, groupin.FUN='mult
 #input.path is the folder in which the expression and clinical file are 
 
 #example
-input.path="D:\\desarrollo\\workspaces\\R\\multiomics\\examples\\survival_gene_by_gene\\input\\"
+input.path=paste0(getwd(),"/test/examples/survival_gene_by_gene/input/"
 input.expression.file.name="input1_expressionMatrix"
 input.clinical.file.name="input2_clinicalData.tsv"
 input.clinical.survival.column.name="OVERALL_SURVIVAL"
@@ -74,7 +72,7 @@ input.clinical.file.path=paste(input.path, input.clinical.file.name, sep="")
 input.expression.file.path=paste(input.path, input.expression.file.name, sep="")
 
 #output.pat is the folder in which all generated files will be placed.
-output.path="D:\\desarrollo\\workspaces\\R\\multiomics\\examples\\survival_gene_by_gene\\output\\"
+output.path=tempdir()
 
 
 

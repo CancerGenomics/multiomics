@@ -14,10 +14,10 @@ source(paste(sourceBaseLocation, "/src/survival.utils/read_genomic_data_utils.R"
 
 ###########CONFIG#################
 #INPUT FOR example
-working.path=paste(sourceBaseLocation, "/examples/cnv_X_mrnas/",sep="")
+working.path=paste0(sourceBaseLocation, "/test/examples/cnv_X_mrnas/")
 mrna.dif.expr.path.file="mrnas.csv"
 cnv.file="cnv.csv"
-the.output.path="d:\\temp\\"
+the.output.path=tempdir()
 
 #YOUR INPUT
 #working.path="D:\\matias\\academia\\investigacion\\medicina personalizada\\8-DatosGenomica\\2016-09-13---paper multiomics\\CNV\\"
