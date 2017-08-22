@@ -46,7 +46,7 @@ getUrlFromTCGAXenaHub <- function(dataset){
       url.sufix<-paste(url.sufix, url.parts[x],sep="/")
     }
   }
-  url<-paste(prefix, url.sufix, sep="")
+  url<-paste0(prefix, url.sufix, ".gz")
 }
 
 

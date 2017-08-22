@@ -565,7 +565,7 @@ shinyServer(function(input, output, session) {
       tagList(
         tags$a(id="downloadLink",
                tags$i(class="fa fa-download"),
-               "Download selected datasets",href=paste0(getUrlFromTCGAXenaHub(input$xenaCohortDatasets),".gz"), target="_blank", 
+               "Download selected datasets",href=getUrlFromTCGAXenaHub(input$xenaCohortDatasets), target="_blank", 
                class="btn btn-default shiny-download-link"
                )
       )
