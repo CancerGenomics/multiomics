@@ -34,8 +34,11 @@ shinyUI(
         mainPanel(
           DT::dataTableOutput('result'),
           tags$div(id="downloadMrnaMirnaResultDiv",
-              shinyjs::hidden(downloadButton("downloadMrnaMirnaResult", "Download csv"))),
-
+              shinyjs::hidden(downloadButton("downloadMrnaMirnaResult", "Download csv"))
+          ),
+          # UI ouputs for the copy-to-clipboard buttons
+          shinyjs::hidden(uiOutput("mirnaClip")),
+          
           plotOutput('correlationPlot'),
           plotOutput('correlationSurvival')
         )

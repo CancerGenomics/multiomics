@@ -74,8 +74,10 @@ shinyServer(function(input, output, session) {
   	  if(!input$miRNA.runMultimir) {
 	      if(nrow(sharedValues$mirna.matrix.to.render) > 0) {
 		      shinyjs::show(id = "downloadMrnaMirnaResult")
+	        shinyjs::show(id = "mirnaClip")
 	      } else {
   		    shinyjs::hide(id = "downloadMrnaMirnaResult")
+	        shinyjs::hide(id = "mirnaClip")
 	      }
 	    }
 
@@ -116,6 +118,11 @@ shinyServer(function(input, output, session) {
  	  } 
 	  return (sharedValues$correlations)
   }), quoted = T)
+ 
+  mirnaCorrelationGeneList <- reactive({
+    gene.list <- correlations()[,1]
+    return(as.character(unique(gene.list)))
+  })
   
   runMRNAMiRNACorrelation <- function() { 
           withProgress(message = 'Please stand by...', 
@@ -127,9 +134,25 @@ shinyServer(function(input, output, session) {
        suppressWarnings(checkSamplesFormIRNArnaCorrelation(mrnaExpressionData(), mirnaExpressionData(), 1))
        print("Preparing...")
        correlations()
-        
+       
+       # Add clipboard buttons
+       #mirnaCorrelationGeneList()
+       output$mirnaClip <- renderUI({
+         if(!is_local) {
+           rclipButton("mirnaCopyToClipboard", "Copy genes to clipboard", mirnaCorrelationGeneList(), icon("clipboard"))
+         } else {
+           actionButton("mirnaLocalCopyToClipboard", "Copy genes to clipboard",icon("clipboard"))    
+         }
+       })       
+
   })
   } 
+
+  # Workaround for execution within RStudio
+  observeEvent(input$mirnaLocalCopyToClipboard, {
+    clipr::write_clip(mirnaCorrelationGeneList())
+  }) 
+  
   
   runMultimirAnalisys <- function() { 
 	  withProgress(message = 'Please stand by...', 
@@ -240,7 +263,7 @@ shinyServer(function(input, output, session) {
       })
     }
   })
-  
+
 
 ###########################################################################
 ########################## CNV - MRNA PIPELINE TAB
