@@ -3,6 +3,8 @@ library("shiny")
 library("DT")
 library("shinyBS")
 library("shinyjs")
+library("rclipboard")
+library("clipr")
 library("multiMiR")
 library("survival")
 
@@ -32,3 +34,6 @@ source("../3-do/API/cnvXmrnas/API_cnv_X_mrnas.R")
 source("../survival.utils/methylation.platforms.utils.R")
 source("../3-do/API/mrnaXmethylation/API_mrnaXmethylation.R")
 
+rclipboardSetup()
+
+is_local <- Sys.getenv('SHINY_PORT') == ""

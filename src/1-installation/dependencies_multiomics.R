@@ -15,6 +15,8 @@ install.packages("shiny")
 install.packages("DT")
 install.packages("shinyBS")
 install.packages("shinyjs")
+install.packages("rclipboard")
+install.packages("clipr")
 
 install.packages("heatmap.plus")
 source("http://bioconductor.org/biocLite.R")
