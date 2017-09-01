@@ -136,14 +136,15 @@ shinyServer(function(input, output, session) {
        correlations()
        
        # Add clipboard buttons
-       #mirnaCorrelationGeneList()
        output$mirnaClip <- renderUI({
+         print(mirnaCorrelationGeneList())
          if(!is_local) {
-           rclipButton("mirnaCopyToClipboard", "Copy genes to clipboard", mirnaCorrelationGeneList(), icon("clipboard"))
+           # mirnaCorrelationGeneList()
+           rclipButton("mirnaCopyToClipboard", "Copy genes to clipboard 2", "probando copy" , icon("clipboard"))
          } else {
-           actionButton("mirnaLocalCopyToClipboard", "Copy genes to clipboard",icon("clipboard"))    
+           actionButton("mirnaLocalCopyToClipboard", "Copy genes to clipboard",icon("clipboard"))
          }
-       })       
+       })      
 
   })
   } 
@@ -152,8 +153,8 @@ shinyServer(function(input, output, session) {
   observeEvent(input$mirnaLocalCopyToClipboard, {
     clipr::write_clip(mirnaCorrelationGeneList())
   }) 
-  
-  
+
+
   runMultimirAnalisys <- function() { 
 	  withProgress(message = 'Please stand by...', 
 			           detail = "Searching in miRNA databases...", 
@@ -316,7 +317,7 @@ shinyServer(function(input, output, session) {
 					  
 					  if(!is.null(input$cnv.survivalFile)) {
 					    number.of.clusters=1
-						print(cnvMrnaExpressionData())
+					  	print(cnvMrnaExpressionData())
 					    progResult <- getPrognosticStatistic(cnvMrnaExpressionData(), number.of.clusters, groupin.FUN=multiomics.cut2, 
 					                                         input$cnv.survivalFile$datapath, input$cnv.survival.column.name , 
 					                                         input$cnv.event.column.name, minimium.number.of.samples.in.a.group=10)
