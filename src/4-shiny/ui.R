@@ -1,8 +1,10 @@
 shinyUI(
 
+  
   fluidPage(
 
   useShinyjs(),
+  rclipboardSetup(),
     
   titlePanel("multiOmics"),
   

@@ -137,10 +137,9 @@ shinyServer(function(input, output, session) {
        
        # Add clipboard buttons
        output$mirnaClip <- renderUI({
-         print(mirnaCorrelationGeneList())
          if(!is_local) {
            # mirnaCorrelationGeneList()
-           rclipButton("mirnaCopyToClipboard", "Copy genes to clipboard 2", "probando copy" , icon("clipboard"))
+           rclipButton("mirnaCopyToClipboard", "Copy genes to clipboard 2", mirnaCorrelationGeneList() , icon("clipboard"))
          } else {
            actionButton("mirnaLocalCopyToClipboard", "Copy genes to clipboard",icon("clipboard"))
          }
