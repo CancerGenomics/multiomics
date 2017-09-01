@@ -68,6 +68,8 @@ shinyUI(
           tags$div(id="downloadMrnaCNVResultDiv",
                    shinyjs::hidden(downloadButton("downloadMrnaCNVResult", "Download csv"))),
           
+          shinyjs::hidden(uiOutput("cnvClip")),
+          
           plotOutput('cnv.correlationPlot'),
           plotOutput('cnv.correlationSurvival')
         )
@@ -94,6 +96,8 @@ shinyUI(
                  tags$div(id="downloadMrnaMethylationResultDiv",
                           shinyjs::hidden(downloadButton("downloadMrnaMethResult", "Download csv"))),
 
+                 shinyjs::hidden(uiOutput("methClip")),
+                 
                  plotOutput('meth.correlationPlot'),
                  plotOutput('meth.correlationSurvival')
                  
