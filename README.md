@@ -23,7 +23,20 @@ biocLite("org.Hs.eg.db")
 biocLite("devtools")  
 biocLite("mtmorgan/xenar")  
 
-## running behind proxy
+## running multiOmics from github
+
+multiOmics provides a visual shiny application.   
+In order to run this application, from RStudio you can execute (after installing required packages):  
+
+library("shiny")  
+runGitHub("multiomics", "cancergenomics", subdir = "src/4-shiny/", ref = "multiomics-0.0.2-beta.12")
+
+## Running cases studies for each pipeline
+
+mRNA, CNV and DNA methylation data matrix are provided under the [example](/examples/) folder to test each multiOmics pipeline.
+
+
+## Running behind internet proxy
 
 multiOmics indirectly uses RCurl ahd httr libraries for accessing internet. 
 You must run the following scripts for configuring proxy connections:  
@@ -44,16 +57,3 @@ library("httr")
 set_config(use_proxy(url=myProxyHost,port=myProxyPort))  
 ### test connection  
 GET("http://www.google.com")  
-
-
-## running multiOmics from github
-
-multiOmics provides a visual shiny application.   
-In order to run this application, from RStudio you can execute (after installing required packages):  
-
-library("shiny")  
-runGitHub("multiomics", "cancergenomics", subdir = "src/4-shiny/", ref = "multiomics-0.0.2-beta.11")
-
-## Running cases studies for each pipeline
-
-mRNA, CNV and DNA methylation data matrix are provided under the [example](/examples/) folder to test each multiOmics pipeline.
