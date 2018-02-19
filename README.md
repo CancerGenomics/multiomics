@@ -1,6 +1,10 @@
 # multiOmics: an R package to infer genomics and epigenomics mechanisms involved with cancer progression  
 
-## How to execute multiOmics?: 
+## How to execute multiOmics?
+
+### Requirements
+
+RStudio and basic RStudio knowledge is required to run multiOmics.     
 
 ### First, install required packages 
 
@@ -27,9 +31,10 @@ biocLite("devtools")
 biocLite("mtmorgan/xenar")  
 ```
 
-### Running multiOmics (from github)
+### Second, just run multiOmics!
 
-You don't need to clone this git repository, RStudio will do it for you automatically. multiOmics provides a visual shiny application.   
+You don't need to clone this git repository, RStudio will do it for you automatically. 
+multiOmics provides a visual shiny application.   
 In order to run this application from RStudio you can execute (after installing required packages):  
 
 ``` R
