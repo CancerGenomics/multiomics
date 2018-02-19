@@ -8,7 +8,7 @@ RStudio and basic RStudio knowledge is required to run multiOmics.
 
 ### First, install required packages 
 
-Before running multiOmics, run this R scripts in order to install the required dependencies:
+Before running multiOmics, run [dependencies_multiomics.R](/src/1-installation/dependencies_multiomics.R) script or run the folowwing instructions in order to install the required dependencies:
 
 ``` R
 install.packages("XML")    
@@ -21,6 +21,8 @@ install.packages("shiny")
 install.packages("DT")    
 install.packages("shinyBS")      
 install.packages("shinyjs")  
+install.packages("rclipboard")
+install.packages("clipr")
 install.packages("heatmap.plus")  
 source("http://bioconductor.org/biocLite.R")  
 biocLite("ctc")  
