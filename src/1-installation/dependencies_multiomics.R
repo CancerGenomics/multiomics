@@ -6,7 +6,9 @@
 
 install.packages("XML")
 install.packages("RCurl")
-multimirFile <- paste(getwd(),"/src/1-installation/dependencies/multiMiR_1.0.1.tar.gz", sep="")
+multimirFile <- "https://gitlab.com/cancergenomics/multiomics/raw/master/src/1-installation/dependencies/multiMiR_1.0.1.tar.gz"    
+# for local instalnation, require cloning the git repo 
+# multimirFile <- paste(getwd(),"/src/1-installation/dependencies/multiMiR_1.0.1.tar.gz", sep="")
 install.packages(multimirFile, repos=NULL, type="source")
 install.packages("GGally")
 install.packages("Hmisc")
