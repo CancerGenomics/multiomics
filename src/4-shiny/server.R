@@ -43,7 +43,7 @@ shinyServer(function(input, output, session) {
       }
 
       # must add clinical data to the matrix to render
-      if(!is.null(input$mirna.survivalFile)) {
+      if((!is.null(input$mirna.survivalFile) && (nrow(sharedValues$correlationsStep2)>0))) {
         number.of.clusters=1
         progResult <- getPrognosticStatistic(mrnaExpressionData(), number.of.clusters, groupin.FUN=multiomics.cut2, 
                                              input$mirna.survivalFile$datapath, input$mirna.survival.column.name , 
@@ -161,10 +161,16 @@ shinyServer(function(input, output, session) {
                                                               )
       print("Finish multimir analisys")
       print(nrow(step2Res))
-      collapsed.output.file.name = paste(input$mirnaFile$name,"-",input$mrnaFile$name,"-multiMiR-collapsed-outputFile.csv", sep = "")    
-      collapsedResult <- ColapseMirnaXMrna(data.frame(step2Res), output.path = "~/", output.file = collapsed.output.file.name)
-      print("Finish collapsing")
-      
+      if (nrow(step2Res)>0){
+        collapsed.output.file.name = paste(input$mirnaFile$name,"-",input$mrnaFile$name,"-multiMiR-collapsed-outputFile.csv", sep = "")    
+        collapsedResult <- ColapseMirnaXMrna(data.frame(step2Res), output.path = "~/", output.file = collapsed.output.file.name)
+        print("Finish collapsing")
+      }
+      else
+      {
+        collapsedResult<-data.frame(matrix(nrow = 0, ncol = 7))
+        
+      }
       sharedValues$correlationsStep2 <- collapsedResult
       
 	})
