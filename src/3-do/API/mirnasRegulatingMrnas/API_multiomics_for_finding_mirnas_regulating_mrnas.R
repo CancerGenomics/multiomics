@@ -25,8 +25,11 @@ readMirnaExpressionFile <- function(mirna.file, ncol.for.expression.id=1) {
 }  
 
 
-
-#Input
+#
+# It generates a matrix with selected statistic corresponding p-value and adjusted p-value using fdr.
+# For adjusting, we use the p-values of all evaluations. Not just the ones which passed the selected correlation coefficient. 
+#
+# Input
 #  expression: matrix obtained with readMirnaExpressionFile function
 #  mirna: matrix obtained with readMrnaExpressionFile function
 #  output.path: The folder for output file. 
@@ -61,20 +64,31 @@ CalculateCorrelationsMirnaMrna <- function(expression, mirna, output.path="~/",
                                            r.minimium=0.7, 
 										   pearsons.method = "pearson", 
                                            inc.progress = F){
-	ptm <- proc.time()
+  ###MDB: 26/2/2018 - P.ADJUST
+  #Columns are: "Gen_symbol","mature_mirna_id","Mirna_Mrna_Correlation","p_value_Of_Mirna_Mrna_Correlation", "p_value_fdr_adjustedMirna_Mrna_Correlation", "ID"
+  num.of.result.columns<-6
+  position.of.adjusted.p.value<-5
+  ####
+  
+  ptm <- proc.time()
 	total.rows=nrow(expression)*nrow(mirna)
 	print(paste("Running pipeline with", r.minimium, 
 				"threshold and pearson's method:", pearsons.method, sep=" "))
 	
 	# The result matix is created
-	res <- matrix(nrow=total.rows,ncol=4)
-	colnames(res)<-(c("Gen_symbol","mature_mirna_id","Mirna_Mrna_Correlation","p_value_Of_Mirna_Mrna_Correlation"))
+	res <- matrix(nrow=total.rows,ncol=num.of.result.columns)
+	colnames(res)<-(c("Gen_symbol","mature_mirna_id","Mirna_Mrna_Correlation","p_value_Of_Mirna_Mrna_Correlation", "p_value_fdr_adjustedMirna_Mrna_Correlation", "ID"))
 	
 	
-
-	actual<-1
+	###MDB: 26/2/2018 - P.ADJUST - Start on 0
+	actual<-0
 	actual.n.correlated<-1
 	print("Start process!")
+	
+	###MDB: 26/2/2018 - P.ADJUST
+	p.values.all<-c()
+	p.values.positions.of.correlated.pairs<-c()
+	###
 	for (i in 1:nrow(mirna)) {
 		actual.mirna<-mirna[i,1]
 		mirna.para.ese.gen<-mirna[i,2:ncol(mirna)]
@@ -99,12 +113,22 @@ CalculateCorrelationsMirnaMrna <- function(expression, mirna, output.path="~/",
 			resultado.pearson<-cor.test(as.numeric(expression.para.ese.gen),
 					                    as.numeric(mirna.para.ese.gen), 
 										method = pearsons.method)
+			###MDB: 26/2/2018 - P.ADJUST
+			p.values.all<-append(p.values.all, resultado.pearson$p.value)
+			id<-paste(actual, actual.gen, actual.mirna, sep="-")
+			###
 			if (!is.na(abs(resultado.pearson$estimate))) {
 				if (abs(resultado.pearson$estimate) > r.minimium) {
+				  #newValue<-c(as.character(actual.gen), as.character(actual.mirna), 
+					#		  resultado.pearson$estimate, resultado.pearson$p.value)
 				  newValue<-c(as.character(actual.gen), as.character(actual.mirna), 
-							  resultado.pearson$estimate, resultado.pearson$p.value)
-				  res[actual.n.correlated,1:4] <- newValue
+				              		  resultado.pearson$estimate, resultado.pearson$p.value, -9999, id)
+				              
+				  res[actual.n.correlated,1:num.of.result.columns] <- newValue
 				  actual.n.correlated<-actual.n.correlated+1
+
+				  ###MDB: 26/2/2018 - P.ADJUST
+				  p.values.positions.of.correlated.pairs<-append(p.values.positions.of.correlated.pairs, id)
 				}
 			}
 		}
@@ -113,10 +137,19 @@ CalculateCorrelationsMirnaMrna <- function(expression, mirna, output.path="~/",
 			incProgress(1/nrow(mirna));
 		}	
 	}
+	###MDB: 26/2/2018 - P.ADJUST
+	p.values.adjusted.fdr<-p.adjust(p.values.all, method="fdr", n=length(p.values.all))
+	#subset(res, res[,"ID"] %in% p.values.positions.of.correlated.pairs)
+	substr(x,1,regexpr(",",x)-1)
+	res[res[,"ID"] %in% p.values.positions.of.correlated.pairs, position.of.adjusted.p.value]<-p.values.adjusted.fdr[p.values.positions.of.correlated.pairs]
+	####
+	
 	# deleting useless and unused rows
-	res <- res[c(1:actual.n.correlated-1),c(1:4)]
+	res <- res[c(1:actual.n.correlated-1),c(1:num.of.result.columns)]
+	
 
-	#if (!(folder.exists(output.path))) {dir.create(output.path)}
+  
+  #if (!(folder.exists(output.path))) {dir.create(output.path)}
 	file.path<-paste(output.path, output.file.name, sep="")
 	write.table(res, file.path, sep="\t", row.names=FALSE, 
 			    col.names=TRUE, quote=FALSE)
