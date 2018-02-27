@@ -5,6 +5,7 @@ library("shinyBS")
 library("shinyjs")
 library("rclipboard")
 library("clipr")
+library("ggplot2")
 library("multiMiR")
 library("survival")
 
@@ -35,3 +36,5 @@ source("../survival.utils/methylation.platforms.utils.R")
 source("../3-do/API/mrnaXmethylation/API_mrnaXmethylation.R")
 
 is_local <- Sys.getenv('SHINY_PORT') == ""
+
+options("shiny.host"="0.0.0.0")
