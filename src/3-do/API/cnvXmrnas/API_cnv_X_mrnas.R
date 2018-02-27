@@ -1,5 +1,5 @@
 #If the CNV has got repeated genes, it will use the first row in the order.
-
+#It will compare all the genes that will be in both files. That is why the fdr is applied over a vector of size = number of elements in common between both files.
 CnvXMrnas <- function(mrna, cnv, output.path="~/", 
                                                      output.file.name="cnvXMrna.csv",
                                                      r.minimium=0.7, 
@@ -11,14 +11,28 @@ CnvXMrnas <- function(mrna, cnv, output.path="~/",
   print(paste("Running pipeline CNv_X_mrnas with", r.minimium, 
               "threshold and pearson's method:", pearsons.method, sep=" "))
   
+  ###MDB: 27/2/2018 - P.ADJUST
+  #Columns are: "Gene","Location", "CNV-mRNA correlation", "p-value", "p_value_fdr_adjusted_CNV-mRNA_Correlation", "ID"
+  num.of.result.columns<-6
+  position.of.adjusted.p.value<-5
+  ####
+  
+  ###MDB: 27/2/2018 - P.ADJUST - Start on 0
+  actual<-0
+  actual.n.correlated<-1
+  print("Start process!")
+  
+  ###MDB: 27/2/2018 - P.ADJUST
+  p.values.all<-c()
+  p.values.positions.of.correlated.pairs<-c()
+  ids<-c()
+  ###
   
   # The result matix is created
-  res <- matrix(nrow=total.rows,ncol=4)
-  colnames(res)<-(c("Gene","Location", "CNV-mRNA correlation", "p-value"))
+  res <- matrix(nrow=total.rows,ncol=num.of.result.columns)
+  colnames(res)<-(c("Gene","Location", "CNV-mRNA correlation", "p-value", "p_value_fdr_adjusted", "ID"))
   
-  actual<-1
-  actual.n.correlated<-1
-  
+
   ids.in.cnv.dataset<-cnv[,1]
   
   print("Start process!")
@@ -48,13 +62,23 @@ CnvXMrnas <- function(mrna, cnv, output.path="~/",
         resultado.pearson<-cor.test(as.numeric(actual.mrna),
                                     as.numeric(actual.cnv), 
                                     method = pearsons.method)
+        
+        ###MDB: 27/2/2018 - P.ADJUST
+        p.values.all<-append(p.values.all, resultado.pearson$p.value)
+        id<-actual
+        ids<-append(ids, id)
+        
         if (!is.na(abs(resultado.pearson$estimate))) {
           if (abs(resultado.pearson$estimate) > r.minimium) {
             location<-getGeneLocation(actual.gen);
             newValue<-c(as.character(actual.gen), location,
-                        resultado.pearson$estimate, resultado.pearson$p.value)
-            res[actual.n.correlated,1:4] <- newValue
+                        resultado.pearson$estimate, resultado.pearson$p.value, -9999, id)
+            ###MDB: 26/2/2018 - P.ADJUST
+            res[actual.n.correlated,1:num.of.result.columns] <- newValue
             actual.n.correlated<-actual.n.correlated+1
+            
+            ###MDB: 26/2/2018 - P.ADJUST
+            p.values.positions.of.correlated.pairs<-append(p.values.positions.of.correlated.pairs, id)
           }
         }
     }
@@ -63,8 +87,17 @@ CnvXMrnas <- function(mrna, cnv, output.path="~/",
     }	
   }
   
+  ###MDB: 26/2/2018 - P.ADJUST
+  p.values.adjusted.fdr<-p.adjust(p.values.all, method="fdr", n=length(p.values.all))
+  names(p.values.adjusted.fdr)<-ids
+  
+  ###MDB: 26/2/2018 - P.ADJUST
+  res[res[,"ID"] %in% p.values.positions.of.correlated.pairs, position.of.adjusted.p.value]<-p.values.adjusted.fdr[p.values.positions.of.correlated.pairs]
+  ####
+  
+  ###MDB: 27/2/2018 - P.ADJUST
   # deleting useless and unused rows
-  res <- res[c(1:actual.n.correlated-1),c(1:4)]
+  res <- res[c(1:actual.n.correlated-1),c(1:num.of.result.columns)]
   
   #if (!(folder.exists(output.path))) {dir.create(output.path)}
   file.path<-paste(output.path, output.file.name, sep="")

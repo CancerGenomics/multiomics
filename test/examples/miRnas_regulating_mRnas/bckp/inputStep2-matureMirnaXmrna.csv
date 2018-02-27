@@ -1,0 +1,4 @@
+Gen_symbol	mature_mirna_id	Mirna_Mrna_Correlation	p_value_Of_Mirna_Mrna_Correlation	p_value_fdr_adjustedMirna_Mrna_Correlation	ID
+SOGA1	hsa-miR-221-5p	-0.802838430583129	6.54656276791992e-09	8.29231283936523e-08	27-SOGA1-hsa-miR-221-5p
+SOGA1	hsa-miR-221-3p	-0.802838430583129	6.54656276791992e-09	8.29231283936523e-08	29-SOGA1-hsa-miR-221-3p
+SOGA1	hsa-miR-35-5p	1	0	0	37-SOGA1-hsa-miR-35-5p

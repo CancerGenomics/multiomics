@@ -1,0 +1,2 @@
+"Gen_symbol"	"mature_mirna_id"	"Mirna_Mrna_Correlation"	"p_value_Of_Mirna_Mrna_Correlation"	"p_value_Of_Mirna_Mrna_Correlation_adjusted"	"ID"	"mirna_database"	"database_predicted_score"	"validation_pubmed_id"
+"SOGA1"	"hsa-miR-221-5p"	"-0.802838430583129"	"6.54656276791992e-09"	NA	"27-SOGA1-hsa-miR-221-5p"	"diana_microt"	"0.817"	NA

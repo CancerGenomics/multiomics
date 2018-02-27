@@ -8,12 +8,22 @@ getPredictedFromMulimir <- function(mirna){
 
   print("get.multimir")
   mirnaDBs <- "all"
+  #mirnaDBs <- "validated"
   #mirnaDBs <- "diana_microt"
 	multimir = get.multimir(org="hsa", mirna=mirna, table=mirnaDBs,summary=TRUE, 
 	                        predicted.cutoff.type="p", predicted.cutoff=30)
+	#write.table(multimir,'c:\\temp\\all' )
+  if (length(multimir)==0) return (NULL)
+
+	if (mirnaDBs=="all") {
+	  multimirPredicted<-multimir$predicted
+	} else {
+	  print("NO ES ALL")
+	  multimirPredicted<-get(mirnaDBs, multimir)
+	  
+	}
 	
-	print("multimir predicted")
-	multimirPredicted<-multimir$predicted
+	
 	varsToKeep <- names(multimirPredicted) %in% c("database", "mature_mirna_id", "target_symbol", "score")
 	multimirPredictedFiltered <- multimirPredicted[varsToKeep]
 	

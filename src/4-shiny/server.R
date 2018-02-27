@@ -22,6 +22,7 @@ shinyServer(function(input, output, session) {
   ########################## MIRNA - MRNA PIPELINE TAB
   ###########################################################################
   
+  #server>>observeEvent -> server>>runMRNAMiRNACorrelation -> API_multiomics_for_finding_mirnas_regulating_mrnas>>CalculateCorrelationsMirnaMrna
   observeEvent(input$runMRNAMiRNACorrelation, { 
     if(!is.null(input$mrnaFile) && !is.null(input$mirnaFile)) {
       
@@ -36,7 +37,7 @@ shinyServer(function(input, output, session) {
         runMultimirAnalisys()
         ###MDB: 26/2/2018 - P.ADJUST
         #colnames(sharedValues$correlationsStep2) <- c("Gene","Mature miRNA","miRNA-mRNA correlation","p-value","miRNA db","Predicted score","PubMed ID")
-        colnames(sharedValues$correlationsStep2) <- c("Gene","Mature miRNA","miRNA-mRNA correlation","p-value","adj-p-value","id",  "miRNA db","Predicted score","PubMed ID")
+        colnames(sharedValues$correlationsStep2) <- c("Gene","Mature miRNA","miRNA-mRNA correlation","p-value", "adj-p-value","id", "miRNA db","Predicted score","PubMed ID")
         
         sharedValues$mirna.matrix.to.render <- sharedValues$correlationsStep2
       } else {
@@ -60,7 +61,7 @@ shinyServer(function(input, output, session) {
         if(input$miRNA.runMultimir) {
           ###MDB: 26/2/2018 - P.ADJUST
           #colnames(sharedValues$correlationsStep2) <- c("Gene","Mature miRNA","miRNA-mRNA correlation","p-value","miRNA db","Predicted score","PubMed ID")
-          colnames(sharedValues$correlationsStep2) <- c("Gene","Mature miRNA","miRNA-mRNA correlation","p-value", "adj-p-value","id", "miRNA db","Predicted score","PubMed ID")
+          colnames(sharedValues$correlationsStep2) <- c("Gene","Mature miRNA","miRNA-mRNA correlation","p-value", "adj-p-value","id", "miRNA db","Predicted score","PubMed ID" )
           
           # creating a matrix to bind to the actual result        
           tmp <- matrix(nrow = nrow(sharedValues$correlationsStep2), ncol = ncol(progResult)-1 )
@@ -181,7 +182,7 @@ shinyServer(function(input, output, session) {
       }
       else
       {
-        collapsedResult<-data.frame(matrix(nrow = 0, ncol = 7))
+        collapsedResult<-data.frame(matrix(nrow = 0, ncol = 9))
         
       }
       sharedValues$correlationsStep2 <- collapsedResult
@@ -333,7 +334,7 @@ shinyServer(function(input, output, session) {
 					    progResult <- getPrognosticStatistic(cnvMrnaExpressionData(), number.of.clusters, groupin.FUN=multiomics.cut2, 
 					                                         input$cnv.survivalFile$datapath, input$cnv.survival.column.name , 
 					                                         input$cnv.event.column.name, minimium.number.of.samples.in.a.group=10)
-					    colnames(sharedValues$cnvMrnaCorrelations) <- c("Gene","Location","CNV-mRNA correlation","p-value")
+					    colnames(sharedValues$cnvMrnaCorrelations) <- c("Gene","Location","CNV-mRNA correlation","p-value", "p_value_fdr_adjusted", "ID")
 					    # creating a matrix to bind to the actual result        
 					    tmp <- matrix(nrow = nrow(sharedValues$cnvMrnaCorrelations), ncol = ncol(progResult)-1 )
 					    actual.result <- sharedValues$cnvMrnaCorrelations
@@ -615,7 +616,7 @@ shinyServer(function(input, output, session) {
       tagList(
         tags$a(id="downloadLink",
                tags$i(class="fa fa-download"),
-               "Download selected datasets",href=getUrlFromTCGAXenaHub(input$xenaCohortDatasets), target="_blank", 
+               "Download selected dataset",href=getUrlFromTCGAXenaHub(input$xenaCohortDatasets), target="_blank", 
                class="btn btn-default shiny-download-link"
                )
       )

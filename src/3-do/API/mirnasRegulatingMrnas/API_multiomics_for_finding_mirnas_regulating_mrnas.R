@@ -88,10 +88,13 @@ CalculateCorrelationsMirnaMrna <- function(expression, mirna, output.path="~/",
 	###MDB: 26/2/2018 - P.ADJUST
 	p.values.all<-c()
 	p.values.positions.of.correlated.pairs<-c()
+	ids<-c()
 	###
 	for (i in 1:nrow(mirna)) {
-		actual.mirna<-mirna[i,1]
+	  ###MDB: 26/2/2018 - P.ADJUST
+	  actual.mirna<-mirna[i,1]
 		mirna.para.ese.gen<-mirna[i,2:ncol(mirna)]
+		###
 		for (j in 1:nrow(expression)) {
 		  actual<-actual+1
 			actual.gen<-expression[j,1]
@@ -115,15 +118,19 @@ CalculateCorrelationsMirnaMrna <- function(expression, mirna, output.path="~/",
 										method = pearsons.method)
 			###MDB: 26/2/2018 - P.ADJUST
 			p.values.all<-append(p.values.all, resultado.pearson$p.value)
-			id<-paste(actual, actual.gen, actual.mirna, sep="-")
+			#id<-paste(actual, actual.gen, actual.mirna, sep="-")
+			id<-actual
+			ids<-append(ids, id)
+			
 			###
 			if (!is.na(abs(resultado.pearson$estimate))) {
 				if (abs(resultado.pearson$estimate) > r.minimium) {
-				  #newValue<-c(as.character(actual.gen), as.character(actual.mirna), 
-					#		  resultado.pearson$estimate, resultado.pearson$p.value)
+				  
+				  ###MDB: 26/2/2018 - P.ADJUST
 				  newValue<-c(as.character(actual.gen), as.character(actual.mirna), 
 				              		  resultado.pearson$estimate, resultado.pearson$p.value, -9999, id)
-				              
+				  ##
+				  
 				  res[actual.n.correlated,1:num.of.result.columns] <- newValue
 				  actual.n.correlated<-actual.n.correlated+1
 
@@ -139,11 +146,13 @@ CalculateCorrelationsMirnaMrna <- function(expression, mirna, output.path="~/",
 	}
 	###MDB: 26/2/2018 - P.ADJUST
 	p.values.adjusted.fdr<-p.adjust(p.values.all, method="fdr", n=length(p.values.all))
-	#subset(res, res[,"ID"] %in% p.values.positions.of.correlated.pairs)
-	substr(x,1,regexpr(",",x)-1)
+	names(p.values.adjusted.fdr)<-ids
+
+	###MDB: 26/2/2018 - P.ADJUST
 	res[res[,"ID"] %in% p.values.positions.of.correlated.pairs, position.of.adjusted.p.value]<-p.values.adjusted.fdr[p.values.positions.of.correlated.pairs]
 	####
 	
+	###MDB: 26/2/2018 - P.ADJUST
 	# deleting useless and unused rows
 	res <- res[c(1:actual.n.correlated-1),c(1:num.of.result.columns)]
 	
@@ -187,7 +196,8 @@ keepBestGeneXMirnaAccordingCorrelationAndAddMirnaDbInfo <- function(genes.x.mirn
 	genes<-genes.x.mirnas[,1]
 	genes<-unique(as.character(genes))
 	
-	result <- data.frame(Gene_Symbol=character(0), mature_mirna_id=character(0), Mirna_Mrna_Correlation=numeric(0), p_value_Of_Mirna_Mrna_Correlation=numeric(0),Database=character(0),Database_Predicted_Score=numeric(0),pubMedID=character(0))  
+	#result <- data.frame(Gene_Symbol=character(0), mature_mirna_id=character(0), Mirna_Mrna_Correlation=numeric(0), p_value_Of_Mirna_Mrna_Correlation=numeric(0), Database=character(0),Database_Predicted_Score=numeric(0),pubMedID=character(0))  
+	result <- data.frame(Gene_Symbol=character(0), mature_mirna_id=character(0), Mirna_Mrna_Correlation=numeric(0), p_value_Of_Mirna_Mrna_Correlation=numeric(0), p_value_Of_Mirna_Mrna_Correlation_adjusted=numeric(0), id=numeric(0),Database=character(0),Database_Predicted_Score=numeric(0),pubMedID=character(0))  
 	for (i in 1:length(mirnas)) {
 		
 		print(paste("mirna",i, "/", length(mirnas), ": ", mirnas[i]), sep="")
@@ -198,7 +208,7 @@ keepBestGeneXMirnaAccordingCorrelationAndAddMirnaDbInfo <- function(genes.x.mirn
 			result<-rbind(result, resultTemp)
 		}
 	}
-	colnames(result)<-c("Gen_symbol","mature_mirna_id","Mirna_Mrna_Correlation","p_value_Of_Mirna_Mrna_Correlation","mirna_database","database_predicted_score", "validation_pubmed_id")
+	colnames(result)<-c("Gen_symbol","mature_mirna_id","Mirna_Mrna_Correlation","p_value_Of_Mirna_Mrna_Correlation", "p_value_Of_Mirna_Mrna_Correlation_adjusted", "ID", "mirna_database","database_predicted_score", "validation_pubmed_id")
 	csvOutputFile<-paste(output.path, output.file, sep="")
 	write.table(result, csvOutputFile, sep="\t",row.names=FALSE)
 	
@@ -254,9 +264,12 @@ ColapseMirnaXMrna <- function(mirnaXmrna, output.path, output.file = "pipelineOu
 	  mirnaXmrnaNegative$validation_pubmed_id[is.na(mirnaXmrnaNegative$validation_pubmed_id)] <- "NO"
 	
 	  #It collapses all the rows with the same mirna and mrna.
-	  result <- aggregate(cbind(mirna_database,database_predicted_score, validation_pubmed_id)
-	                      ~Gen_symbol+mature_mirna_id+Mirna_Mrna_Correlation+p_value_Of_Mirna_Mrna_Correlation,
+	  result <- aggregate(cbind(mirna_database,as.character(database_predicted_score), validation_pubmed_id)
+	                      ~Gen_symbol+mature_mirna_id+Mirna_Mrna_Correlation+p_value_Of_Mirna_Mrna_Correlation+p_value_Of_Mirna_Mrna_Correlation_adjusted+ID,
 	                      paste, collapse=",", data=mirnaXmrnaNegative, na.action=na.pass)
+	  
+	  
+	  
 	  print(paste("Luego del agregate",nrow(result)))
 	    
 	
