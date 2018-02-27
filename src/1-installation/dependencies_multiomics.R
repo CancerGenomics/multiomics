@@ -12,6 +12,7 @@ multimirFile <- "https://gitlab.com/cancergenomics/multiomics/raw/master/src/1-i
 install.packages(multimirFile, repos=NULL, type="source")
 install.packages("GGally")
 install.packages("Hmisc")
+install.packages("ggplot2")
 
 install.packages("shiny")
 install.packages("DT")
