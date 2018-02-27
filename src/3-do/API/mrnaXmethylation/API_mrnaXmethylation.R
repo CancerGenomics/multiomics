@@ -15,25 +15,42 @@ methXMrnas <- function(mrna, meth, meth.platform, output.path="~/",
               "threshold and pearson's method:", pearsons.method, sep=" "))
   
   
-  # The result matix is created
-  res <- matrix(nrow=total.rows,ncol=5)
-  colnames(res)<-(c("Gene","Location", "methylation-id", "Methylation-mRNA correlation", "p-value"))
+  ###MDB: 26/2/2018 - P.ADJUST
+  #Columns are: "Gene","Location", "methylation-id", "Methylation-mRNA correlation", "p-value", "p_value_fdr_adjustedMeth_Mrna_Correlation", "ID"
+  num.of.result.columns<-7
+  position.of.adjusted.p.value<-6
+  ####
   
-  actual<-1
+  
+  # The result matix is created
+  res <- matrix(nrow=total.rows,ncol=num.of.result.columns)
+  colnames(res)<-(c("Gene","Location", "methylation-id", "Methylation-mRNA correlation", "p-value", "p-value-fdr-adjusted", "ID"))
+  
+  ###MDB: 26/2/2018 - P.ADJUST - Start on 0
+  actual<-0
   actual.n.correlated<-1
+  print("Start process!")
+  
+  ###MDB: 26/2/2018 - P.ADJUST
+  p.values.all<-c()
+  p.values.positions.of.correlated.pairs<-c()
+  ids<-c()
+  ###
   
   ids.in.meth.dataset<-meth[,1]
   
   print("Start process!")
   for (i in 1:nrow(mrna)) {
-    actual<-actual+1
+    
     actual.gen<-as.character(mrna[i,1])
     #position.in.cnv.dataset<-which(ids.in.cnv.dataset == actual.gen)
     #In meths i have each cg, which do methialtion over the gene.
     cgs.for.this.gene<-get.cgs.for.this.genes(actual.gen,meth.platform)
     #Se queda con el primer CNV
     if (length(cgs.for.this.gene)>0){
-      for (actual.cg.index in 1:length(cgs.for.this.gene)){
+        
+        for (actual.cg.index in 1:length(cgs.for.this.gene)){
+            actual<-actual+1
             actual.cg<-cgs.for.this.gene[actual.cg.index]
             #position.in.cnv.dataset<-position.in.cnv.dataset[1]
             actual.mrna<-mrna[i,2:ncol(mrna)]
@@ -43,13 +60,23 @@ methXMrnas <- function(mrna, meth, meth.platform, output.path="~/",
                   resultado.pearson<-cor.test(as.numeric(actual.mrna),
                                               as.numeric(actual.meth), 
                                               method = pearsons.method)
+        
+                  ###MDB: 26/2/2018 - P.ADJUST
+                  p.values.all<-append(p.values.all, resultado.pearson$p.value)
+                  #id<-paste(actual, actual.gen, actual.mirna, sep="-")
+                  id<-actual
+                  ids<-append(ids, id)
+                  
+                  
                   if (!is.na(abs(resultado.pearson$estimate))) {
                     if ((abs(resultado.pearson$estimate) > r.minimium) & (resultado.pearson$estimate<0)) {
                       location<-getGeneLocation(actual.gen);
                       newValue<-c(as.character(actual.gen), location, actual.cg,
-                                  resultado.pearson$estimate, resultado.pearson$p.value)
-                      res[actual.n.correlated,1:5] <- newValue
+                                  resultado.pearson$estimate, resultado.pearson$p.value, -9999, id)
+                      res[actual.n.correlated,1:num.of.result.columns] <- newValue
                       actual.n.correlated<-actual.n.correlated+1
+                      ###MDB: 26/2/2018 - P.ADJUST
+                      p.values.positions.of.correlated.pairs<-append(p.values.positions.of.correlated.pairs, id)
                     }
                   }
       
@@ -76,8 +103,17 @@ methXMrnas <- function(mrna, meth, meth.platform, output.path="~/",
     }	
   }
   
+  ###MDB: 26/2/2018 - P.ADJUST
+  p.values.adjusted.fdr<-p.adjust(p.values.all, method="fdr", n=length(p.values.all))
+  names(p.values.adjusted.fdr)<-ids
+  
+  ###MDB: 26/2/2018 - P.ADJUST
+  res[res[,"ID"] %in% p.values.positions.of.correlated.pairs, position.of.adjusted.p.value]<-p.values.adjusted.fdr[as.character(p.values.positions.of.correlated.pairs)]
+  ####
+  
+  
   # deleting useless and unused rows
-  res <- res[c(1:actual.n.correlated-1),c(1:5)]
+  res <- res[c(1:actual.n.correlated-1),c(1:num.of.result.columns)]
   
   #if (!(folder.exists(output.path))) {dir.create(output.path)}
   file.path<-paste(output.path, output.file.name, sep="")

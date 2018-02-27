@@ -35,7 +35,7 @@ cnv <- readCNVFile(cnv.path)
 
 CnvXMrnas(mrna.dif.expr, cnv, output.path=the.output.path,
                       output.file.name="cnvXMrna.csv",
-                      r.minimium=0.15, 
+                      r.minimium=0.9, 
                       pearsons.method = "pearson", 
                       inc.progress = F)
 

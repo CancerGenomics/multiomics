@@ -149,7 +149,7 @@ CalculateCorrelationsMirnaMrna <- function(expression, mirna, output.path="~/",
 	names(p.values.adjusted.fdr)<-ids
 
 	###MDB: 26/2/2018 - P.ADJUST
-	res[res[,"ID"] %in% p.values.positions.of.correlated.pairs, position.of.adjusted.p.value]<-p.values.adjusted.fdr[p.values.positions.of.correlated.pairs]
+	res[res[,"ID"] %in% p.values.positions.of.correlated.pairs, position.of.adjusted.p.value]<-p.values.adjusted.fdr[as.character(p.values.positions.of.correlated.pairs)]
 	####
 	
 	###MDB: 26/2/2018 - P.ADJUST

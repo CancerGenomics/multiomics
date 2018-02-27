@@ -1,13 +1,14 @@
 source(paste0(getwd(),"/src/3-do/API/mrnaXmethylation/API_mrnaXmethylation.R"))
 source(paste0(getwd(),"/src/survival.utils/matrix_utils.R"))
 source(paste0(getwd(),"/src/survival.utils/genomic_utils.R"))
+source(paste0(getwd(),"/src/survival.utils/read_genomic_data_utils.R"))
 
 do.test <- function(meth.platform){
-  mrna<-read.table(paste0(getwd(),"/test/examples/methylation_X_mrnas/mrnas.csv"), header = TRUE)
-  meth<-read.table(paste0(getwd(),"/test/examples/methylation_X_mrnas/meth.csv"), header = TRUE)
+  mrna<-readMrnaExpressionFile(paste0(getwd(),"/test/examples/methylation_X_mrnas/mrnas.csv"))
+  meth<-readMethylationFile(paste0(getwd(),"/test/examples/methylation_X_mrnas/meth.csv"))
   methXMrnas(mrna, meth, meth.platform, output.path=tempdir(), 
              output.file.name="methylationXMrna.csv",
-             r.minimium=0.4, 
+             r.minimium=0.3, 
              pearsons.method = "pearson", 
              inc.progress = F)
   
@@ -24,7 +25,7 @@ do.test(meth.platform)
 
 
 
-#Ejemplo con un file de methylation platform preparado para el test.
+  #Ejemplo con un file de methylation platform preparado para el test.
 #El resultado debe ser:
     #Gene	Location	methylation-id	Methylation-mRNA correlation	p-value
     #HPSE	4q21.3	cg25428494	-0.711446450679181	1.6598986905973e-06

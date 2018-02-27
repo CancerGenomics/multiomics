@@ -471,6 +471,7 @@ shinyServer(function(input, output, session) {
                                                       r.minimium = methThreshold(), 
                                                       pearsons.method = methPearsonsMethod(), 
                                                       inc.progress = T)
+
     }
     return (sharedValues$methMrnaCorrelations)
   }), quoted = T)  
