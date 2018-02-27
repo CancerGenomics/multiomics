@@ -15,9 +15,34 @@ shinyUI(
       sidebarLayout(
       
         sidebarPanel(
-          fileInput("mrnaFile", accept=c("text/csv"), label=h4("mRNA profile")),
-          fileInput("mirnaFile",accept=c("text/csv"), label=h4("miRNA profile")),
-          fileInput("mirna.survivalFile", label=h4("Follow-up data")),
+          fileInput("mrnaFile", accept=c("text/csv"), label=h4("mRNA profile",style="display: inline-block;",
+                                                               actionLink(inputId="mrnaFileHelp", label="", 
+                                                                          icon = icon("question-sign",lib = "glyphicon")),
+                                                               bsModal("mrnaFileHelpModal", title = "mRNA file format", 
+                                                                       trigger = "mrnaFileHelp",size="large",
+                                                                       img(src="testModal.png", width = "100%")
+                                                                       )
+                                                               )
+                    ),
+          fileInput("mirnaFile",accept=c("text/tsv"), label=h4("miRNA profile",style="display: inline-block;",
+                                                               actionLink(inputId="mirnaFileHelp", label="", 
+                                                                          icon = icon("question-sign",lib = "glyphicon")),
+                                                               bsModal("mirnaFileHelpModal", title = "miRNA file format", 
+                                                                       trigger = "mirnaFileHelp",size="large",
+                                                                       p("File must have this information structure, and columns must be delimited by the tab character"),
+                                                                       img(src="mirna_format.png", width = "100%")
+                                                                       )
+                                                               )
+                    ),
+          fileInput("mirna.survivalFile", label=h4("Follow-up data",style="display: inline-block;",
+                                                   actionLink(inputId="followUpFileHelp", label="", 
+                                                              icon = icon("question-sign",lib = "glyphicon")),
+                                                   bsModal("followUpFileHelpModal", title = "follow up data file format", 
+                                                           trigger = "followUpFileHelp",size="large",
+                                                           img(src="testModal.png", width = "100%")
+                                                           )
+                                                   )
+                    ),
           hidden(selectInput("mirna.survival.column.name","Survival column name",NULL)),
           hidden(selectInput("mirna.event.column.name","Event column name",NULL)),
           sliderInput("thresholdSlider", label=h4("Correlation coefficient"), 
