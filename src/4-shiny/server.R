@@ -589,7 +589,13 @@ shinyServer(function(input, output, session) {
                      if(input$xenaCohorts != "(unassigned)"){
                        print(paste("Searching datesets for", input$xenaCohorts, sep=" "))
                        ds <- datasets(XenaHub(cohorts = input$xenaCohorts))
-                       updateSelectInput(session, "xenaCohortDatasets","Cohort datasets", choices = ds)
+                       
+                       filtered <- c()
+                       filtered <- ds[grep("RNA",ds)]
+                       filtered <- append(filtered,ds[grep("CopyNumber",ds)])
+                       filtered <- append(filtered,ds[grep("Meth",ds)])
+
+                       updateSelectInput(session, "xenaCohortDatasets","Cohort datasets", choices = filtered)
                        shinyjs::show("xenaCohortDatasets")
                      } else {
                        ds <- c("")
