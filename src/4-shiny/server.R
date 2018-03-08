@@ -22,7 +22,6 @@ shinyServer(function(input, output, session) {
   ########################## MIRNA - MRNA PIPELINE TAB
   ###########################################################################
   
-  #server>>observeEvent -> server>>runMRNAMiRNACorrelation -> API_multiomics_for_finding_mirnas_regulating_mrnas>>CalculateCorrelationsMirnaMrna
   observeEvent(input$runMRNAMiRNACorrelation, { 
     if(!is.null(input$mrnaFile) && !is.null(input$mirnaFile)) {
       
@@ -105,24 +104,31 @@ shinyServer(function(input, output, session) {
 	      }
 	    }
 
-      sharedValues$fromButton <- F      
+      sharedValues$fromButton <- F  
       
     } else {
-      print("No hay archivos cargados")
+      openGeneralInformationMessage("You must select at least mRNA and miRNA file")
+      print("No hay archivos cargados para el pipeline de mirna")
     }
     
   })
+  
+  openGeneralInformationMessage <- function(message) {
+    output$generalMessageOutputText <- renderText(message)
+    shinyBS::toggleModal(session = session, modalId = "generalMessageModal", toggle = "open")
+    
+  }
 
   mrnaExpressionData <- reactive({
     print("mrnaExpressionData")
-    readMrnaExpressionFile(input$mrnaFile$datapath)
+    return(readMrnaExpressionFile(input$mrnaFile$datapath))
   })
   
   mirnaExpressionData <- reactive({
     print("mirnaExpressionData")
     readMirnaExpressionFile(input$mirnaFile$datapath)
-  })
-  
+  })  
+
   threshold <- reactive({
   	input$thresholdSlider
   })
@@ -134,21 +140,22 @@ shinyServer(function(input, output, session) {
  correlations <- reactive(quote({
     if(sharedValues$fromButton) {
 	  sharedValues$correlations <- CalculateCorrelationsMirnaMrna(
-			                       mrnaExpressionData(), mirnaExpressionData(),
-		   						   output.path="~/", 
-								   output.file.name = paste(input$mirnaFile$name,"-",input$mrnaFile$name,"-outputFile.csv", sep = ""),
-								   r.minimium = threshold(), inc.progress = T, 
-								   pearsons.method = pearsonsMethod())
+	    mrnaExpressionData(), mirnaExpressionData(),
+	    output.path="~/", 
+	    output.file.name = paste(input$mirnaFile$name,"-",
+	                             input$mrnaFile$name,"-outputFile.csv", sep = ""),
+	    r.minimium = threshold(), inc.progress = T, 
+	    pearsons.method = pearsonsMethod())
  	  } 
 	  return (sharedValues$correlations)
   }), quoted = T)
- 
 
+ 
   runMRNAMiRNACorrelation <- function() { 
           withProgress(message = 'Please stand by...', 
           detail = "calculating correlation", 
           min=0, max=1, {
-            
+       
        #Checks if both files has the same samples in the same order. If not, aborts the execution.
        print("Checking if both files has the same samples in the same order...")
        suppressWarnings(checkSamplesFormIRNArnaCorrelation(mrnaExpressionData(), mirnaExpressionData(), 1))
@@ -198,6 +205,60 @@ shinyServer(function(input, output, session) {
     shinyjs::show("mirna.event.column.name")
 
   })
+  
+  validatemirnaExpressionData <- function(datapath) {
+    result <- tryCatch({
+      readMirnaExpressionFile(datapath)
+      result <- T
+    }, error = function(e) {
+      result <- F
+    })
+    return(result)
+  }  
+  
+  observeEvent(input$mirnaFile,{
+    valid <- validatemirnaExpressionData(input$mirnaFile$datapath)
+    if(!valid){
+      shinyjs::show(id="mirnaMirnaFileErrorMsg")
+      sharedValues$mirna.matrix.to.render <- NULL
+      output$result <- DT::renderDataTable(sharedValues$mirna.matrix.to.render, selection = 'single')      
+      shinyjs::hide(id="downloadMrnaMirnaResult")
+      shinyjs::hide(id="mirnaClip")
+    } else {
+      shinyjs::hide(id="mirnaMirnaFileErrorMsg")
+    }
+    shiny::validate(
+      need(valid,"miRNA file has a wrong format, please verify the file and retry")
+    )
+    
+  })  
+  
+  validatemrnaExpressionData <- function(datapath) {
+    result <- tryCatch({
+      readMrnaExpressionFile(datapath)
+      result <- T
+    }, error = function(e) {
+      result <- F
+    })
+    return(result)
+  }
+  
+  observeEvent(input$mrnaFile,{
+    valid <- validatemrnaExpressionData(input$mrnaFile$datapath)
+    if(!valid){
+      shinyjs::show(id="mirnaMrnaFileErrorMsg")
+      sharedValues$mirna.matrix.to.render <- NULL
+      output$result <- DT::renderDataTable(sharedValues$mirna.matrix.to.render, selection = 'single')      
+      shinyjs::hide(id="downloadMrnaMirnaResult")
+      shinyjs::hide(id="mirnaClip")
+    } else {
+      shinyjs::hide(id="mirnaMrnaFileErrorMsg")
+    }
+    shiny::validate(
+      need(valid,"mRNA file has a wrong format, please verify the file and retry")
+    )     
+    
+  })  
   
   output$downloadMrnaMirnaResult <- downloadHandler(
     filename = function() { 
@@ -319,7 +380,7 @@ shinyServer(function(input, output, session) {
 	  withProgress(message = 'Please stand by...', 
 			  detail = "calculating correlation", 
 			  min=0, max=1, {
-				  
+
 				  if(!is.null(input$cnv.mrnaFile) && !is.null(input$cnv.cnvFile)) {
 					  
 					  print("Preparing...")
@@ -371,7 +432,8 @@ shinyServer(function(input, output, session) {
 					  }      
 					  sharedValues$fromButton <- F
 				  } else {
-					  print("No hay archivos cargados")
+				    openGeneralInformationMessage("You must select at least CNV and miRNA file")
+					  print("No hay archivos cargados para el pipeline de CNV")
 				  }
 				  
     })
@@ -506,7 +568,7 @@ shinyServer(function(input, output, session) {
     withProgress(message = 'Please stand by...', 
                  detail = "calculating correlation", 
                  min=0, max=1, {
-                   
+            
       if(!is.null(input$meth.mrnaFile) && !is.null(input$meth.methFile)) {
                      
         print("Preparing...")
@@ -532,7 +594,8 @@ shinyServer(function(input, output, session) {
         }
         sharedValues$fromButton <- F
       } else {
-        print("No hay archivos cargados")
+        openGeneralInformationMessage("You must select at least Methylation and miRNA file")
+        print("No hay archivos cargados para el pipeline de meth")
       }
 
     })    

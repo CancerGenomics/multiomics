@@ -7,6 +7,12 @@ shinyUI(
   rclipboardSetup(),
     
   titlePanel("multiOmics"),
+
+  # dialogo modal para mensajes generales          
+  bsModal("generalMessageModal", title = "multiOmics message", 
+          size="large", trigger = "",
+          textOutput("generalMessageOutputText")
+  ),
   
   tabsetPanel(type = "pills", 
 
@@ -15,27 +21,44 @@ shinyUI(
       sidebarLayout(
       
         sidebarPanel(
-          fileInput("mrnaFile", accept=c("text/csv","text/tsv"), 
-                    label=h4("mRNA profile",style="display: inline-block;",
-                                                               actionLink(inputId="mrnaFileHelp", label="", 
-                                                                          icon = icon("question-sign",lib = "glyphicon")),
-                                                               bsModal("mrnaFileHelpModal", title = "mRNA file format", 
-                                                                       trigger = "mrnaFileHelp",size="large",
-                                                                       p("File must have this information structure, and columns must be delimited by the tab character"),
-                                                                       img(src="mrna_format.png", width = "100%")
-                                                                       )
-                                                               )
+
+
+          fileInput("mrnaFile", label=h4("mRNA profile",style="display: inline-block;",
+                                         actionLink(inputId="mrnaFileHelp", label="", 
+                                                    icon = icon("question-sign",lib = "glyphicon")),
+                                         bsModal("mrnaFileHelpModal", title = "mRNA file format", 
+                                                 trigger = "mrnaFileHelp",size="large",
+                                                 p("File must have this information structure, and columns must be delimited by the tab character"),
+                                                 img(src="mrna_format.png", width = "100%")
+                                                 )
+                                         ),
+                    
                     ),
-          fileInput("mirnaFile",accept=c("text/tsv"), label=h4("miRNA profile",style="display: inline-block;",
-                                                               actionLink(inputId="mirnaFileHelp", label="", 
-                                                                          icon = icon("question-sign",lib = "glyphicon")),
-                                                               bsModal("mirnaFileHelpModal", title = "miRNA file format", 
-                                                                       trigger = "mirnaFileHelp",size="large",
-                                                                       p("File must have this information structure, and columns must be delimited by the tab character"),
-                                                                       img(src="mirna_format.png", width = "100%")
-                                                                       )
-                                                               )
+          tags$div(id="mirnaMrnaFileErrorMsgDiv",
+                   shinyjs::hidden(
+                     p(id="mirnaMrnaFileErrorMsg",
+                       class="alert alert-danger",
+                       "mRNA file has a wrong format, please verify the file and re-run the pipeline")
+                   )
+          ),
+          
+          fileInput("mirnaFile", label=h4("miRNA profile",style="display: inline-block;",
+                                          actionLink(inputId="mirnaFileHelp", label="", 
+                                                     icon = icon("question-sign",lib = "glyphicon")),
+                                          bsModal("mirnaFileHelpModal", title = "miRNA file format", 
+                                                  trigger = "mirnaFileHelp",size="large",
+                                                  p("File must have this information structure, and columns must be delimited by the tab character"),
+                                                  img(src="mirna_format.png", width = "100%")
+                                                  )
+                                          )
                     ),
+          tags$div(id="mirnaMirnaFileErrorMsgDiv",
+                   shinyjs::hidden(
+                     p(id="mirnaMirnaFileErrorMsg",
+                       class="alert alert-danger",
+                       "miRNA file has a wrong format, please verify the file and re-run the pipeline")
+                   )
+          ),
           fileInput("mirna.survivalFile", label=h4("Follow-up data",style="display: inline-block;",
                                                    actionLink(inputId="followUpFileHelp", label="", 
                                                               icon = icon("question-sign",lib = "glyphicon")),
@@ -46,6 +69,13 @@ shinyUI(
                                                            )
                                                    )
                     ),
+          tags$div(id="mirnaSurvivalFileErrorMsgDiv",
+                   shinyjs::hidden(
+                     p(id="mirnaSurvivalFileErrorMsg",
+                       class="alert alert-danger",
+                       "Follow up file has a wrong format, please verify the file and re-run the pipeline")
+                   )
+          ),
           hidden(selectInput("mirna.survival.column.name","Survival column name",NULL)),
           hidden(selectInput("mirna.event.column.name","Event column name",NULL)),
           sliderInput("thresholdSlider", label=h4("Correlation coefficient"), 
@@ -78,26 +108,40 @@ shinyUI(
       sidebarLayout(
 					
         sidebarPanel(
-          fileInput("cnv.mrnaFile", accept=c("text/csv"), label=h4("mRNA profile",style="display: inline-block;",
-                                                                   actionLink(inputId="cnvMrnaFileHelp", label="", 
-                                                                              icon = icon("question-sign",lib = "glyphicon")),
-                                                                   bsModal("cnvMrnaFileHelpModal", title = "mRNA file format", 
-                                                                           trigger = "cnvMrnaFileHelp",size="large",
-                                                                           p("File must have this information structure, and columns must be delimited by the tab character"),
-                                                                           img(src="mrna_format.png", width = "100%")
-                                                                           )
-                                                                   )
+          fileInput("cnv.mrnaFile", label=h4("mRNA profile",style="display: inline-block;",
+                                             actionLink(inputId="cnvMrnaFileHelp", label="", 
+                                                        icon = icon("question-sign",lib = "glyphicon")),
+                                             bsModal("cnvMrnaFileHelpModal", title = "mRNA file format", 
+                                                     trigger = "cnvMrnaFileHelp",size="large",
+                                                     p("File must have this information structure, and columns must be delimited by the tab character"),
+                                                     img(src="mrna_format.png", width = "100%")
+                                                     )
+                                             )
                     ),
-          fileInput("cnv.cnvFile",accept=c("text/csv"), label=h4("CNV profile",style="display: inline-block;",
-                                                                 actionLink(inputId="cnvFileHelp", label="", 
-                                                                            icon = icon("question-sign",lib = "glyphicon")),
-                                                                 bsModal("cnvFileHelpModal", title = "cnv file format", 
-                                                                         trigger = "cnvFileHelp",size="large",
-                                                                         p("File must have this information structure, and columns must be delimited by the tab character"),
-                                                                         img(src="cnv_format.png", width = "100%")
-                                                                         )
-                                                                 )
+          tags$div(id="cnvMrnaFileErrorMsgDiv",
+                   shinyjs::hidden(
+                     p(id="cnvMrnaFileErrorMsg",
+                       class="alert alert-danger",
+                       "mRNA file has a wrong format, please verify the file and re-run the pipeline")
+                   )
+          ),
+          fileInput("cnv.cnvFile", label=h4("CNV profile",style="display: inline-block;",
+                                            actionLink(inputId="cnvFileHelp", label="", 
+                                                       icon = icon("question-sign",lib = "glyphicon")),
+                                            bsModal("cnvFileHelpModal", title = "cnv file format", 
+                                                    trigger = "cnvFileHelp",size="large",
+                                                    p("File must have this information structure, and columns must be delimited by the tab character"),
+                                                    img(src="cnv_format.png", width = "100%")
+                                                    )
+                                            )
                     ),
+          tags$div(id="cnvFileErrorMsgDiv",
+                   shinyjs::hidden(
+                     p(id="cnvFileErrorMsg",
+                       class="alert alert-danger",
+                       "CNV file has a wrong format, please verify the file and re-run the pipeline")
+                   )
+          ),
           fileInput("cnv.survivalFile", label=h4("Follow-up data",style="display: inline-block;",
                                                  actionLink(inputId="cnvFollowUpFileHelp", label="", 
                                                             icon = icon("question-sign",lib = "glyphicon")),
@@ -108,6 +152,13 @@ shinyUI(
                                                          )
                                                  )
                     ),
+          tags$div(id="cnvSurvivalFileErrorMsgDiv",
+                   shinyjs::hidden(
+                     p(id="cnvSurvivalFileErrorMsg",
+                       class="alert alert-danger",
+                       "Follow up file has a wrong format, please verify the file and re-run the pipeline")
+                   )
+          ),
           hidden(selectInput("cnv.survival.column.name","Survival column name",NULL)),
           hidden(selectInput("cnv.event.column.name","Event column name",NULL)),
           sliderInput("cnv.thresholdSlider", label=h4("Correlation coefficient"), 
@@ -134,26 +185,40 @@ shinyUI(
              sidebarLayout(
                
                sidebarPanel(
-                 fileInput("meth.mrnaFile", accept=c("text/csv"), label=h4("mRNA profile",style="display: inline-block;",
-                                                                           actionLink(inputId="methMrnaFileHelp", label="", 
-                                                                                      icon = icon("question-sign",lib = "glyphicon")),
-                                                                           bsModal("methMrnaFileHelpModal", title = "mRNA file format", 
-                                                                                   trigger = "methMrnaFileHelp",size="large",
-                                                                                   p("File must have this information structure, and columns must be delimited by the tab character"),
-                                                                                   img(src="mrna_format.png", width = "100%")
-                                                                                   )
-                                                                           )
+                 fileInput("meth.mrnaFile", label=h4("mRNA profile",style="display: inline-block;",
+                                                     actionLink(inputId="methMrnaFileHelp", label="", 
+                                                                icon = icon("question-sign",lib = "glyphicon")),
+                                                     bsModal("methMrnaFileHelpModal", title = "mRNA file format", 
+                                                             trigger = "methMrnaFileHelp",size="large",
+                                                             p("File must have this information structure, and columns must be delimited by the tab character"),
+                                                             img(src="mrna_format.png", width = "100%")
+                                                             )
+                                                     )
                            ),
-                 fileInput("meth.methFile",accept=c("text/csv"), label=h4("Methylation profile",style="display: inline-block;",
-                                                                          actionLink(inputId="methFileHelp", label="", 
-                                                                                     icon = icon("question-sign",lib = "glyphicon")),
-                                                                          bsModal("methFileHelpModal", title = "Methylation file format", 
-                                                                                  trigger = "methFileHelp",size="large",
-                                                                                  p("File must have this information structure, and columns must be delimited by the tab character"),
-                                                                                  img(src="meth_format.png", width = "100%")
-                                                                                  )
-                                                                          )
+                 tags$div(id="methMrnaFileErrorMsgDiv",
+                          shinyjs::hidden(
+                            p(id="methMrnaFileErrorMsg",
+                              class="alert alert-danger",
+                              "mRNA file has a wrong format, please verify the file and re-run the pipeline")
+                          )
+                 ),
+                 fileInput("meth.methFile", label=h4("Methylation profile",style="display: inline-block;",
+                                                     actionLink(inputId="methFileHelp", label="", 
+                                                                icon = icon("question-sign",lib = "glyphicon")),
+                                                     bsModal("methFileHelpModal", title = "Methylation file format", 
+                                                             trigger = "methFileHelp",size="large",
+                                                             p("File must have this information structure, and columns must be delimited by the tab character"),
+                                                             img(src="meth_format.png", width = "100%")
+                                                             )
+                                                     )
                            ),
+                 tags$div(id="methFileErrorMsgDiv",
+                          shinyjs::hidden(
+                            p(id="methFileErrorMsg",
+                              class="alert alert-danger",
+                              "Methylation file has a wrong format, please verify the file and re-run the pipeline")
+                          )
+                 ),
                  # TODO habria que tomar los choices de las plataformas disponibles en getMethylationPlatformNames()
                  selectInput("meth.platform.select", label = h4("Platform"), choices = c("HumanMethylation450 BeadChip")),
                  sliderInput("meth.thresholdSlider", label=h4("Correlation coefficient"), 
