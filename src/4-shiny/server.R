@@ -456,6 +456,50 @@ shinyServer(function(input, output, session) {
     
   })  
   
+  validateCnvExpressionData <- function(datapath) {
+    result <- tryCatch({
+      readCNVFile(datapath)
+      result <- T
+    }, error = function(e) {
+      result <- F
+    })
+    return(result)
+  }  
+  
+  observeEvent(input$cnv.cnvFile,{
+    valid <- validateCnvExpressionData(input$cnv.cnvFile$datapath)
+    if(!valid){
+      shinyjs::show(id="cnvFileErrorMsg")
+      sharedValues$cnv.matrix.to.render <- NULL
+      output$MRNACNVResult <- DT::renderDataTable(sharedValues$cnv.matrix.to.render, selection = 'single')      
+      shinyjs::hide(id="downloadMrnaCNVResult")
+      shinyjs::hide(id="cnvClip")
+    } else {
+      shinyjs::hide(id="cnvFileErrorMsg")
+    }
+    shiny::validate(
+      need(valid,"CNV file has a wrong format, please verify the file and retry")
+    )
+    
+  })    
+  
+  observeEvent(input$cnv.mrnaFile,{
+    valid <- validatemrnaExpressionData(input$cnv.mrnaFile$datapath)
+    if(!valid){
+      shinyjs::show(id="cnvMrnaFileErrorMsg")
+      sharedValues$cnv.matrix.to.render <- NULL
+      output$MRNACNVResult <- DT::renderDataTable(sharedValues$cnv.matrix.to.render, selection = 'single')      
+      shinyjs::hide(id="downloadMrnaCNVResult")
+      shinyjs::hide(id="cnvClip")
+    } else {
+      shinyjs::hide(id="cnvMrnaFileErrorMsg")
+    }
+    shiny::validate(
+      need(valid,"mRNA file has a wrong format, please verify the file and retry")
+    )     
+    
+  })   
+  
   output$cnv.correlationPlot <- renderPlot({
     if(!is.null(input$MRNACNVResult_rows_selected)){
       selected.gene <- cnvMrnaCorrelations()[input$MRNACNVResult_rows_selected,1]
@@ -600,6 +644,53 @@ shinyServer(function(input, output, session) {
 
     })    
   }
+  
+  
+  validateMethExpressionData <- function(datapath) {
+    result <- tryCatch({
+      readMethylationFile(datapath)
+      result <- T
+    }, error = function(e) {
+      result <- F
+    })
+    return(result)
+  }  
+  
+  observeEvent(input$meth.methFile,{
+    valid <- validateCnvExpressionData(input$meth.methFile$datapath)
+    if(!valid){
+      shinyjs::show(id="methFileErrorMsg")
+      sharedValues$meth.matrix.to.render <- NULL
+      output$MRNAMethResult <- DT::renderDataTable(sharedValues$meth.matrix.to.render, selection = 'single')      
+      shinyjs::hide(id="downloadMrnaMethResult")
+      shinyjs::hide(id="methClip")
+    } else {
+      shinyjs::hide(id="methFileErrorMsg")
+    }
+    shiny::validate(
+      need(valid,"Methylation file has a wrong format, please verify the file and retry")
+    )
+    
+  })    
+  
+  observeEvent(input$meth.mrnaFile,{
+    valid <- validatemrnaExpressionData(input$meth.mrnaFile$datapath)
+    if(!valid){
+      shinyjs::show(id="methMrnaFileErrorMsg")
+      sharedValues$meth.matrix.to.render <- NULL
+      output$MRNAMethResult <- DT::renderDataTable(sharedValues$meth.matrix.to.render, selection = 'single')      
+      shinyjs::hide(id="downloadMrnaMethResult")
+      shinyjs::hide(id="methClip")
+    } else {
+      shinyjs::hide(id="methMrnaFileErrorMsg")
+    }
+    shiny::validate(
+      need(valid,"mRNA file has a wrong format, please verify the file and retry")
+    )     
+    
+  })   
+  
+  
   
   output$downloadMrnaMethResult <- downloadHandler(
     filename = function() { 
