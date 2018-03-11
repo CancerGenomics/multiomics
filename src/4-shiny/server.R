@@ -6,7 +6,7 @@ shinyServer(function(input, output, session) {
   sharedValues <- reactiveValues(fromButton=F,correlations="",correlationsStep2="",
                                  mirna.matrix.to.render="",cnvMrnaCorrelations="",
                                  cnv.matrix.to.render="", meth.matrix.to.render="",
-                                 methMrnaCorrelations="")
+                                 methMrnaCorrelations="", xena.datasets="")
   
   
   geneListToClipboard <- function(gene.list){
@@ -742,23 +742,32 @@ shinyServer(function(input, output, session) {
                      #print(input$xenaCohorts)
                      if(input$xenaCohorts != "(unassigned)"){
                        print(paste("Searching datesets for", input$xenaCohorts, sep=" "))
-                       ds <- datasets(XenaHub(cohorts = input$xenaCohorts))
-                       
-                       filtered <- c()
-                       filtered <- ds[grep("RNA",ds)]
-                       filtered <- append(filtered,ds[grep("CopyNumber",ds)])
-                       filtered <- append(filtered,ds[grep("Meth",ds)])
-
-                       updateSelectInput(session, "xenaCohortDatasets","Cohort datasets", choices = filtered)
+                       sharedValues$xena.datasets <- datasets(XenaHub(cohorts = input$xenaCohorts))
                        shinyjs::show("xenaCohortDatasets")
+                       shinyjs::show("xenaCohortDatasetsFilter")
                      } else {
-                       ds <- c("")
-                       updateSelectInput(session, "xenaCohortDatasets","Cohort datasets", choices = ds)
+                       sharedValues$xena.datasets <- c("")
                        shinyjs::hide("xenaCohortDatasets")
+                       shinyjs::hide("xenaCohortDatasetsFilter")
                      }
+                     updateSelectInput(session, "xenaCohortDatasets","Cohort datasets", choices = sharedValues$xena.datasets)
+                     updateSelectInput(session, "xenaCohortDatasetsFilter",selected = "All")
                    }
                  })   
   })   
+  
+  observeEvent(input$xenaCohortDatasetsFilter, {  
+
+    if(!is.null(input$xenaCohorts)) {
+      filtered <- sharedValues$xena.datasets
+      if((input$xenaCohortDatasetsFilter != "All")) {
+        filtered <- filtered[grep(input$xenaCohortDatasetsFilter,filtered)]
+      }
+    
+      updateSelectInput(session, "xenaCohortDatasets","Cohort datasets", choices = filtered)
+    }
+  })
+  
   
   observeEvent(input$xenaCohortDatasets, {  
     print("Update datasets")

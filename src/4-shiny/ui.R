@@ -265,7 +265,10 @@ shinyUI(
                   selectInput("xenaCohorts","XenaHub available cohorts",NULL, size = 30, selectize = F)
                 ),
                 column(6,
-                  hidden(selectInput("xenaCohortDatasets","Selected cohort datasets",NULL, size = 30,selectize = F))
+                       hidden(selectInput("xenaCohortDatasetsFilter","Filter datasets",
+                                          c("All","miRNA","RNA","CopyNumber","Methylation"),
+                                          selected = "All")),
+                       hidden(selectInput("xenaCohortDatasets","Selected cohort datasets",NULL, size = 26,selectize = F))
                 )
               )
             ) 
