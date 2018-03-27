@@ -32,6 +32,10 @@ biocLite("survcomp")
 biocLite("org.Hs.eg.db")  
 biocLite("devtools")  
 biocLite("mtmorgan/xenar")  
+install.packages("reshape2")
+source("http://bioconductor.org/biocLite.R") 
+biocLite(c("AnnotationDbi", "impute", "GO.db", "preprocessCore")) 
+install.packages("WGCNA")
 ```
 
 ### Second, just run multiOmics!
@@ -42,7 +46,7 @@ In order to run this application from RStudio you can execute (after installing 
 
 ``` R
 library("shiny")  
-runGitHub("multiomics", "cancergenomics", subdir = "src/4-shiny/", ref = "multiomics-0.0.2-beta.13")
+runGitHub("multiomics", "cancergenomics", subdir = "src/4-shiny/", ref = "multiomics-0.0.2-beta.14")
 ```
 
 ### Running cases studies for each pipeline

@@ -128,7 +128,7 @@ CalculateCorrelationsMirnaMrnaUsingWCGNA <- function(expression, mirna, output.p
   
   temp<-merge(cor.melt, p.melt, by=c("Gen_symbol","mature_mirna_id"))
   res<-merge(temp, padj.melt,  by=c("Gen_symbol","mature_mirna_id"))
-  res<-cbind(res, paste(res[,1], res[,2]), sep="---")
+  res<-cbind(res, paste(res[,1], res[,2], sep="---"))
   
   file.path<-paste(output.path, output.file.name, sep="")
   write.table(res, file.path, sep="\t", row.names=FALSE, 
