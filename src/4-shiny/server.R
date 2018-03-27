@@ -36,7 +36,7 @@ shinyServer(function(input, output, session) {
         runMultimirAnalisys()
         ###MDB: 26/2/2018 - P.ADJUST
         #colnames(sharedValues$correlationsStep2) <- c("Gene","Mature miRNA","miRNA-mRNA correlation","p-value","miRNA db","Predicted score","PubMed ID")
-        colnames(sharedValues$correlationsStep2) <- c("Gene","Mature miRNA","miRNA-mRNA correlation","p-value", "adj-p-value","id", "miRNA db","Predicted score","PubMed ID")
+        colnames(sharedValues$correlationsStep2) <- c("Gene","Mature miRNA","miRNA-mRNA correlation","p-value", "adj-p-value", "miRNA db","Predicted score","PubMed ID")
         
         sharedValues$mirna.matrix.to.render <- sharedValues$correlationsStep2
       } else {
@@ -44,7 +44,7 @@ shinyServer(function(input, output, session) {
         
         ###MDB: 26/2/2018 - P.ADJUST
         #colnames(sharedValues$correlations) <- c("Gene","Mature miRNA","miRNA-mRNA correlation","p-value")
-        colnames(sharedValues$correlations) <- c("Gene","Mature miRNA","miRNA-mRNA correlation","p-value", "adj-p-value","id")
+        colnames(sharedValues$correlations) <- c("Gene","Mature miRNA","miRNA-mRNA correlation","p-value", "adj-p-value")
         
         sharedValues$mirna.matrix.to.render <- sharedValues$correlations
       }
@@ -60,7 +60,7 @@ shinyServer(function(input, output, session) {
         if(input$miRNA.runMultimir) {
           ###MDB: 26/2/2018 - P.ADJUST
           #colnames(sharedValues$correlationsStep2) <- c("Gene","Mature miRNA","miRNA-mRNA correlation","p-value","miRNA db","Predicted score","PubMed ID")
-          colnames(sharedValues$correlationsStep2) <- c("Gene","Mature miRNA","miRNA-mRNA correlation","p-value", "adj-p-value","id", "miRNA db","Predicted score","PubMed ID" )
+          colnames(sharedValues$correlationsStep2) <- c("Gene","Mature miRNA","miRNA-mRNA correlation","p-value", "adj-p-value", "miRNA db","Predicted score","PubMed ID" )
           
           # creating a matrix to bind to the actual result        
           tmp <- matrix(nrow = nrow(sharedValues$correlationsStep2), ncol = ncol(progResult)-1 )
@@ -68,7 +68,7 @@ shinyServer(function(input, output, session) {
         } else {
           ###MDB: 26/2/2018 - P.ADJUST
           #colnames(sharedValues$correlations) <- c("Gene","Mature miRNA","miRNA-mRNA correlation","p-value")
-          colnames(sharedValues$correlations) <- c("Gene","Mature miRNA","miRNA-mRNA correlation","p-value","adj-p-value","id")
+          colnames(sharedValues$correlations) <- c("Gene","Mature miRNA","miRNA-mRNA correlation","p-value","adj-p-value")
           
            # creating a matrix to bind to the actual result        
           tmp <- matrix(nrow = nrow(sharedValues$correlations), ncol = ncol(progResult)-1 )

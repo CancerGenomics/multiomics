@@ -76,12 +76,12 @@ mirna.dif.expr.path<-paste(working.path, mirna.dif.expr.path.file, sep="")
 mrna.dif.expr <- readMrnaExpressionFile(mrna.dif.expr.path)
 mirna.dif.expr <- readMirnaExpressionFile(mirna.dif.expr.path)
 
-mrna.dif.expr<-read.table("C:\\desarrollo\\workspaces\\r\\UAI\\multiomics2\\examples\\mRNAvsmiRNA\\mRNA_TCGA_breast.csv", header = T)
-mirna.dif.expr<-read.table("C:\\desarrollo\\workspaces\\r\\UAI\\multiomics2\\examples\\mRNAvsmiRNA\\miRNA_TCGA_breast.csv", header = T)
+#mrna.dif.expr<-read.table("C:\\desarrollo\\workspaces\\r\\UAI\\multiomics2\\examples\\mRNAvsmiRNA\\mRNA_TCGA_breast.csv", header = T)
+#mirna.dif.expr<-read.table("C:\\desarrollo\\workspaces\\r\\UAI\\multiomics2\\examples\\mRNAvsmiRNA\\miRNA_TCGA_breast.csv", header = T)
 
 #Checks if both files has the same samples. If not, aborts the execution.
 suppressWarnings(checkSamplesFormIRNArnaCorrelation(mrna.dif.expr, mirna.dif.expr, 1))
-library("propagate")
+
 #calculated <- CalculateCorrelationsMirnaMrnaUsingBigCor(mrna.dif.expr,mirna.dif.expr, working.path, 
  #                              output.file.name=maturemirna.x.mrna.correlation.file.name,
   #                             r.minimium=0.8)

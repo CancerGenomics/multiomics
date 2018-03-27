@@ -72,7 +72,7 @@ CalculateCorrelationsMirnaMrnaUsingWCGNA <- function(expression, mirna, output.p
   
   ###MDB: 26/2/2018 
   #Columns are: "Gen_symbol","mature_mirna_id","Mirna_Mrna_Correlation","p_value_Of_Mirna_Mrna_Correlation", "p_value_fdr_adjustedMirna_Mrna_Correlation", "ID"
-  num.of.result.columns<-6
+  num.of.result.columns<-5
   position.of.adjusted.p.value<-5
   
   ####Number of rows to evaluate (number of mrnas * number of mirnas)
@@ -82,7 +82,7 @@ CalculateCorrelationsMirnaMrnaUsingWCGNA <- function(expression, mirna, output.p
   
   # The result matix is created
   res <- matrix(nrow=total.rows,ncol=num.of.result.columns)
-  colnames(res)<-(c("Gen_symbol","mature_mirna_id","Mirna_Mrna_Correlation","p_value_Of_Mirna_Mrna_Correlation", "p_value_fdr_adjustedMirna_Mrna_Correlation", "ID"))
+  colnames(res)<-(c("Gen_symbol","mature_mirna_id","Mirna_Mrna_Correlation","p_value_Of_Mirna_Mrna_Correlation", "p_value_fdr_adjustedMirna_Mrna_Correlation"))
   
   print("Start process!")
   
@@ -128,7 +128,7 @@ CalculateCorrelationsMirnaMrnaUsingWCGNA <- function(expression, mirna, output.p
   
   temp<-merge(cor.melt, p.melt, by=c("Gen_symbol","mature_mirna_id"))
   res<-merge(temp, padj.melt,  by=c("Gen_symbol","mature_mirna_id"))
-  res<-cbind(res, paste(res[,1], res[,2], sep="---"))
+  #res<-cbind(res, paste(res[,1], res[,2]), sep="---")
   
   file.path<-paste(output.path, output.file.name, sep="")
   write.table(res, file.path, sep="\t", row.names=FALSE, 
