@@ -133,7 +133,7 @@ shinyServer(function(input, output, session) {
 
  correlations <- reactive(quote({
     if(sharedValues$fromButton) {
-	  sharedValues$correlations <- CalculateCorrelationsMirnaMrna(
+	  sharedValues$correlations <- CalculateCorrelationsMirnaMrnaUsingWCGNA(
 			                       mrnaExpressionData(), mirnaExpressionData(),
 		   						   output.path="~/", 
 								   output.file.name = paste(input$mirnaFile$name,"-",input$mrnaFile$name,"-outputFile.csv", sep = ""),
