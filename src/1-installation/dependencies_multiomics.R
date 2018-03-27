@@ -30,4 +30,8 @@ biocLite("org.Hs.eg.db")
 biocLite("devtools")
 # if you're behind proxy see: http://stackoverflow.com/questions/16740256/error-installing-packages-from-github
 biocLite("mtmorgan/xenar")
+install.packages("reshape2")
+source("http://bioconductor.org/biocLite.R") 
+biocLite(c("AnnotationDbi", "impute", "GO.db", "preprocessCore")) 
+install.packages("WGCNA")
 

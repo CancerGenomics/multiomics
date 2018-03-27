@@ -25,6 +25,8 @@ readMirnaExpressionFile <- function(mirna.file, ncol.for.expression.id=1) {
 }  
 
 
+
+
 #
 # It generates a matrix with selected statistic corresponding p-value and adjusted p-value using fdr.
 # For adjusting, we use the p-values of all evaluations. Not just the ones which passed the selected correlation coefficient. 
@@ -58,12 +60,130 @@ readMirnaExpressionFile <- function(mirna.file, ncol.for.expression.id=1) {
 #   regulation of this gene.
 #	In general, the correlation will be negative because mirnas inhibes the 
 #   arnM translation (yes translation).
-#   
+CalculateCorrelationsMirnaMrnaUsingWCGNA <- function(expression, mirna, output.path="~/", 
+                                                     output.file.name="inputStep2-matureMirnaXmrna.csv",
+                                                     r.minimium=0.7, 
+                                                     pearsons.method = "pearson", 
+                                                     inc.progress = F){
+  
+  ###MDB: 26/3/2018
+  library("WGCNA")
+  library("reshape2")
+  
+  ###MDB: 26/2/2018 
+  #Columns are: "Gen_symbol","mature_mirna_id","Mirna_Mrna_Correlation","p_value_Of_Mirna_Mrna_Correlation", "p_value_fdr_adjustedMirna_Mrna_Correlation", "ID"
+  num.of.result.columns<-6
+  position.of.adjusted.p.value<-5
+  
+  ####Number of rows to evaluate (number of mrnas * number of mirnas)
+  ptm <- proc.time()
+  total.rows=nrow(expression)*nrow(mirna)
+  print(paste("Running pipeline with", r.minimium,"threshold and pearson's method:", pearsons.method, sep=" "))
+  
+  # The result matix is created
+  res <- matrix(nrow=total.rows,ncol=num.of.result.columns)
+  colnames(res)<-(c("Gen_symbol","mature_mirna_id","Mirna_Mrna_Correlation","p_value_Of_Mirna_Mrna_Correlation", "p_value_fdr_adjustedMirna_Mrna_Correlation", "ID"))
+  
+  print("Start process!")
+  
+  #Organize the matrix to keep it in the following format
+  #Mirna or mrna as columns, samples as rows. mirna names o mrna names as column names, and sample names as row names.
+  row.names(expression)<-expression[,1]
+  row.names(mirna)<-mirna[,1]
+  expression<-expression[,2:ncol(expression)]
+  mirna<-mirna[,2:ncol(mirna)]
+  mrnat<-t(expression)
+  mirnat<-t(mirna)
+  mrnatn<-apply(mrnat[2:nrow(mrnat),], 2, as.numeric)
+  mirnatn<-as.numeric(mirnat[2:nrow(mirnat),])
+  
+  #WCGNA correlation
+  cor_pvalueFast <- corAndPvalue(mrnat, mirnat)
+  
+  #correlation result
+  cor<-cor_pvalueFast$cor
+  rownames(cor)<-colnames(mrnat)
+  colnames(cor)<-colnames(mirnat)
+  
+  #p value result
+  p<-cor_pvalueFast$p
+  rownames(p)<-colnames(mrnat)
+  colnames(p)<-colnames(mirnat)
+  
+  #padj result
+  padj = apply(p, MARGIN = 2, FUN = function(p) p.adjust(p, length(p), method = "fdr"))
+  rownames(padj)<-colnames(mrnat)
+  colnames(padj)<-colnames(mirnat)  
+  
+  #TRansform each cell of the matrix into a row in the result matrix.
+  #For each colnmae-rowname, will create a row.
+  cor.melt<-melt(cor)
+  colnames(cor.melt) <- c("Gen_symbol","mature_mirna_id","Mirna_Mrna_Correlation")
+  
+  p.melt<-melt(p)
+  colnames(p.melt) <- c("Gen_symbol","mature_mirna_id","p_value_Of_Mirna_Mrna_Correlation")
+  
+  padj.melt<-melt(padj)
+  colnames(padj.melt) <- c("Gen_symbol","mature_mirna_id","p_value_fdr_adjustedMirna_Mrna_Correlation")
+  
+  temp<-merge(cor.melt, p.melt, by=c("Gen_symbol","mature_mirna_id"))
+  res<-merge(temp, padj.melt,  by=c("Gen_symbol","mature_mirna_id"))
+  res<-cbind(res, paste(res[,1], res[,2]), sep="---")
+  
+  file.path<-paste(output.path, output.file.name, sep="")
+  write.table(res, file.path, sep="\t", row.names=FALSE, 
+              col.names=TRUE, quote=FALSE)
+  print(proc.time() - ptm)
+  
+  return (convertVectorToMatrix(res))
+}
+
+
+
+
+
+#
+# It generates a matrix with selected statistic corresponding p-value and adjusted p-value using fdr.
+# For adjusting, we use the p-values of all evaluations. Not just the ones which passed the selected correlation coefficient. 
+#
+# Input
+#  expression: matrix obtained with readMirnaExpressionFile function
+#  mirna: matrix obtained with readMrnaExpressionFile function
+#  output.path: The folder for output file. 
+#  ncol.for.expression.id: It defines hoy many ID columns has got the file. 
+#                          First one will be take into account to identify the gene or mirna; 
+#                          others will be discarded. The default value is 1.
+#  r.minimium: The minimium value for pearson coefficient for considering the 
+#              correlation between a gene and a mirna.
+#  pearsons.method: Pearson's product moment correlation coefficient.
+#                   Possible values c("pearson", "kendall", "spearman"). Default "pearsons"
+#  inc.progress: when running from shiny, increments progress bar during calculation.
+#
+#  Output
+#	It generates a file with 4 columns: Gen - Mirna - Pearson correlation - p-value 
+#	Pearson correlation indicates if there is or not a correlation between mrna 
+#   expression and mirna expression taking into account all samples. 
+#	If there is a correlation (both expression has similar values in all samples 
+#   (positive correlation) or so different values in all samples (negative values)). 
+#	But how we define if there are enough similar or enough different to say 
+#   there are or there are not (positive or negative) correlation? Using statistics. 
+#   In particular the Pearson method that works exactly for this case: compare 
+#   two vector of values of the same size to check if there is correlation with 
+#   statistical significance.	
+#	It will be considered that both vectors correlates if (r>0.7 with p-value<0.05).
+#   In this case it would be indicate that this mirna participates in the 
+#   regulation of this gene.
+#	In general, the correlation will be negative because mirnas inhibes the 
+#   arnM translation (yes translation).
+#   NOT USED. It was replaced by 
 CalculateCorrelationsMirnaMrna <- function(expression, mirna, output.path="~/", 
                                            output.file.name="inputStep2-matureMirnaXmrna.csv",
                                            r.minimium=0.7, 
 										   pearsons.method = "pearson", 
                                            inc.progress = F){
+  
+
+  
   ###MDB: 26/2/2018 - P.ADJUST
   #Columns are: "Gen_symbol","mature_mirna_id","Mirna_Mrna_Correlation","p_value_Of_Mirna_Mrna_Correlation", "p_value_fdr_adjustedMirna_Mrna_Correlation", "ID"
   num.of.result.columns<-6
@@ -166,6 +286,110 @@ CalculateCorrelationsMirnaMrna <- function(expression, mirna, output.path="~/",
 	
 	return (convertVectorToMatrix(res))
 }
+
+
+
+CalculateCorrelationsMirnaMrnaUsingBigCor <- function(expression, mirna, output.path="~/", 
+                                           output.file.name="inputStep2-matureMirnaXmrna.csv",
+                                           r.minimium=0.7, 
+                                           pearsons.method = "pearson", 
+                                           inc.progress = F){
+  ###MDB: 26/2/2018 - P.ADJUST
+  #Columns are: "Gen_symbol","mature_mirna_id","Mirna_Mrna_Correlation","p_value_Of_Mirna_Mrna_Correlation", "p_value_fdr_adjustedMirna_Mrna_Correlation", "ID"
+  num.of.result.columns<-6
+  position.of.adjusted.p.value<-5
+  ####
+  
+  ptm <- proc.time()
+  total.rows=nrow(expression)*nrow(mirna)
+  print(paste("Running pipeline with", r.minimium, 
+              "threshold and pearson's method:", pearsons.method, sep=" "))
+  
+  # The result matix is created
+  res <- matrix(nrow=total.rows,ncol=num.of.result.columns)
+  colnames(res)<-(c("Gen_symbol","mature_mirna_id","Mirna_Mrna_Correlation","p_value_Of_Mirna_Mrna_Correlation", "p_value_fdr_adjustedMirna_Mrna_Correlation", "ID"))
+  
+  
+  ###MDB: 26/2/2018 - P.ADJUST - Start on 0
+  actual<-0
+  actual.n.correlated<-1
+  print("Start process!")
+  
+  ###MDB: 26/2/2018 - P.ADJUST
+  p.values.all<-c()
+  p.values.positions.of.correlated.pairs<-c()
+  ids<-c()
+  ###
+ 
+  row.names(expression)<-expression[,1]
+  row.names(mirna)<-mirna[,1]
+  expression<-expression[,2:ncol(expression)]
+  mirna<-mirna[,2:ncol(mirna)]
+  mrnat<-t(expression)
+  mirnat<-t(mirna)
+  mrnatn<-apply(mrnat[2:nrow(mrnat),], 2, as.numeric)
+  mirnatn<-as.numeric(mirnat[2:nrow(mirnat),])
+  bigcorres<-bigcor(mrnat, mirnat)
+  
+  df<-as.data.frame(bigcorres[1:nrow(bigcorres), 1:ncol(bigcorres)])
+  
+  df<-cbind(colnames(mrnat),df  )
+  df<-rbind(c("0", colnames(mirnat)),df  )
+  rownames(df)<-c("", colnames(mrnat))
+  colnames(df)<-c("", colnames(mirnat))
+  
+  
+  #apply(df, 2, function(mrna){
+  # i<-0
+  #  for (mirna in colnames(bigcorres)) {
+    ###MDB: 26/2/2018 - P.ADJUST
+  #    print(i)
+  #    i<-i+1
+  #     if (abs(bigcorres[mrna, mirna]) > r.minimium){
+  #      newValue<-c(as.character(mrna), as.character(mirna),bigcorres[mrna, mirna], -9999, -9999, paste(mrna, "<>",mirna, sep=""))
+  #      res[actual.n.correlated,1:num.of.result.columns] <- newValue
+  #      actual.n.correlated<-actual.n.correlated+1
+  #}
+  #}
+  # })
+    
+    
+    
+  
+  
+  bigcorres<-df
+  i<-0
+  for (mrna in rownames(bigcorres)[-1]) {
+   for (mirna in colnames(bigcorres)[-1]) {
+      ###MDB: 26/2/2018 - P.ADJUST
+     print(i)
+     i<-i+1
+     if (abs(as.numeric(bigcorres[mrna, mirna])) > r.minimium){
+       newValue<-c(as.character(mrna), as.character(mirna),bigcorres[mrna, mirna], -9999, -9999, paste(mrna, "<>",mirna, sep=""))
+       res[actual.n.correlated,1:num.of.result.columns] <- newValue
+       actual.n.correlated<-actual.n.correlated+1
+      }
+    res[res[,1]==mrna & res[,2]==mirna, 2]<-bigcorres[mrna, mirna]
+    }
+     }
+  
+  res <- res[c(1:actual.n.correlated-1),c(1:num.of.result.columns)]
+  
+  #if (!(folder.exists(output.path))) {dir.create(output.path)}
+  file.path<-paste(output.path, output.file.name, sep="")
+  write.table(res, file.path, sep="\t", row.names=FALSE, 
+              col.names=TRUE, quote=FALSE)
+  print(proc.time() - ptm)
+  
+  return (convertVectorToMatrix(res))
+}
+
+
+
+
+
+
+
 
 
 #Input

@@ -6,7 +6,7 @@ shinyServer(function(input, output, session) {
   sharedValues <- reactiveValues(fromButton=F,correlations="",correlationsStep2="",
                                  mirna.matrix.to.render="",cnvMrnaCorrelations="",
                                  cnv.matrix.to.render="", meth.matrix.to.render="",
-                                 methMrnaCorrelations="", xena.datasets="")
+                                 methMrnaCorrelations="")
   
   
   geneListToClipboard <- function(gene.list){
@@ -22,6 +22,7 @@ shinyServer(function(input, output, session) {
   ########################## MIRNA - MRNA PIPELINE TAB
   ###########################################################################
   
+  #server>>observeEvent -> server>>runMRNAMiRNACorrelation -> API_multiomics_for_finding_mirnas_regulating_mrnas>>CalculateCorrelationsMirnaMrna
   observeEvent(input$runMRNAMiRNACorrelation, { 
     if(!is.null(input$mrnaFile) && !is.null(input$mirnaFile)) {
       
@@ -104,31 +105,24 @@ shinyServer(function(input, output, session) {
 	      }
 	    }
 
-      sharedValues$fromButton <- F  
+      sharedValues$fromButton <- F      
       
     } else {
-      openGeneralInformationMessage("You must select at least mRNA and miRNA file")
-      print("No hay archivos cargados para el pipeline de mirna")
+      print("No hay archivos cargados")
     }
     
   })
-  
-  openGeneralInformationMessage <- function(message) {
-    output$generalMessageOutputText <- renderText(message)
-    shinyBS::toggleModal(session = session, modalId = "generalMessageModal", toggle = "open")
-    
-  }
 
   mrnaExpressionData <- reactive({
     print("mrnaExpressionData")
-    return(readMrnaExpressionFile(input$mrnaFile$datapath))
+    readMrnaExpressionFile(input$mrnaFile$datapath)
   })
   
   mirnaExpressionData <- reactive({
     print("mirnaExpressionData")
     readMirnaExpressionFile(input$mirnaFile$datapath)
-  })  
-
+  })
+  
   threshold <- reactive({
   	input$thresholdSlider
   })
@@ -139,23 +133,22 @@ shinyServer(function(input, output, session) {
 
  correlations <- reactive(quote({
     if(sharedValues$fromButton) {
-	  sharedValues$correlations <- CalculateCorrelationsMirnaMrna(
-	    mrnaExpressionData(), mirnaExpressionData(),
-	    output.path="~/", 
-	    output.file.name = paste(input$mirnaFile$name,"-",
-	                             input$mrnaFile$name,"-outputFile.csv", sep = ""),
-	    r.minimium = threshold(), inc.progress = T, 
-	    pearsons.method = pearsonsMethod())
+	  sharedValues$correlations <- CalculateCorrelationsMirnaMrnaUsingWCGNA(
+			                       mrnaExpressionData(), mirnaExpressionData(),
+		   						   output.path="~/", 
+								   output.file.name = paste(input$mirnaFile$name,"-",input$mrnaFile$name,"-outputFile.csv", sep = ""),
+								   r.minimium = threshold(), inc.progress = T, 
+								   pearsons.method = pearsonsMethod())
  	  } 
 	  return (sharedValues$correlations)
   }), quoted = T)
-
  
+
   runMRNAMiRNACorrelation <- function() { 
           withProgress(message = 'Please stand by...', 
           detail = "calculating correlation", 
           min=0, max=1, {
-       
+            
        #Checks if both files has the same samples in the same order. If not, aborts the execution.
        print("Checking if both files has the same samples in the same order...")
        suppressWarnings(checkSamplesFormIRNArnaCorrelation(mrnaExpressionData(), mirnaExpressionData(), 1))
@@ -205,60 +198,6 @@ shinyServer(function(input, output, session) {
     shinyjs::show("mirna.event.column.name")
 
   })
-  
-  validatemirnaExpressionData <- function(datapath) {
-    result <- tryCatch({
-      readMirnaExpressionFile(datapath)
-      result <- T
-    }, error = function(e) {
-      result <- F
-    })
-    return(result)
-  }  
-  
-  observeEvent(input$mirnaFile,{
-    valid <- validatemirnaExpressionData(input$mirnaFile$datapath)
-    if(!valid){
-      shinyjs::show(id="mirnaMirnaFileErrorMsg")
-      sharedValues$mirna.matrix.to.render <- NULL
-      output$result <- DT::renderDataTable(sharedValues$mirna.matrix.to.render, selection = 'single')      
-      shinyjs::hide(id="downloadMrnaMirnaResult")
-      shinyjs::hide(id="mirnaClip")
-    } else {
-      shinyjs::hide(id="mirnaMirnaFileErrorMsg")
-    }
-    shiny::validate(
-      need(valid,"miRNA file has a wrong format, please verify the file and retry")
-    )
-    
-  })  
-  
-  validatemrnaExpressionData <- function(datapath) {
-    result <- tryCatch({
-      readMrnaExpressionFile(datapath)
-      result <- T
-    }, error = function(e) {
-      result <- F
-    })
-    return(result)
-  }
-  
-  observeEvent(input$mrnaFile,{
-    valid <- validatemrnaExpressionData(input$mrnaFile$datapath)
-    if(!valid){
-      shinyjs::show(id="mirnaMrnaFileErrorMsg")
-      sharedValues$mirna.matrix.to.render <- NULL
-      output$result <- DT::renderDataTable(sharedValues$mirna.matrix.to.render, selection = 'single')      
-      shinyjs::hide(id="downloadMrnaMirnaResult")
-      shinyjs::hide(id="mirnaClip")
-    } else {
-      shinyjs::hide(id="mirnaMrnaFileErrorMsg")
-    }
-    shiny::validate(
-      need(valid,"mRNA file has a wrong format, please verify the file and retry")
-    )     
-    
-  })  
   
   output$downloadMrnaMirnaResult <- downloadHandler(
     filename = function() { 
@@ -380,7 +319,7 @@ shinyServer(function(input, output, session) {
 	  withProgress(message = 'Please stand by...', 
 			  detail = "calculating correlation", 
 			  min=0, max=1, {
-
+				  
 				  if(!is.null(input$cnv.mrnaFile) && !is.null(input$cnv.cnvFile)) {
 					  
 					  print("Preparing...")
@@ -432,8 +371,7 @@ shinyServer(function(input, output, session) {
 					  }      
 					  sharedValues$fromButton <- F
 				  } else {
-				    openGeneralInformationMessage("You must select at least CNV and miRNA file")
-					  print("No hay archivos cargados para el pipeline de CNV")
+					  print("No hay archivos cargados")
 				  }
 				  
     })
@@ -455,50 +393,6 @@ shinyServer(function(input, output, session) {
     shinyjs::show("cnv.event.column.name")
     
   })  
-  
-  validateCnvExpressionData <- function(datapath) {
-    result <- tryCatch({
-      readCNVFile(datapath)
-      result <- T
-    }, error = function(e) {
-      result <- F
-    })
-    return(result)
-  }  
-  
-  observeEvent(input$cnv.cnvFile,{
-    valid <- validateCnvExpressionData(input$cnv.cnvFile$datapath)
-    if(!valid){
-      shinyjs::show(id="cnvFileErrorMsg")
-      sharedValues$cnv.matrix.to.render <- NULL
-      output$MRNACNVResult <- DT::renderDataTable(sharedValues$cnv.matrix.to.render, selection = 'single')      
-      shinyjs::hide(id="downloadMrnaCNVResult")
-      shinyjs::hide(id="cnvClip")
-    } else {
-      shinyjs::hide(id="cnvFileErrorMsg")
-    }
-    shiny::validate(
-      need(valid,"CNV file has a wrong format, please verify the file and retry")
-    )
-    
-  })    
-  
-  observeEvent(input$cnv.mrnaFile,{
-    valid <- validatemrnaExpressionData(input$cnv.mrnaFile$datapath)
-    if(!valid){
-      shinyjs::show(id="cnvMrnaFileErrorMsg")
-      sharedValues$cnv.matrix.to.render <- NULL
-      output$MRNACNVResult <- DT::renderDataTable(sharedValues$cnv.matrix.to.render, selection = 'single')      
-      shinyjs::hide(id="downloadMrnaCNVResult")
-      shinyjs::hide(id="cnvClip")
-    } else {
-      shinyjs::hide(id="cnvMrnaFileErrorMsg")
-    }
-    shiny::validate(
-      need(valid,"mRNA file has a wrong format, please verify the file and retry")
-    )     
-    
-  })   
   
   output$cnv.correlationPlot <- renderPlot({
     if(!is.null(input$MRNACNVResult_rows_selected)){
@@ -612,7 +506,7 @@ shinyServer(function(input, output, session) {
     withProgress(message = 'Please stand by...', 
                  detail = "calculating correlation", 
                  min=0, max=1, {
-            
+                   
       if(!is.null(input$meth.mrnaFile) && !is.null(input$meth.methFile)) {
                      
         print("Preparing...")
@@ -638,59 +532,11 @@ shinyServer(function(input, output, session) {
         }
         sharedValues$fromButton <- F
       } else {
-        openGeneralInformationMessage("You must select at least Methylation and miRNA file")
-        print("No hay archivos cargados para el pipeline de meth")
+        print("No hay archivos cargados")
       }
 
     })    
   }
-  
-  
-  validateMethExpressionData <- function(datapath) {
-    result <- tryCatch({
-      readMethylationFile(datapath)
-      result <- T
-    }, error = function(e) {
-      result <- F
-    })
-    return(result)
-  }  
-  
-  observeEvent(input$meth.methFile,{
-    valid <- validateCnvExpressionData(input$meth.methFile$datapath)
-    if(!valid){
-      shinyjs::show(id="methFileErrorMsg")
-      sharedValues$meth.matrix.to.render <- NULL
-      output$MRNAMethResult <- DT::renderDataTable(sharedValues$meth.matrix.to.render, selection = 'single')      
-      shinyjs::hide(id="downloadMrnaMethResult")
-      shinyjs::hide(id="methClip")
-    } else {
-      shinyjs::hide(id="methFileErrorMsg")
-    }
-    shiny::validate(
-      need(valid,"Methylation file has a wrong format, please verify the file and retry")
-    )
-    
-  })    
-  
-  observeEvent(input$meth.mrnaFile,{
-    valid <- validatemrnaExpressionData(input$meth.mrnaFile$datapath)
-    if(!valid){
-      shinyjs::show(id="methMrnaFileErrorMsg")
-      sharedValues$meth.matrix.to.render <- NULL
-      output$MRNAMethResult <- DT::renderDataTable(sharedValues$meth.matrix.to.render, selection = 'single')      
-      shinyjs::hide(id="downloadMrnaMethResult")
-      shinyjs::hide(id="methClip")
-    } else {
-      shinyjs::hide(id="methMrnaFileErrorMsg")
-    }
-    shiny::validate(
-      need(valid,"mRNA file has a wrong format, please verify the file and retry")
-    )     
-    
-  })   
-  
-  
   
   output$downloadMrnaMethResult <- downloadHandler(
     filename = function() { 
@@ -742,32 +588,17 @@ shinyServer(function(input, output, session) {
                      #print(input$xenaCohorts)
                      if(input$xenaCohorts != "(unassigned)"){
                        print(paste("Searching datesets for", input$xenaCohorts, sep=" "))
-                       sharedValues$xena.datasets <- datasets(XenaHub(cohorts = input$xenaCohorts))
+                       ds <- datasets(XenaHub(cohorts = input$xenaCohorts))
+                       updateSelectInput(session, "xenaCohortDatasets","Cohort datasets", choices = ds)
                        shinyjs::show("xenaCohortDatasets")
-                       shinyjs::show("xenaCohortDatasetsFilter")
                      } else {
-                       sharedValues$xena.datasets <- c("")
+                       ds <- c("")
+                       updateSelectInput(session, "xenaCohortDatasets","Cohort datasets", choices = ds)
                        shinyjs::hide("xenaCohortDatasets")
-                       shinyjs::hide("xenaCohortDatasetsFilter")
                      }
-                     updateSelectInput(session, "xenaCohortDatasets","Cohort datasets", choices = sharedValues$xena.datasets)
-                     updateSelectInput(session, "xenaCohortDatasetsFilter",selected = "All")
                    }
                  })   
   })   
-  
-  observeEvent(input$xenaCohortDatasetsFilter, {  
-
-    if(!is.null(input$xenaCohorts)) {
-      filtered <- sharedValues$xena.datasets
-      if((input$xenaCohortDatasetsFilter != "All")) {
-        filtered <- filtered[grep(input$xenaCohortDatasetsFilter,filtered)]
-      }
-    
-      updateSelectInput(session, "xenaCohortDatasets","Cohort datasets", choices = filtered)
-    }
-  })
-  
   
   observeEvent(input$xenaCohortDatasets, {  
     print("Update datasets")
