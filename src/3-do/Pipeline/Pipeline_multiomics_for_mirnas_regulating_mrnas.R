@@ -100,7 +100,7 @@ mirnaxrna.path<-paste(working.path, maturemirna.x.mrna.correlation.file.name, se
 genes.x.mirnas.path <- paste(working.path,maturemirna.x.mrna.correlation.file.name, sep="")
 #genes.x.mirnas<-read.table(genes.x.mirnas.path, header=TRUE)
 genes.x.mirnas <- calculated
-best <- keepBestGeneXMirnaAccordingCorrelationAndAddMirnaDbInfo(genes.x.mirnas[1,], working.path, 
+best <- keepBestGeneXMirnaAccordingCorrelationAndAddMirnaDbInfo(genes.x.mirnas, working.path, 
                                                         output.file=just.betters.maturemirna.X.mrna.considering.mirna.databases,
                                                         predicted.cut.off=my.predicted.cut.off)
 
