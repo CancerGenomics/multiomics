@@ -32,6 +32,16 @@ readMrnaExpressionFile <- function(expression.file, ncol.for.expression.id=1) {
 }
 
 
+keepSameColumns <- function(matrix1, matrix2) {
+  cols_to_keep <- intersect(colnames(matrix1)[-1],colnames(matrix2)[-1])
+  matrix1 <- matrix1[,c(colnames(matrix1)[1],cols_to_keep), drop=FALSE]
+  matrix2 <- matrix2[,c(colnames(matrix2)[1],cols_to_keep), drop=FALSE]
+  return (list(matrix1,matrix2))
+  
+}
+
+
+
 #Ejemplo de cohort: TCGA Uterine Carcinosarcoma (UCS)
 #Ejemplo de dataset: TCGA/TCGA.UCS.sampleMap/RPPA
 #Prefijo del xenahub: https://tcga.xenahubs.net/download/

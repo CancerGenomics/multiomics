@@ -46,7 +46,7 @@ working.path=paste(sourceBaseLocation, "/test/examples/miRnas_regulating_mRnas/"
 #	   -The cells has got the expression level of each gene for each sample
 #mrna.dif.expr.path.file="gastrica-mrna-expression-chico.csv"
 #example
-mrna.dif.expr.path.file="mrnas.csv"
+mrna.dif.expr.path.file="mrnas-with-extra-samples.csv"
 
 #The mirna expression data. it must have the following format:
 #      -Row 1: It has the sample labels
@@ -76,15 +76,17 @@ mirna.dif.expr.path<-paste(working.path, mirna.dif.expr.path.file, sep="")
 mrna.dif.expr <- readMrnaExpressionFile(mrna.dif.expr.path)
 mirna.dif.expr <- readMirnaExpressionFile(mirna.dif.expr.path)
 
+#Keep columns which are in both databases
+intersection<-keepSameColumns(mrna.dif.expr,mirna.dif.expr)
+mrna.dif.expr<-(intersection[[1]])
+mirna.dif.expr<-(intersection[[2]])
+
+
+#BIG FILES FOR TESTING
 #mrna.dif.expr<-read.table("C:\\desarrollo\\workspaces\\r\\UAI\\multiomics2\\examples\\mRNAvsmiRNA\\mRNA_TCGA_breast.csv", header = T)
 #mirna.dif.expr<-read.table("C:\\desarrollo\\workspaces\\r\\UAI\\multiomics2\\examples\\mRNAvsmiRNA\\miRNA_TCGA_breast.csv", header = T)
 
-#Checks if both files has the same samples. If not, aborts the execution.
-suppressWarnings(checkSamplesFormIRNArnaCorrelation(mrna.dif.expr, mirna.dif.expr, 1))
 
-#calculated <- CalculateCorrelationsMirnaMrnaUsingBigCor(mrna.dif.expr,mirna.dif.expr, working.path, 
- #                              output.file.name=maturemirna.x.mrna.correlation.file.name,
-  #                             r.minimium=0.8)
 calculated <- CalculateCorrelationsMirnaMrnaUsingWCGNA(mrna.dif.expr,mirna.dif.expr, working.path, 
                                                        output.file.name=maturemirna.x.mrna.correlation.file.name,
                                                       r.minimium=0.3)
@@ -98,7 +100,7 @@ mirnaxrna.path<-paste(working.path, maturemirna.x.mrna.correlation.file.name, se
 genes.x.mirnas.path <- paste(working.path,maturemirna.x.mrna.correlation.file.name, sep="")
 #genes.x.mirnas<-read.table(genes.x.mirnas.path, header=TRUE)
 genes.x.mirnas <- calculated
-best <- keepBestGeneXMirnaAccordingCorrelationAndAddMirnaDbInfo(genes.x.mirnas, working.path, 
+best <- keepBestGeneXMirnaAccordingCorrelationAndAddMirnaDbInfo(genes.x.mirnas[1,], working.path, 
                                                         output.file=just.betters.maturemirna.X.mrna.considering.mirna.databases,
                                                         predicted.cut.off=my.predicted.cut.off)
 

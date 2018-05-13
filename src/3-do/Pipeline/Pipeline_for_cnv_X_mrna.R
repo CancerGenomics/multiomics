@@ -10,12 +10,13 @@ source(paste(sourceBaseLocation, "/src/3-do/API/survivalGeneByGene/API_multiomic
 source(paste(sourceBaseLocation, "/src/3-do/API/cnvXmrnas/API_cnv_X_mrnas.R",sep=""), echo=FALSE, encoding="Cp1252")
 source(paste(sourceBaseLocation, "/src/survival.utils/matrix_utils.R",sep=""), echo=FALSE, encoding="Cp1252")
 source(paste(sourceBaseLocation, "/src/survival.utils/read_genomic_data_utils.R",sep=""), echo=FALSE, encoding="Cp1252")
+source(paste(sourceBaseLocation, "/src/survival.utils/genomic_utils.R",sep=""), echo=FALSE, encoding="Cp1252")
 
 
 ###########CONFIG#################
 #INPUT FOR example
 working.path=paste0(sourceBaseLocation, "/test/examples/cnv_X_mrnas/")
-mrna.dif.expr.path.file="mrnas.csv"
+mrna.dif.expr.path.file="mrnas-with-extra-samples.csv"
 cnv.file="cnv.csv"
 the.output.path=tempdir()
 
@@ -32,6 +33,12 @@ cnv.path<-paste(working.path, cnv.file, sep="")
 print("Preparing...")
 mrna.dif.expr <- readMrnaExpressionFile(mrna.dif.expr.path)
 cnv <- readCNVFile(cnv.path)
+
+#Keep columns which are in both databases
+intersection<-keepSameColumns(mrna.dif.expr,cnv)
+mrna.dif.expr<-(intersection[[1]])
+cnv<-(intersection[[2]])
+
 
 CnvXMrnas(mrna.dif.expr, cnv, output.path=the.output.path,
                       output.file.name="cnvXMrna.csv",
