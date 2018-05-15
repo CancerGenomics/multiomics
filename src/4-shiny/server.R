@@ -27,7 +27,7 @@ shinyServer(function(input, output, session) {
       
       sharedValues$fromButton <- T
       sharedValues$correlationsStep2 <- matrix()
-        
+      
       runMRNAMiRNACorrelation()
       
       #chequear si quiere correr el step 2 y mandar a correr
@@ -48,14 +48,14 @@ shinyServer(function(input, output, session) {
         
         sharedValues$mirna.matrix.to.render <- sharedValues$correlations
       }
-
+      
       # must add clinical data to the matrix to render
       if((!is.null(input$mirna.survivalFile) && (nrow(sharedValues$correlationsStep2)>0))) {
         number.of.clusters=1
         progResult <- getPrognosticStatistic(mrnaExpressionData(), number.of.clusters, groupin.FUN=multiomics.cut2, 
                                              input$mirna.survivalFile$datapath, input$mirna.survival.column.name , 
                                              input$mirna.event.column.name, minimium.number.of.samples.in.a.group=10)
-
+        
         
         if(input$miRNA.runMultimir) {
           ###MDB: 26/2/2018 - P.ADJUST
@@ -70,7 +70,7 @@ shinyServer(function(input, output, session) {
           #colnames(sharedValues$correlations) <- c("Gene","Mature miRNA","miRNA-mRNA correlation","p-value")
           colnames(sharedValues$correlations) <- c("Gene","Mature miRNA","miRNA-mRNA correlation","p-value","adj-p-value")
           
-           # creating a matrix to bind to the actual result        
+          # creating a matrix to bind to the actual result        
           tmp <- matrix(nrow = nrow(sharedValues$correlations), ncol = ncol(progResult)-1 )
           actual.result <- sharedValues$correlations
         }
@@ -92,17 +92,17 @@ shinyServer(function(input, output, session) {
       
       # render the matrix with corresponding values
       output$result <- DT::renderDataTable(sharedValues$mirna.matrix.to.render, selection = 'single')
-	  
-  	  if(!input$miRNA.runMultimir) {
-	      if(nrow(sharedValues$mirna.matrix.to.render) > 0) {
-		      shinyjs::show(id = "downloadMrnaMirnaResult")
-	        shinyjs::show(id = "mirnaClip")
-	      } else {
-  		    shinyjs::hide(id = "downloadMrnaMirnaResult")
-	        shinyjs::hide(id = "mirnaClip")
-	      }
-	    }
-
+      
+      if(!input$miRNA.runMultimir) {
+        if(nrow(sharedValues$mirna.matrix.to.render) > 0) {
+          shinyjs::show(id = "downloadMrnaMirnaResult")
+          shinyjs::show(id = "mirnaClip")
+        } else {
+          shinyjs::hide(id = "downloadMrnaMirnaResult")
+          shinyjs::hide(id = "mirnaClip")
+        }
+      }
+      
       sharedValues$fromButton <- F      
       
     } else {
@@ -111,13 +111,13 @@ shinyServer(function(input, output, session) {
     }
     
   })
-
+  
   openGeneralInformationMessage <- function(message) {
     output$generalMessageOutputText <- renderText(message)
     shinyBS::toggleModal(session = session, modalId = "generalMessageModal", toggle = "open")
     
   }
-
+  
   mrnaExpressionData <- reactive({
     print("mrnaExpressionData")
     return(readMrnaExpressionFile(input$mrnaFile$datapath))
@@ -129,70 +129,75 @@ shinyServer(function(input, output, session) {
   })
   
   threshold <- reactive({
-  	input$thresholdSlider
+    input$thresholdSlider
   })
-
+  
   pearsonsMethod <- reactive({
-	  input$pearsons.method
+    input$pearsons.method
   })
-
- correlations <- reactive(quote({
+  
+  correlations <- reactive(quote({
     if(sharedValues$fromButton) {
-	  sharedValues$correlations <- CalculateCorrelationsMirnaMrnaUsingWCGNA(
-			                       mrnaExpressionData(), mirnaExpressionData(),
-		   						   output.path="~/", 
-								   output.file.name = paste(input$mirnaFile$name,"-",input$mrnaFile$name,"-outputFile.csv", sep = ""),
-								   r.minimium = threshold(), inc.progress = T, 
-								   pearsons.method = pearsonsMethod())
- 	  } 
-	  return (sharedValues$correlations)
-  }), quoted = T)
- 
-
-  runMRNAMiRNACorrelation <- function() { 
-          withProgress(message = 'Please stand by...', 
-          detail = "calculating correlation", 
-          min=0, max=1, {
-            
-       #Checks if both files has the same samples in the same order. If not, aborts the execution.
-       print("Checking if both files has the same samples in the same order...")
-       suppressWarnings(checkSamplesFormIRNArnaCorrelation(mrnaExpressionData(), mirnaExpressionData(), 1))
-       print("Preparing...")
-       correlations()
-       
-       # Add clipboard buttons
-       output$mirnaClip <- renderUI({
-           rclipButton("mirnaCopyToClipboard", "Copy genes to clipboard", geneListToClipboard(correlations()[,1]) , icon("clipboard"))
-       })      
-
-  })
-  } 
-
-  runMultimirAnalisys <- function() { 
-	  withProgress(message = 'Please stand by...', 
-			           detail = "Searching in miRNA databases...", 
-			           min=0, max=1, {
-				  
-			output.file.name = paste(input$mirnaFile$name,"-",input$mrnaFile$name,"-multiMiR-outputFile.csv", sep = "")    
-			print(output.file.name)
-      step2Res <- keepBestGeneXMirnaAccordingCorrelationAndAddMirnaDbInfo(sharedValues$correlations,output.path="~/",
-                                                              output.file.name, predicted.cut.off=10
-                                                              )
-      print("Finish multimir analisys")
-      print(nrow(step2Res))
-      if (nrow(step2Res)>0){
-        collapsed.output.file.name = paste(input$mirnaFile$name,"-",input$mrnaFile$name,"-multiMiR-collapsed-outputFile.csv", sep = "")    
-        collapsedResult <- ColapseMirnaXMrna(data.frame(step2Res), output.path = "~/", output.file = collapsed.output.file.name)
-        print("Finish collapsing")
-      }
-      else
-      {
-        collapsedResult<-data.frame(matrix(nrow = 0, ncol = 9))
-        
-      }
-      sharedValues$correlationsStep2 <- collapsedResult
+      #Keep columns which are in both databases
+      intersection<-keepSameColumns(mrnaExpressionData(),mirnaExpressionData())
+      mrna.dif.expr<-(intersection[[1]])
+      mirna.dif.expr<-(intersection[[2]])
       
-	})
+      sharedValues$correlations <- CalculateCorrelationsMirnaMrnaUsingWCGNA(
+        mrna.dif.expr, mirna.dif.expr,
+        output.path="~/", 
+        output.file.name = paste(input$mirnaFile$name,"-",input$mrnaFile$name,"-outputFile.csv", sep = ""),
+        r.minimium = threshold(), inc.progress = T, 
+        pearsons.method = pearsonsMethod())
+    } 
+    return (sharedValues$correlations)
+  }), quoted = T)
+  
+  
+  runMRNAMiRNACorrelation <- function() { 
+    withProgress(message = 'Please stand by...', 
+                 detail = "calculating correlation", 
+                 min=0, max=1, {
+                   
+                   #Checks if both files has the same samples in the same order. If not, aborts the execution.
+                   #print("Checking if both files has the same samples in the same order...")
+                   #suppressWarnings(checkSamplesFormIRNArnaCorrelation(mrnaExpressionData(), mirnaExpressionData(), 1))
+                   print("Preparing...")
+                   correlations()
+                   
+                   # Add clipboard buttons
+                   output$mirnaClip <- renderUI({
+                     rclipButton("mirnaCopyToClipboard", "Copy genes to clipboard", geneListToClipboard(correlations()[,1]) , icon("clipboard"))
+                   })      
+                   
+                 })
+  } 
+  
+  runMultimirAnalisys <- function() { 
+    withProgress(message = 'Please stand by...', 
+                 detail = "Searching in miRNA databases...", 
+                 min=0, max=1, {
+                   
+                   output.file.name = paste(input$mirnaFile$name,"-",input$mrnaFile$name,"-multiMiR-outputFile.csv", sep = "")    
+                   print(output.file.name)
+                   step2Res <- keepBestGeneXMirnaAccordingCorrelationAndAddMirnaDbInfo(sharedValues$correlations,output.path="~/",
+                                                                                       output.file.name, predicted.cut.off=10
+                   )
+                   print("Finish multimir analisys")
+                   print(nrow(step2Res))
+                   if (nrow(step2Res)>0){
+                     collapsed.output.file.name = paste(input$mirnaFile$name,"-",input$mrnaFile$name,"-multiMiR-collapsed-outputFile.csv", sep = "")    
+                     collapsedResult <- ColapseMirnaXMrna(data.frame(step2Res), output.path = "~/", output.file = collapsed.output.file.name)
+                     print("Finish collapsing")
+                   }
+                   else
+                   {
+                     collapsedResult<-data.frame(matrix(nrow = 0, ncol = 9))
+                     
+                   }
+                   sharedValues$correlationsStep2 <- collapsedResult
+                   
+                 })
   }  
   
   observeEvent(input$mirna.survivalFile,{
@@ -201,7 +206,7 @@ shinyServer(function(input, output, session) {
     shinyjs::show("mirna.survival.column.name")
     updateSelectInput(session,"mirna.event.column.name", choices = colnames(clinical.data))
     shinyjs::show("mirna.event.column.name")
-
+    
   })
   
   validatemirnaExpressionData <- function(datapath) {
@@ -269,7 +274,7 @@ shinyServer(function(input, output, session) {
     content = function(file) {
       write.csv(sharedValues$mirna.matrix.to.render, file)
     })  
-
+  
   output$correlationPlot <- renderPlot({
     if(!is.null(input$result_rows_selected)){
       selected.gene <- correlations()[input$result_rows_selected,1]
@@ -284,14 +289,14 @@ shinyServer(function(input, output, session) {
       abline(line, col="blue")
     }
   })
-
+  
   
   output$correlationSurvival <- renderPlot({
     ERROR.GROUPING="ERROR.GROUPING"
     ERROR.EXECUTING.SURV.FIT.FOR.PLOTTING="ERROR.EXECUTING.SURVFIT.FOR.PLOTTING"
-
+    
     if(!is.null(input$mirna.survivalFile) && !is.null(input$result_rows_selected)){
-
+      
       selected.gene <- correlations()[input$result_rows_selected,1]
       selected.gene.row <- which(mrnaExpressionData()==selected.gene)
       expression.vector <- as.numeric(as.vector(mrnaExpressionData()[selected.gene.row,2:ncol(mrnaExpressionData())]))
@@ -299,7 +304,7 @@ shinyServer(function(input, output, session) {
       mirna.survival.matrix <- read.table(input$mirna.survivalFile$datapath, header = T)
       survival.name.col <- which(colnames(mirna.survival.matrix)==input$mirna.survival.column.name)
       survival.event.col <- which(colnames(mirna.survival.matrix)==input$mirna.event.column.name)
-
+      
       ######ENGANCHAR CON LA GUI Y ELIMINAR HARCODEO ####
       #number.of.clusters<-read.number.of.clusters()
       number.of.clusters<-2
@@ -307,12 +312,12 @@ shinyServer(function(input, output, session) {
       grouping.FUN<-multiomics.cut2
       #minimium.number.of.samples.in.a.group<-read.minimium.number.of.samples.in.a.group()
       minimium.number.of.samples.in.a.group<-1
-
+      
       time<-as.vector(mirna.survival.matrix[,survival.name.col])
       event<-as.vector(mirna.survival.matrix[,survival.event.col])
       #event<-c(0,1,0,1,0,1,0,1,0,0,0,0,1,1,1,0,1,1,1,1,0,0,0,1,0,1,0,0,1,1,1,0,0,0,0)
       #time<-c(0.00000,22.17659,181.25670,36.43532,105.62630,64.98563,123.53180,46.88296,133.88090,94.48871,121.65910,211.90970,31.29960,66.04920,31.43040,210.89120,27.48600,17.83984,44.84400,46.19302,153.19920,155.95890,181.61810,24.77207,169.52770,112.88710,65.83984,220.09030,32.49281,32.51520,95.14560,49.41360,66.66119,153.16630,158.09450)
-
+      
       tryCatch({
         #Grouping
         tryCatch(
@@ -323,118 +328,122 @@ shinyServer(function(input, output, session) {
           
           },error=function(e){stop(formatErrorMessage(error.type=ERROR.GROUPING, error.detail=e$message))})
         
-          n.groups <- length(unique(groups))
+        n.groups <- length(unique(groups))
         
-          #SurvFit for plotting
-          tryCatch({
-           surv.fit<-survfit(formula = Surv(time, event) ~ groups)
-            #Los colores se asignan as?: el primer color del vector col se asigna al grupo m?s chico, el segundo color al segundo m?s chico y as? siguiendo.
-           #Es decir, no importa el orden en el que aparezcan los elementos en el time.Considera solamente el groups. 
-           plot(surv.fit,col=c("blue", "red"), xlab="Time", ylab="survival")
-           title<-selected.gene
-           drawLegends(groups, "Survival", title)
-          },error=function(e){stop(formatErrorMessage(error.type=ERROR.EXECUTING.SURV.FIT.FOR.PLOTTING, error.detail=e$message))})
+        #SurvFit for plotting
+        tryCatch({
+          surv.fit<-survfit(formula = Surv(time, event) ~ groups)
+          #Los colores se asignan as?: el primer color del vector col se asigna al grupo m?s chico, el segundo color al segundo m?s chico y as? siguiendo.
+          #Es decir, no importa el orden en el que aparezcan los elementos en el time.Considera solamente el groups. 
+          plot(surv.fit,col=c("blue", "red"), xlab="Time", ylab="survival")
+          title<-selected.gene
+          drawLegends(groups, "Survival", title)
+        },error=function(e){stop(formatErrorMessage(error.type=ERROR.EXECUTING.SURV.FIT.FOR.PLOTTING, error.detail=e$message))})
       })
     }
   })
-
-
-###########################################################################
-########################## CNV - MRNA PIPELINE TAB
-###########################################################################
-
+  
+  
+  ###########################################################################
+  ########################## CNV - MRNA PIPELINE TAB
+  ###########################################################################
+  
   observeEvent(input$runMRNACNVCorrelation, { 
-	  runMRNACNVCorrelation()
+    runMRNACNVCorrelation()
   })
-
+  
   cnvThreshold <- reactive({
     input$cnv.thresholdSlider
   })
-
+  
   cnvMrnaExpressionData <- reactive({
-	print("mrnaExpressionData")
-	readMrnaExpressionFile(input$cnv.mrnaFile$datapath)
+    print("mrnaExpressionData")
+    readMrnaExpressionFile(input$cnv.mrnaFile$datapath)
   })
-
+  
   cnvExpressionData <- reactive({
-	print("cnvExpressionData")
-	readCNVFile(input$cnv.cnvFile$datapath)
+    print("cnvExpressionData")
+    readCNVFile(input$cnv.cnvFile$datapath)
   })
-
+  
   cnvPearsonsMethod <- reactive({
     input$cnv.pearsons.method
   })
   
   cnvMrnaCorrelations <- reactive(quote({
     if(sharedValues$fromButton) {
-		sharedValues$cnvMrnaCorrelations <- CnvXMrnas(cnvMrnaExpressionData(), cnvExpressionData(), output.path="~/", 
-		                                              output.file.name=paste(input$cnv.mrnaFile$name,"-",input$cnv.cnvFile$name,"-outputFile.csv", sep = ""),
-		  			                                     	r.minimium = cnvThreshold(), inc.progress = T, pearsons.method = cnvPearsonsMethod())
+      #Keep columns which are in both databases
+      intersection<-keepSameColumns(cnvMrnaExpressionData(),cnvExpressionData())
+      mrna.dif.expr<-(intersection[[1]])
+      cnv<-(intersection[[2]])
+      sharedValues$cnvMrnaCorrelations <- CnvXMrnas(mrna.dif.expr, cnv, output.path="~/", 
+                                                    output.file.name=paste(input$cnv.mrnaFile$name,"-",input$cnv.cnvFile$name,"-outputFile.csv", sep = ""),
+                                                    r.minimium = cnvThreshold(), inc.progress = T, pearsons.method = cnvPearsonsMethod())
     }
     return (sharedValues$cnvMrnaCorrelations)
   }), quoted = T)
-
+  
   runMRNACNVCorrelation <- function(){
-	  withProgress(message = 'Please stand by...', 
-			  detail = "calculating correlation", 
-			  min=0, max=1, {
-				  
-				  if(!is.null(input$cnv.mrnaFile) && !is.null(input$cnv.cnvFile)) {
-					  
-					  print("Preparing...")
-					  
-					  sharedValues$fromButton <- T
-					  cnvMrnaCorrelations()
-					  sharedValues$cnv.matrix.to.render <- sharedValues$cnvMrnaCorrelations
-					  
-					  if(!is.null(input$cnv.survivalFile)) {
-					    number.of.clusters=1
-					  	print(cnvMrnaExpressionData())
-					    progResult <- getPrognosticStatistic(cnvMrnaExpressionData(), number.of.clusters, groupin.FUN=multiomics.cut2, 
-					                                         input$cnv.survivalFile$datapath, input$cnv.survival.column.name , 
-					                                         input$cnv.event.column.name, minimium.number.of.samples.in.a.group=10)
-					    colnames(sharedValues$cnvMrnaCorrelations) <- c("Gene","Location","CNV-mRNA correlation","p-value", "p_value_fdr_adjusted", "ID")
-					    # creating a matrix to bind to the actual result        
-					    tmp <- matrix(nrow = nrow(sharedValues$cnvMrnaCorrelations), ncol = ncol(progResult)-1 )
-					    actual.result <- sharedValues$cnvMrnaCorrelations
-					    
-					    # add new colnames to show
-					    colnames(tmp) <- colnames(progResult)[2:ncol(progResult)]
-					    sharedValues$cnv.matrix.to.render <- cbind(actual.result,tmp)
-					    
-					    # loop into the matrix to plot looking for the corresponding values per gen
-					    for (i in 1:nrow(sharedValues$cnv.matrix.to.render)) {
-					      # actual gen from row i
-					      gen <- sharedValues$cnv.matrix.to.render[i,1]
-					      # values corresponding to actual gen to add columns
-					      row <- which(progResult[,1] == gen)
-					      # adding columns for actual gen row
-					      sharedValues$cnv.matrix.to.render[i,(ncol(actual.result) +1):ncol(sharedValues$cnv.matrix.to.render)] <- progResult[row,2:ncol(progResult)]
-					    }					    
-					  }
-					  
-					  if(nrow(sharedValues$cnv.matrix.to.render) > 0) {
-					    output$MRNACNVResult <- DT::renderDataTable(sharedValues$cnv.matrix.to.render, selection = 'single')
-					    shinyjs::show(id = "downloadMrnaCNVResult")
-					    # Add clipboard buttons
-					    output$cnvClip <- renderUI({
-					      rclipButton("cnvCopyToClipboard", "Copy genes to clipboard", geneListToClipboard(cnvMrnaCorrelations()[,1]) , icon("clipboard"))
-					    })  					  
-					    
-					    shinyjs::show(id = "cnvClip")
-					    print("Hay resultados")
-					  } else {
-						  print("NO hay resultados")
-					    shinyjs::hide(id = "downloadMrnaCNVResult")
-					    shinyjs::hide(id = "cnvClip")
-					  }      
-					  sharedValues$fromButton <- F
-				  } else {
-				    openGeneralInformationMessage("You must select at least CNV and miRNA file")
-					  print("No hay archivos cargados para el pipeline de CNV")
-				  }
-				  
-    })
+    withProgress(message = 'Please stand by...', 
+                 detail = "calculating correlation", 
+                 min=0, max=1, {
+                   
+                   if(!is.null(input$cnv.mrnaFile) && !is.null(input$cnv.cnvFile)) {
+                     
+                     print("Preparing...")
+                     
+                     sharedValues$fromButton <- T
+                     cnvMrnaCorrelations()
+                     sharedValues$cnv.matrix.to.render <- sharedValues$cnvMrnaCorrelations
+                     
+                     if(!is.null(input$cnv.survivalFile)) {
+                       number.of.clusters=1
+                       print(cnvMrnaExpressionData())
+                       progResult <- getPrognosticStatistic(cnvMrnaExpressionData(), number.of.clusters, groupin.FUN=multiomics.cut2, 
+                                                            input$cnv.survivalFile$datapath, input$cnv.survival.column.name , 
+                                                            input$cnv.event.column.name, minimium.number.of.samples.in.a.group=10)
+                       colnames(sharedValues$cnvMrnaCorrelations) <- c("Gene","Location","CNV-mRNA correlation","p-value", "p_value_fdr_adjusted", "ID")
+                       # creating a matrix to bind to the actual result        
+                       tmp <- matrix(nrow = nrow(sharedValues$cnvMrnaCorrelations), ncol = ncol(progResult)-1 )
+                       actual.result <- sharedValues$cnvMrnaCorrelations
+                       
+                       # add new colnames to show
+                       colnames(tmp) <- colnames(progResult)[2:ncol(progResult)]
+                       sharedValues$cnv.matrix.to.render <- cbind(actual.result,tmp)
+                       
+                       # loop into the matrix to plot looking for the corresponding values per gen
+                       for (i in 1:nrow(sharedValues$cnv.matrix.to.render)) {
+                         # actual gen from row i
+                         gen <- sharedValues$cnv.matrix.to.render[i,1]
+                         # values corresponding to actual gen to add columns
+                         row <- which(progResult[,1] == gen)
+                         # adding columns for actual gen row
+                         sharedValues$cnv.matrix.to.render[i,(ncol(actual.result) +1):ncol(sharedValues$cnv.matrix.to.render)] <- progResult[row,2:ncol(progResult)]
+                       }					    
+                     }
+                     
+                     if(nrow(sharedValues$cnv.matrix.to.render) > 0) {
+                       output$MRNACNVResult <- DT::renderDataTable(sharedValues$cnv.matrix.to.render, selection = 'single')
+                       shinyjs::show(id = "downloadMrnaCNVResult")
+                       # Add clipboard buttons
+                       output$cnvClip <- renderUI({
+                         rclipButton("cnvCopyToClipboard", "Copy genes to clipboard", geneListToClipboard(cnvMrnaCorrelations()[,1]) , icon("clipboard"))
+                       })  					  
+                       
+                       shinyjs::show(id = "cnvClip")
+                       print("Hay resultados")
+                     } else {
+                       print("NO hay resultados")
+                       shinyjs::hide(id = "downloadMrnaCNVResult")
+                       shinyjs::hide(id = "cnvClip")
+                     }      
+                     sharedValues$fromButton <- F
+                   } else {
+                     openGeneralInformationMessage("You must select at least CNV and miRNA file")
+                     print("No hay archivos cargados para el pipeline de CNV")
+                   }
+                   
+                 })
   }
   
   output$downloadMrnaCNVResult <- downloadHandler(
@@ -511,8 +520,8 @@ shinyServer(function(input, output, session) {
       abline(line, col="blue")
     }
   })
-
-
+  
+  
   # output$cnv.correlationSurvival <- renderPlot({
   #   ERROR.GROUPING="ERROR.GROUPING"
   #   ERROR.EXECUTING.SURV.FIT.FOR.PLOTTING="ERROR.EXECUTING.SURVFIT.FOR.PLOTTING"
@@ -569,13 +578,16 @@ shinyServer(function(input, output, session) {
   
   methMrnaCorrelations <- reactive(quote({
     if(sharedValues$fromButton) {
-      
-      sharedValues$methMrnaCorrelations <- methXMrnas(methMrnaExpressionData(), methExpressionData(), methPlatform() , output.path="~/",
+      #Keep columns which are in both databases
+      intersection<-keepSameColumns(methMrnaExpressionData(),methExpressionData())
+      mrna.dif.expr<-(intersection[[1]])
+      meth<-(intersection[[2]])
+      sharedValues$methMrnaCorrelations <- methXMrnas(mrna.dif.expr, meth, methPlatform() , output.path="~/",
                                                       output.file.name=paste(input$meth.mrnaFile$name,"-",input$meth.methFile$name,"-outputFile.csv", sep = ""),           
                                                       r.minimium = methThreshold(), 
                                                       pearsons.method = methPearsonsMethod(), 
                                                       inc.progress = T)
-
+      
     }
     return (sharedValues$methMrnaCorrelations)
   }), quoted = T)  
@@ -599,48 +611,48 @@ shinyServer(function(input, output, session) {
   methPearsonsMethod <- reactive({
     input$meth.pearsons.method
   })
-
+  
   
   observeEvent(input$runMRNAMethylationCorrelation, { 
     runMRNAMethylationCorrelation()
   })  
   
-
+  
   runMRNAMethylationCorrelation <- function(){
     withProgress(message = 'Please stand by...', 
                  detail = "calculating correlation", 
                  min=0, max=1, {
                    
-      if(!is.null(input$meth.mrnaFile) && !is.null(input$meth.methFile)) {
+                   if(!is.null(input$meth.mrnaFile) && !is.null(input$meth.methFile)) {
                      
-        print("Preparing...")
+                     print("Preparing...")
                      
-        sharedValues$fromButton <- T
-        methMrnaCorrelations()
-        sharedValues$meth.matrix.to.render <- sharedValues$methMrnaCorrelations
+                     sharedValues$fromButton <- T
+                     methMrnaCorrelations()
+                     sharedValues$meth.matrix.to.render <- sharedValues$methMrnaCorrelations
+                     
+                     if(nrow(sharedValues$meth.matrix.to.render) > 0) {
+                       output$MRNAMethResult <- DT::renderDataTable(sharedValues$meth.matrix.to.render, selection = 'single')
+                       shinyjs::show(id = "downloadMrnaMethResult")
+                       
+                       # Add clipboard buttons
+                       output$methClip <- renderUI({
+                         rclipButton("methCopyToClipboard", "Copy genes to clipboard", geneListToClipboard(methMrnaCorrelations()[,1]) , icon("clipboard"))
+                       })   
+                       shinyjs::show(id = "methClip")
+                       print("Hay resultados")
+                     } else {
+                       print("NO hay resultados")
+                       shinyjs::hide(id = "downloadMrnaMethResult")
+                       shinyjs::hide(id = "methClip")
+                     }
+                     sharedValues$fromButton <- F
+                   } else {
+                     openGeneralInformationMessage("You must select at least Methylation and miRNA file")
+                     print("No hay archivos cargados para el pipeline de meth")
+                   }
                    
-        if(nrow(sharedValues$meth.matrix.to.render) > 0) {
-          output$MRNAMethResult <- DT::renderDataTable(sharedValues$meth.matrix.to.render, selection = 'single')
-          shinyjs::show(id = "downloadMrnaMethResult")
-          
-          # Add clipboard buttons
-          output$methClip <- renderUI({
-            rclipButton("methCopyToClipboard", "Copy genes to clipboard", geneListToClipboard(methMrnaCorrelations()[,1]) , icon("clipboard"))
-          })   
-          shinyjs::show(id = "methClip")
-          print("Hay resultados")
-        } else {
-          print("NO hay resultados")
-          shinyjs::hide(id = "downloadMrnaMethResult")
-          shinyjs::hide(id = "methClip")
-        }
-        sharedValues$fromButton <- F
-      } else {
-        openGeneralInformationMessage("You must select at least Methylation and miRNA file")
-        print("No hay archivos cargados para el pipeline de meth")
-      }
-
-    })    
+                 })    
   }
   
   
@@ -664,12 +676,12 @@ shinyServer(function(input, output, session) {
       shinyjs::hide(id="methClip")
     } else {
       shinyjs::hide(id="methFileErrorMsg")
-      }
+    }
     shiny::validate(
       need(valid,"Methylation file has a wrong format, please verify the file and retry")
     )
-
-    })    
+    
+  })    
   
   observeEvent(input$meth.mrnaFile,{
     valid <- validatemrnaExpressionData(input$meth.mrnaFile$datapath)
@@ -681,7 +693,7 @@ shinyServer(function(input, output, session) {
       shinyjs::hide(id="methClip")
     } else {
       shinyjs::hide(id="methMrnaFileErrorMsg")
-  }
+    }
     shiny::validate(
       need(valid,"mRNA file has a wrong format, please verify the file and retry")
     )     
@@ -755,13 +767,13 @@ shinyServer(function(input, output, session) {
   })   
   
   observeEvent(input$xenaCohortDatasetsFilter, {  
-
+    
     if(!is.null(input$xenaCohorts)) {
       filtered <- sharedValues$xena.datasets
       if((input$xenaCohortDatasetsFilter != "All")) {
         filtered <- filtered[grep(input$xenaCohortDatasetsFilter,filtered)]
       }
-    
+      
       updateSelectInput(session, "xenaCohortDatasets","Cohort datasets", choices = filtered)
     }
   })
@@ -786,12 +798,12 @@ shinyServer(function(input, output, session) {
                tags$i(class="fa fa-download"),
                "Download selected dataset",href=getUrlFromTCGAXenaHub(input$xenaCohortDatasets), target="_blank", 
                class="btn btn-default shiny-download-link"
-               )
+        )
       )
     } else {
       tagList()
     }
   })  
-
-
+  
+  
 })

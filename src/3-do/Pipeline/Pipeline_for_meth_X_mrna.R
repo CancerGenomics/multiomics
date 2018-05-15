@@ -43,7 +43,7 @@ meth<-(intersection[[2]])
 
 path.platform<-paste(sourceBaseLocation, "/resources/methilation.platforms/illuminaMethyl450_hg19_GPL16304.txt", sep="")
 
-res<-methXMrnas(mrna.dif.expr, meth, getMethylationPlatformTable("HumanMethylation450 BeadChip", path.platform), output.path=the.output.path,
+res<-methXMrnas(mrna.dif.expr, meth, getMethylationPlatformTableForPipeline("HumanMethylation450 BeadChip", path.platform), output.path=the.output.path,
           output.file.name="cnvXMrna.csv",
           r.minimium=0.2, 
           pearsons.method = "pearson", 

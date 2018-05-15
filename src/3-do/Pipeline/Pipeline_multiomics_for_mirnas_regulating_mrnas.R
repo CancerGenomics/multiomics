@@ -72,9 +72,15 @@ just.betters.maturemirna.X.mrna.considering.mirna.databases="inputStep3_justBett
 #For doing it, it evaluates the correlation between each row of mirna file (representing the expression for a particular mature mirna) against each mrna expresion line (representing the expression for a particular gene) using Pearson 
 mrna.dif.expr.path<-paste(working.path, mrna.dif.expr.path.file, sep="")
 mirna.dif.expr.path<-paste(working.path, mirna.dif.expr.path.file, sep="")
+
+#BIG FILES FOR TESTING
+#mrna.dif.expr.path<-"C:\\desarrollo\\workspaces\\r\\UAI\\multiomics2\\examples\\mRNAvsmiRNA\\mRNA_TCGA_breast.csv"
+#mirna.dif.expr.pat<-"C:\\desarrollo\\workspaces\\r\\UAI\\multiomics2\\examples\\mRNAvsmiRNA\\miRNA_TCGA_breast.csv"
+
 #It reads mrna file and mirna file. It sorts each file by sample name (that is by column)
 mrna.dif.expr <- readMrnaExpressionFile(mrna.dif.expr.path)
 mirna.dif.expr <- readMirnaExpressionFile(mirna.dif.expr.path)
+
 
 #Keep columns which are in both databases
 intersection<-keepSameColumns(mrna.dif.expr,mirna.dif.expr)
@@ -82,9 +88,6 @@ mrna.dif.expr<-(intersection[[1]])
 mirna.dif.expr<-(intersection[[2]])
 
 
-#BIG FILES FOR TESTING
-#mrna.dif.expr<-read.table("C:\\desarrollo\\workspaces\\r\\UAI\\multiomics2\\examples\\mRNAvsmiRNA\\mRNA_TCGA_breast.csv", header = T)
-#mirna.dif.expr<-read.table("C:\\desarrollo\\workspaces\\r\\UAI\\multiomics2\\examples\\mRNAvsmiRNA\\miRNA_TCGA_breast.csv", header = T)
 
 
 calculated <- CalculateCorrelationsMirnaMrnaUsingWCGNA(mrna.dif.expr,mirna.dif.expr, working.path, 
