@@ -69,12 +69,16 @@ CalculateCorrelationsMirnaMrnaUsingWCGNA <- function(expression, mirna, output.p
   ###MDB: 26/3/2018
   library("WGCNA")
   library("reshape2")
+  library("data.table")
+  
+  ### Enable parallel processing for WCGNA Correlation
+  enableWGCNAThreads()
   
   ###MDB: 26/2/2018 
   #Columns are: "Gen_symbol","mature_mirna_id","Mirna_Mrna_Correlation","p_value_Of_Mirna_Mrna_Correlation", "p_value_fdr_adjustedMirna_Mrna_Correlation", "ID"
   num.of.result.columns<-5
   position.of.adjusted.p.value<-5
-  
+
   ####Number of rows to evaluate (number of mrnas * number of mirnas)
   ptm <- proc.time()
   total.rows=nrow(expression)*nrow(mirna)
@@ -98,22 +102,16 @@ CalculateCorrelationsMirnaMrnaUsingWCGNA <- function(expression, mirna, output.p
   mirnatn<-as.numeric(mirnat[2:nrow(mirnat),])
   
   #WCGNA correlation
+  correlation.start <- proc.time()
   cor_pvalueFast <- corAndPvalue(mrnat, mirnat)
+  cat("CORRELATION TIME: : ", (proc.time() - correlation.start)["elapsed"], "\n")
   
   #correlation result
   cor<-cor_pvalueFast$cor
-  rownames(cor)<-colnames(mrnat)
-  colnames(cor)<-colnames(mirnat)
-  
   #p value result
   p<-cor_pvalueFast$p
-  rownames(p)<-colnames(mrnat)
-  colnames(p)<-colnames(mirnat)
-  
   #padj result
   padj = apply(p, MARGIN = 2, FUN = function(p) p.adjust(p, length(p), method = "fdr"))
-  rownames(padj)<-colnames(mrnat)
-  colnames(padj)<-colnames(mirnat)  
   
   #TRansform each cell of the matrix into a row in the result matrix.
   #For each colnmae-rowname, will create a row.
@@ -126,16 +124,22 @@ CalculateCorrelationsMirnaMrnaUsingWCGNA <- function(expression, mirna, output.p
   padj.melt<-melt(padj)
   colnames(padj.melt) <- c("Gen_symbol","mature_mirna_id","p_value_fdr_adjustedMirna_Mrna_Correlation")
   
-  temp<-merge(cor.melt, p.melt, by=c("Gen_symbol","mature_mirna_id"))
-  res<-merge(temp, padj.melt,  by=c("Gen_symbol","mature_mirna_id"))
-  #res<-cbind(res, paste(res[,1], res[,2]), sep="---")
+  # Transform data.frame's to data.table's to improve merge performance. Once the merge is done, transform back to data.frame,
+  # as the caller code needs a data.frame to work
+  merge.start <- proc.time()
+  temp.table <- merge(as.data.table(cor.melt), as.data.table(p.melt), by=c("Gen_symbol","mature_mirna_id"))
+  result.table <-merge(temp.table, as.data.table(padj.melt),  by=c("Gen_symbol","mature_mirna_id"))
+  result <- as.data.frame(subset(result.table, abs(Mirna_Mrna_Correlation) > r.minimium))
+  cat("MERGE TIME: : ", (proc.time() - merge.start)["elapsed"], "\n")
   
-  file.path<-paste(output.path, output.file.name, sep="")
-  write.table(res, file.path, sep="\t", row.names=FALSE, 
-              col.names=TRUE, quote=FALSE)
+  write.start <- proc.time()
+  file.path<-paste(output.path, paste(output.file.name), sep="")
+  fwrite(result,file.path,sep="\t", row.names=FALSE, col.names=TRUE, quote=FALSE)
+  cat("WRITE TIME: : ", (proc.time() - write.start)["elapsed"], "\n")
+
   print(proc.time() - ptm)
   
-  return (convertVectorToMatrix(res))
+  return (convertVectorToMatrix(result))
 }
 
 

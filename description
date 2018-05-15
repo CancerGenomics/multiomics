@@ -1,8 +1,0 @@
-Package: multiomics
-Title: Multi omics 
-Version: 0.1
-Authors@R: "Butti Matias <matias.butti@gmail.com> [aut, cre]"
-Description: Multi omics over expression data
-Depends: R (>= 3.1.0)
-License: What license is it under?
-LazyData: true
