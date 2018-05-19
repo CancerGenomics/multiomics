@@ -114,7 +114,7 @@ CalculateCorrelationsMirnaMrnaUsingWCGNA <- function(expression, mirna, output.p
   ###MDB: 2018-05-19: pdaj is done below
   #padj result
   #padj = apply(p, MARGIN = 2, FUN = function(p) p.adjust(p, length(p), method = "fdr"))
-  ###MDB: 2018-05-19: pdaj is done below
+  ###END MDB: 2018-05-19: pdaj is done below
   
   
   #TRansform each cell of the matrix into a row in the result matrix.
