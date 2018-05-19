@@ -35,3 +35,5 @@ source("http://bioconductor.org/biocLite.R")
 biocLite(c("AnnotationDbi", "impute", "GO.db", "preprocessCore")) 
 install.packages("WGCNA")
 
+#MDV: 19/5/2018
+install.packages("Matrix")
