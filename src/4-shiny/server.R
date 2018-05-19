@@ -752,7 +752,7 @@ shinyServer(function(input, output, session) {
                      #print(input$xenaCohorts)
                      if(input$xenaCohorts != "(unassigned)"){
                        print(paste("Searching datesets for", input$xenaCohorts, sep=" "))
-                       sharedValues$xena.datasets <- datasets(XenaHub(cohorts = input$xenaCohorts))
+                       sharedValues$xena.datasets <- XenaR::datasets(XenaHub(hosts = "https://tcga.xenahubs.net", cohorts = input$xenaCohorts))
                        shinyjs::show("xenaCohortDatasets")
                        shinyjs::show("xenaCohortDatasetsFilter")
                      } else {
