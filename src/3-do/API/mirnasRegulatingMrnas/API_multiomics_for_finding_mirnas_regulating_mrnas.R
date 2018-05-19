@@ -110,8 +110,12 @@ CalculateCorrelationsMirnaMrnaUsingWCGNA <- function(expression, mirna, output.p
   cor<-cor_pvalueFast$cor
   #p value result
   p<-cor_pvalueFast$p
+  
+  ###MDB: 2018-05-19: pdaj is done below
   #padj result
-  padj = apply(p, MARGIN = 2, FUN = function(p) p.adjust(p, length(p), method = "fdr"))
+  #padj = apply(p, MARGIN = 2, FUN = function(p) p.adjust(p, length(p), method = "fdr"))
+  ###END MDB: 2018-05-19: pdaj is done below
+  
   
   #TRansform each cell of the matrix into a row in the result matrix.
   #For each colnmae-rowname, will create a row.
@@ -120,9 +124,14 @@ CalculateCorrelationsMirnaMrnaUsingWCGNA <- function(expression, mirna, output.p
   
   p.melt<-melt(p)
   colnames(p.melt) <- c("Gen_symbol","mature_mirna_id","p_value_Of_Mirna_Mrna_Correlation")
-  
-  padj.melt<-melt(padj)
+
+  ###MDB: 2018-05-19
+  #p.value adjusted  
+  padj.melt<-p.melt
+  all.p.values<-p.melt[,3]
+  padj.melt[,3] = p.adjust(all.p.values, length(all.p.values), method = "fdr")
   colnames(padj.melt) <- c("Gen_symbol","mature_mirna_id","p_value_fdr_adjustedMirna_Mrna_Correlation")
+  ###END MDB: 2018-05-19
   
   # Transform data.frame's to data.table's to improve merge performance. Once the merge is done, transform back to data.frame,
   # as the caller code needs a data.frame to work

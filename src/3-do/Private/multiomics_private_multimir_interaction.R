@@ -10,7 +10,7 @@ getPredictedFromMulimir <- function(mirna){
   mirnaDBs <- "all"
   #mirnaDBs <- "validated"
   #mirnaDBs <- "diana_microt"
-	multimir = get.multimir(org="hsa", mirna=mirna, table=mirnaDBs,summary=TRUE, 
+	multimir = get_multimir(org="hsa", mirna=mirna, table=mirnaDBs,summary=TRUE, 
 	                        predicted.cutoff.type="p", predicted.cutoff=30)
 	#write.table(multimir,'c:\\temp\\all' )
   if (length(multimir)==0) return (NULL)
