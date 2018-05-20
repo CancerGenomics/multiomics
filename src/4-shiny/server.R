@@ -731,15 +731,26 @@ shinyServer(function(input, output, session) {
   ###########################################################################
   
   mrnaCohortsData <- reactive({
-    withProgress(message = 'Connectig with Xena...', 
-                 detail = "Getting cohorts", 
-                 min=0, max=1, {    
+    tryCatch(
+        withProgress(message = 'Connectig with Xena...', detail = "Getting cohorts", min=0, max=1, {    
                    print("Connecting to XenaHub...")
                    cohorts(XenaHub(hosts = "https://tcga.xenahubs.net"))
-                   #cohorts(XenaHub())
-                 })  
-  })
+        })  
+    , error=function(e){
+      tryCatch(
+        {
+          library(curl) 
+          readLines(curl("https://tcga.xenahubs.net"))
+          withProgress(message = 'Connectig with Xena...', detail = "Getting cohorts", min=0, max=1, {    
+            print("Connecting to XenaHub...")
+            cohorts(XenaHub(hosts = "https://tcga.xenahubs.net"))
+          })
+        }, error=function(e){print("Error connecting to https://tcga.xenahubs.net.")})
+    })
+    })
+
   
+    
   observeEvent(input$connectToXenaHub, { 
     updateSelectInput(session, "xenaCohorts","XenaHub available cohorts", choices = mrnaCohortsData())
   })  
