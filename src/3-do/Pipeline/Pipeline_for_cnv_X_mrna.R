@@ -11,6 +11,8 @@ source(paste(sourceBaseLocation, "/src/3-do/API/cnvXmrnas/API_cnv_X_mrnas.R",sep
 source(paste(sourceBaseLocation, "/src/survival.utils/matrix_utils.R",sep=""), echo=FALSE, encoding="Cp1252")
 source(paste(sourceBaseLocation, "/src/survival.utils/read_genomic_data_utils.R",sep=""), echo=FALSE, encoding="Cp1252")
 source(paste(sourceBaseLocation, "/src/survival.utils/genomic_utils.R",sep=""), echo=FALSE, encoding="Cp1252")
+source(paste(sourceBaseLocation, "/src/survival.utils/file_utils.R",sep=""), echo=FALSE, encoding="Cp1252")
+
 
 
 ###########CONFIG#################
@@ -18,7 +20,7 @@ source(paste(sourceBaseLocation, "/src/survival.utils/genomic_utils.R",sep=""), 
 working.path=paste0(sourceBaseLocation, "/test/examples/cnv_X_mrnas/")
 mrna.dif.expr.path.file="mrnas-with-extra-samples.csv"
 cnv.file="cnv.csv"
-the.output.path=tempdir()
+working.path=paste(sourceBaseLocation, "/test/examples/cnv_X_mrnas/",sep="")
 
 #YOUR INPUT
 #working.path="D:\\matias\\academia\\investigacion\\medicina personalizada\\8-DatosGenomica\\2016-09-13---paper multiomics\\CNV\\"
@@ -40,11 +42,15 @@ mrna.dif.expr<-(intersection[[1]])
 cnv<-(intersection[[2]])
 
 
-CnvXMrnas(mrna.dif.expr, cnv, output.path=the.output.path,
+CnvXMrnas(mrna.dif.expr, cnv, output.path=working.path,
                       output.file.name="cnvXMrna.csv",
                       r.minimium=0.9, 
                       pearsons.method = "pearson", 
                       inc.progress = F)
 
 
-
+CnvXMrnasWCGNA(mrna.dif.expr, cnv, output.path=working.path,
+          output.file.name="cnvXMrna.csv",
+          r.minimium=0.9, 
+          pearsons.method = "pearson", 
+          inc.progress = F)

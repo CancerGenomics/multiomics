@@ -109,6 +109,43 @@ CnvXMrnas <- function(mrna, cnv, output.path="~/",
   
 }
 
+CnvXMrnasWCGNA <- function(expression, cnv, output.path="~/", 
+                      output.file.name="cnvXMrna.csv",
+                      r.minimium=0.7, 
+                      pearsons.method = "pearson", 
+                      inc.progress = F){
+
+  ###MDB: 26/3/2018
+  library("WGCNA")
+  library("reshape2")
+  library("data.table")
+  
+  ####Number of rows to evaluate (number of mrnas * number of mirnas)
+  ptm <- proc.time()
+  print(paste("Running pipeline with", r.minimium,"threshold and pearson's method:", pearsons.method, sep=" "))
+  
+  #Organize the matrix to keep it in the following format
+  #Mirna or mrna as columns, samples as rows. mirna names o mrna names as column names, and sample names as row names.
+  row.names(expression)<-expression[,1]
+  row.names(cnv)<-cnv[,1]
+  expression<-expression[,1:ncol(expression)]
+  mirna<-cnv[,2:ncol(cnv)]
+  
+  # calcultate correlation using wcgna
+  correlation.result <-correlation.with.wcgna(expression, cnv,r.minimium)
+  colnames(correlation.result)<-(c("Gene","Location", "CNV_mRNA_Correlation", "p-value", "p_value_fdr_adjusted"))
+  
+  # Apply function to set Gene Location on resulting dataframe. This is specific to this Process
+  correlation.result[,2] <- apply(correlation.result[,2], 1, getGeneLocationFromFactor)
+  
+  # Write the result to a file
+  write.to.file(correlation.result, output.path, output.file.name)
+  
+  print(proc.time() - ptm)
+  
+  return (as.matrix(correlation.result))
+  
+}
 
 
 

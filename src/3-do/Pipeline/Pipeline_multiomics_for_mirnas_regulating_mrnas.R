@@ -30,7 +30,10 @@ source(paste(sourceBaseLocation, "/src/3-do/API/survivalGeneByGene/API_multiomic
 source(paste(sourceBaseLocation, "/src/3-do/API/survivalGeneByGene/API_multiomics_for_survival_gene_by_gene.R",sep=""), echo=FALSE, encoding="Cp1252")
 source(paste(sourceBaseLocation, "/src/survival.utils/matrix_utils.R",sep=""), echo=FALSE, encoding="Cp1252")
 source(paste(sourceBaseLocation, "/src/survival.utils/read_genomic_data_utils.R",sep=""), echo=FALSE, encoding="Cp1252")
+source(paste(sourceBaseLocation, "/src/survival.utils/file_utils.R",sep=""), echo=FALSE, encoding="Cp1252")
+
 library("multiMiR")
+
 
 ##########CONFIG: You should change this 3 variables to set your values##################
 #Where input files are and where the intermediate and result files will be stored
