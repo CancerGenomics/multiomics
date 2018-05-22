@@ -66,29 +66,12 @@ CalculateCorrelationsMirnaMrnaUsingWCGNA <- function(expression, mirna, output.p
                                                      pearsons.method = "pearson", 
                                                      inc.progress = F){
   
-  ###MDB: 26/3/2018
   library("WGCNA")
   library("reshape2")
   library("data.table")
   
-  ### Enable parallel processing for WCGNA Correlation
-  enableWGCNAThreads()
-  
-  ###MDB: 26/2/2018 
-  #Columns are: "Gen_symbol","mature_mirna_id","Mirna_Mrna_Correlation","p_value_Of_Mirna_Mrna_Correlation", "p_value_fdr_adjustedMirna_Mrna_Correlation", "ID"
-  num.of.result.columns<-5
-  position.of.adjusted.p.value<-5
-
-  ####Number of rows to evaluate (number of mrnas * number of mirnas)
   ptm <- proc.time()
-  total.rows=nrow(expression)*nrow(mirna)
   print(paste("Running pipeline with", r.minimium,"threshold and pearson's method:", pearsons.method, sep=" "))
-  
-  # The result matix is created
-  res <- matrix(nrow=total.rows,ncol=num.of.result.columns)
-  colnames(res)<-(c("Gen_symbol","mature_mirna_id","Mirna_Mrna_Correlation","p_value_Of_Mirna_Mrna_Correlation", "p_value_fdr_adjustedMirna_Mrna_Correlation"))
-  
-  print("Start process!")
   
   #Organize the matrix to keep it in the following format
   #Mirna or mrna as columns, samples as rows. mirna names o mrna names as column names, and sample names as row names.
@@ -96,59 +79,17 @@ CalculateCorrelationsMirnaMrnaUsingWCGNA <- function(expression, mirna, output.p
   row.names(mirna)<-mirna[,1]
   expression<-expression[,2:ncol(expression)]
   mirna<-mirna[,2:ncol(mirna)]
-  mrnat<-t(expression)
-  mirnat<-t(mirna)
-  mrnatn<-apply(mrnat[2:nrow(mrnat),], 2, as.numeric)
-  mirnatn<-as.numeric(mirnat[2:nrow(mirnat),])
   
-  #WCGNA correlation
-  correlation.start <- proc.time()
-  cor_pvalueFast <- corAndPvalue(mrnat, mirnat)
-  cat("CORRELATION TIME: : ", (proc.time() - correlation.start)["elapsed"], "\n")
+  # calcultate correlation using wcgna
+  correlation.result <-correlation.with.wcgna(expression, mirna,r.minimium)
+  colnames(correlation.result)<-(c("Gen_symbol","mature_mirna_id","Mirna_Mrna_Correlation","p_value_Of_Mirna_Mrna_Correlation", "p_value_fdr_adjustedMirna_Mrna_Correlation"))
   
-  #correlation result
-  cor<-cor_pvalueFast$cor
-  #p value result
-  p<-cor_pvalueFast$p
-  
-  ###MDB: 2018-05-19: pdaj is done below
-  #padj result
-  #padj = apply(p, MARGIN = 2, FUN = function(p) p.adjust(p, length(p), method = "fdr"))
-  ###END MDB: 2018-05-19: pdaj is done below
-  
-  
-  #TRansform each cell of the matrix into a row in the result matrix.
-  #For each colnmae-rowname, will create a row.
-  cor.melt<-melt(cor)
-  colnames(cor.melt) <- c("Gen_symbol","mature_mirna_id","Mirna_Mrna_Correlation")
-  
-  p.melt<-melt(p)
-  colnames(p.melt) <- c("Gen_symbol","mature_mirna_id","p_value_Of_Mirna_Mrna_Correlation")
-
-  ###MDB: 2018-05-19
-  #p.value adjusted  
-  padj.melt<-p.melt
-  all.p.values<-p.melt[,3]
-  padj.melt[,3] = p.adjust(all.p.values, length(all.p.values), method = "fdr")
-  colnames(padj.melt) <- c("Gen_symbol","mature_mirna_id","p_value_fdr_adjustedMirna_Mrna_Correlation")
-  ###END MDB: 2018-05-19
-  
-  # Transform data.frame's to data.table's to improve merge performance. Once the merge is done, transform back to data.frame,
-  # as the caller code needs a data.frame to work
-  merge.start <- proc.time()
-  temp.table <- merge(as.data.table(cor.melt), as.data.table(p.melt), by=c("Gen_symbol","mature_mirna_id"))
-  result.table <-merge(temp.table, as.data.table(padj.melt),  by=c("Gen_symbol","mature_mirna_id"))
-  result <- as.data.frame(subset(result.table, abs(Mirna_Mrna_Correlation) > r.minimium))
-  cat("MERGE TIME: : ", (proc.time() - merge.start)["elapsed"], "\n")
-  
-  write.start <- proc.time()
-  file.path<-paste(output.path, paste(output.file.name), sep="")
-  fwrite(result,file.path,sep="\t", row.names=FALSE, col.names=TRUE, quote=FALSE)
-  cat("WRITE TIME: : ", (proc.time() - write.start)["elapsed"], "\n")
+  # Write the result to a file
+  write.to.file(correlation.result, output.path, output.file.name)
 
   print(proc.time() - ptm)
   
-  return (convertVectorToMatrix(result))
+  return (as.matrix(correlation.result))
 }
 
 

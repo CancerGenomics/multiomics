@@ -125,6 +125,66 @@ methXMrnas <- function(mrna, meth, meth.platform, output.path="~/",
   
 }
 
+methXMrnasWCGNA <- function(mrna, meth, meth.platform, output.path="~/", 
+                       output.file.name="methylationXMrna.csv",
+                       r.minimium=0.7, 
+                       pearsons.method = "pearson", 
+                       inc.progress = F){
+  
+  library("WGCNA")
+  library("reshape2")
+  library("data.table")
+  
+  ptm <- proc.time()
+  print(paste("Running pipeline methylaion_X_mrnas with", r.minimium, 
+              "threshold and pearson's method:", pearsons.method, sep=" "))
+  
+  # TODO: Find a way to avoid this.
+  # rm(final.data.frame)
+  
+  final.data.frame <- data.frame(matrix(ncol = 5, nrow = 0))
+  colnames(final.data.frame) <- c("x", "y", "correlation", "p.value", "p.value.fdr.adjusted")
+
+  # For each gen on MRNA file
+  for (i in 1:nrow(mrna)) {
+    # Build a dataframe with actual gen row only
+    actual.mrna<-mrna[i,2:ncol(mrna)]
+    actual.gen<-as.character(mrna[i,1])
+
+    # Get a list of all CG associated to the actual gen using the file meth.platform
+    cg.genes <- subset(meth.platform, gene == actual.gen)
+    
+    if (nrow(cg.genes) > 0) {
+      # Create dataframe with all files on meth file which key is a value on cg.genes
+      current.gen.meth.values.by.cg <- subset(meth, meth %in% cg.genes$cg)
+      # set row names using first row values, then remove first column
+      rownames(current.gen.meth.values.by.cg) <- current.gen.meth.values.by.cg[,1]
+      current.gen.meth.values.by.cg <- current.gen.meth.values.by.cg[,2:ncol(current.gen.meth.values.by.cg)]
+      
+      print("Correlation....")
+      # calcultate correlation using wcgna
+      correlation.result <-correlation.with.wcgna(actual.mrna, current.gen.meth.values.by.cg,r.minimium)
+      # colnames(correlation.result)<-(c("Gene","Location", "CNV_mRNA_Correlation", "p-value", "p_value_fdr_adjusted"))
+      
+      final.data.frame <- rbind(final.data.frame, correlation.result)
+    }
+  }
+  
+  # Filter out results with correlation greater than 0. This is specific to this correlation
+  colnames(final.data.frame)<-(c("Gene", "methylation-id", "Methylation_mRNA_correlation", "p-value", "p_value_fdr_adjusted"))
+  final.data.frame <- subset(final.data.frame, Methylation_mRNA_correlation < 0)
+  
+  # For each row, calculate methylation-id position
+  final.data.frame$Location <- apply(final.data.frame[,1], 1, getGeneLocationFromFactor) 
+  final.data.frame <- final.data.frame[,c("Gene","Location", "methylation-id", "Methylation_mRNA_correlation", "p-value", "p_value_fdr_adjusted")]
+  
+  # Write the result to a file
+  write.to.file(final.data.frame, output.path, output.file.name)
+  
+  print(proc.time() - ptm)
+  
+  return (as.matrix(final.data.frame))
+}
 
 
 get.cgs.for.this.genes <- function(actual.gen,meth.platform){
