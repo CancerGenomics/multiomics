@@ -5,10 +5,14 @@ correlation.with.wcgna <- function(x, y, minimium) {
   
   # Calculate correlation between x and y using  WCGNA
   correlation.start <- proc.time()
-  # transpose matrix beore correlation
+  # transpose matrix before correlation
   x.transposed <-t(x)
   y.transposed <- t(y)
-  cor.and.pvalue <- corAndPvalue(x.transposed, y.transposed)
+  
+  x.transposed.numeric<-apply(x.transposed, 2, as.numeric)
+  y.transposed.numeric<-apply(y.transposed, 2, as.numeric)
+  
+  cor.and.pvalue <- corAndPvalue(x.transposed.numeric, y.transposed.numeric)
   cat("CORRELATION TIME: : ", (proc.time() - correlation.start)["elapsed"], "\n")
 
   merge.start <- proc.time()
@@ -36,3 +40,4 @@ correlation.with.wcgna <- function(x, y, minimium) {
   
   return(result.table)
 }
+

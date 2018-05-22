@@ -27,13 +27,13 @@ test_that("WCGNA correlation gives same results as previous implementation", {
   meth.platform.table = getMethylationPlatformTableForPipeline("HumanMethylation450 BeadChip", path.platform)
   
   # Test with a r.minimum greater than 0
-  calculated.legacy <- res<-methXMrnas(mrna.dif.expr, meth.dif.expr, meth.platform.table, output.path=the.output.path,
+  calculated.legacy <- methXMrnas(mrna.dif.expr, meth.dif.expr, meth.platform.table, output.path=the.output.path,
                                        output.file.name="cnvXMrna.csv",
                                        r.minimium=0.2, 
                                        pearsons.method = "pearson", 
                                        inc.progress = F)
   
-  calculated.wcgna <- res<-methXMrnasWCGNA(mrna.dif.expr, meth.dif.expr, meth.platform.table, output.path=the.output.path,
+  calculated.wcgna <- methXMrnasWCGNA(mrna.dif.expr, meth.dif.expr, meth.platform.table, output.path=the.output.path,
                                        output.file.name="cnvXMrna.csv",
                                        r.minimium=0.2, 
                                        pearsons.method = "pearson", 

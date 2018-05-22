@@ -4,6 +4,7 @@ sourceBaseLocation=getwd()
 source(paste(sourceBaseLocation, "/src/2-load/load_multiomics.R",sep=""), echo=FALSE, encoding="Cp1252")
 source(paste(sourceBaseLocation, "/src/3-do/Private/multiomics_private_data_validation.R",sep=""), echo=FALSE, encoding="Cp1252")
 source(paste(sourceBaseLocation, "/src/3-do/Private/multiomics_private_multimir_interaction.R",sep=""), echo=FALSE, encoding="Cp1252")
+source(paste(sourceBaseLocation, "/src/3-do/Private/multiomics_correlation_wcgna.R",sep=""), echo=FALSE, encoding="Cp1252")
 source(paste(sourceBaseLocation, "/src/3-do/API/mirnasRegulatingMrnas/API_multiomics_for_finding_mirnas_regulating_mrnas.R",sep=""), echo=FALSE, encoding="Cp1252")
 source(paste(sourceBaseLocation, "/src/3-do/API/survivalGeneByGene/API_multiomics_for_survival_gene_by_gene.R",sep=""), echo=FALSE, encoding="Cp1252")
 source(paste(sourceBaseLocation, "/src/3-do/API/survivalGeneByGene/API_multiomics_for_survival_gene_by_gene.R",sep=""), echo=FALSE, encoding="Cp1252")
@@ -42,14 +43,14 @@ mrna.dif.expr<-(intersection[[1]])
 cnv<-(intersection[[2]])
 
 
-CnvXMrnas(mrna.dif.expr, cnv, output.path=working.path,
+correlation <- CnvXMrnas(mrna.dif.expr, cnv, output.path=working.path,
                       output.file.name="cnvXMrna.csv",
                       r.minimium=0.9, 
                       pearsons.method = "pearson", 
                       inc.progress = F)
 
 
-CnvXMrnasWCGNA(mrna.dif.expr, cnv, output.path=working.path,
+correlation2 <- CnvXMrnasWCGNA(mrna.dif.expr, cnv, output.path=working.path,
           output.file.name="cnvXMrna.csv",
           r.minimium=0.9, 
           pearsons.method = "pearson", 

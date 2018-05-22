@@ -128,11 +128,11 @@ CnvXMrnasWCGNA <- function(expression, cnv, output.path="~/",
   #Mirna or mrna as columns, samples as rows. mirna names o mrna names as column names, and sample names as row names.
   row.names(expression)<-expression[,1]
   row.names(cnv)<-cnv[,1]
-  expression<-expression[,1:ncol(expression)]
+  expression<-expression[,2:ncol(expression)]
   mirna<-cnv[,2:ncol(cnv)]
   
   # calcultate correlation using wcgna
-  correlation.result <-correlation.with.wcgna(expression, cnv,r.minimium)
+  correlation.result <-correlation.with.wcgna(expression, mirna,r.minimium)
   colnames(correlation.result)<-(c("Gene","Location", "CNV_mRNA_Correlation", "p-value", "p_value_fdr_adjusted"))
   
   # Apply function to set Gene Location on resulting dataframe. This is specific to this Process

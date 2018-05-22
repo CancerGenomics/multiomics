@@ -140,8 +140,11 @@ methXMrnasWCGNA <- function(mrna, meth, meth.platform, output.path="~/",
               "threshold and pearson's method:", pearsons.method, sep=" "))
   
   # TODO: Find a way to avoid this.
-  rm(final.data.frame)
+  # rm(final.data.frame)
   
+  final.data.frame <- data.frame(matrix(ncol = 5, nrow = 0))
+  colnames(final.data.frame) <- c("x", "y", "correlation", "p.value", "p.value.fdr.adjusted")
+
   # For each gen on MRNA file
   for (i in 1:nrow(mrna)) {
     # Build a dataframe with actual gen row only
@@ -158,16 +161,12 @@ methXMrnasWCGNA <- function(mrna, meth, meth.platform, output.path="~/",
       rownames(current.gen.meth.values.by.cg) <- current.gen.meth.values.by.cg[,1]
       current.gen.meth.values.by.cg <- current.gen.meth.values.by.cg[,2:ncol(current.gen.meth.values.by.cg)]
       
+      print("Correlation....")
       # calcultate correlation using wcgna
       correlation.result <-correlation.with.wcgna(actual.mrna, current.gen.meth.values.by.cg,r.minimium)
       # colnames(correlation.result)<-(c("Gene","Location", "CNV_mRNA_Correlation", "p-value", "p_value_fdr_adjusted"))
       
-      if (exists("final.data.frame")) {
-        # Agrego el sub conjunto al resultado total
-        final.data.frame <- rbind(final.data.frame, correlation.result)
-      } else {
-        final.data.frame <- correlation.result[,]
-      }
+      final.data.frame <- rbind(final.data.frame, correlation.result)
     }
   }
   
