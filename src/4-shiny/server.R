@@ -376,7 +376,7 @@ shinyServer(function(input, output, session) {
       intersection<-keepSameColumns(cnvMrnaExpressionData(),cnvExpressionData())
       mrna.dif.expr<-(intersection[[1]])
       cnv<-(intersection[[2]])
-      sharedValues$cnvMrnaCorrelations <- CnvXMrnas(mrna.dif.expr, cnv, output.path="~/", 
+      sharedValues$cnvMrnaCorrelations <- CnvXMrnasWCGNA(mrna.dif.expr, cnv, output.path="~/", 
                                                     output.file.name=paste(input$cnv.mrnaFile$name,"-",input$cnv.cnvFile$name,"-outputFile.csv", sep = ""),
                                                     r.minimium = cnvThreshold(), inc.progress = T, pearsons.method = cnvPearsonsMethod())
     }
@@ -582,7 +582,7 @@ shinyServer(function(input, output, session) {
       intersection<-keepSameColumns(methMrnaExpressionData(),methExpressionData())
       mrna.dif.expr<-(intersection[[1]])
       meth<-(intersection[[2]])
-      sharedValues$methMrnaCorrelations <- methXMrnas(mrna.dif.expr, meth, methPlatform() , output.path="~/",
+      sharedValues$methMrnaCorrelations <- methXMrnasWCGNA(mrna.dif.expr, meth, methPlatform() , output.path="~/",
                                                       output.file.name=paste(input$meth.mrnaFile$name,"-",input$meth.methFile$name,"-outputFile.csv", sep = ""),           
                                                       r.minimium = methThreshold(), 
                                                       pearsons.method = methPearsonsMethod(), 

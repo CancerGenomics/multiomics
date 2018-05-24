@@ -12,6 +12,7 @@ correlation.with.wcgna <- function(x, y, minimium) {
   x.transposed.numeric<-apply(x.transposed, 2, as.numeric)
   y.transposed.numeric<-apply(y.transposed, 2, as.numeric)
   
+  print("Running correlation using WCGNA.")
   cor.and.pvalue <- corAndPvalue(x.transposed.numeric, y.transposed.numeric)
   cat("CORRELATION TIME: : ", (proc.time() - correlation.start)["elapsed"], "\n")
 
