@@ -157,16 +157,17 @@ methXMrnasWCGNA <- function(mrna, meth, meth.platform, output.path="~/",
     if (nrow(cg.genes) > 0) {
       # Create dataframe with all files on meth file which key is a value on cg.genes
       current.gen.meth.values.by.cg <- subset(meth, meth %in% cg.genes$cg)
-      # set row names using first row values, then remove first column
-      rownames(current.gen.meth.values.by.cg) <- current.gen.meth.values.by.cg[,1]
-      current.gen.meth.values.by.cg <- current.gen.meth.values.by.cg[,2:ncol(current.gen.meth.values.by.cg)]
-      
-      print("Correlation....")
-      # calcultate correlation using wcgna
-      correlation.result <-correlation.with.wcgna(actual.mrna, current.gen.meth.values.by.cg,r.minimium)
-      # colnames(correlation.result)<-(c("Gene","Location", "CNV_mRNA_Correlation", "p-value", "p_value_fdr_adjusted"))
-      
-      final.data.frame <- rbind(final.data.frame, correlation.result)
+      if (nrow(current.gen.meth.values.by.cg) > 0) {
+        # set row names using first row values, then remove first column
+        rownames(current.gen.meth.values.by.cg) <- current.gen.meth.values.by.cg[,1]
+        current.gen.meth.values.by.cg <- current.gen.meth.values.by.cg[,2:ncol(current.gen.meth.values.by.cg)]
+        
+        print("Correlation....")
+        # calcultate correlation using wcgna
+        correlation.result <-correlation.with.wcgna(actual.mrna, current.gen.meth.values.by.cg,r.minimium)
+        # colnames(correlation.result)<-(c("Gene","Location", "CNV_mRNA_Correlation", "p-value", "p_value_fdr_adjusted"))
+        final.data.frame <- rbind(final.data.frame, correlation.result)
+      }
     }
   }
   
@@ -175,8 +176,10 @@ methXMrnasWCGNA <- function(mrna, meth, meth.platform, output.path="~/",
   final.data.frame <- subset(final.data.frame, Methylation_mRNA_correlation < 0)
   
   # For each row, calculate methylation-id position
-  final.data.frame$Location <- apply(final.data.frame[,1], 1, getGeneLocationFromFactor) 
-  final.data.frame <- final.data.frame[,c("Gene","Location", "methylation-id", "Methylation_mRNA_correlation", "p-value", "p_value_fdr_adjusted")]
+  if (nrow(final.data.frame) > 0) {
+    final.data.frame$Location <- apply(final.data.frame[,1], 1, getGeneLocationFromFactor) 
+    final.data.frame <- final.data.frame[,c("Gene","Location", "methylation-id", "Methylation_mRNA_correlation", "p-value", "p_value_fdr_adjusted")]
+  }
   
   # Write the result to a file
   write.to.file(final.data.frame, output.path, output.file.name)
