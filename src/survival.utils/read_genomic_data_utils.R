@@ -45,18 +45,9 @@ keepSameColumns <- function(matrix1, matrix2) {
 #Ejemplo de cohort: TCGA Uterine Carcinosarcoma (UCS)
 #Ejemplo de dataset: TCGA/TCGA.UCS.sampleMap/RPPA
 #Prefijo del xenahub: https://tcga.xenahubs.net/download/
-#URL resultante: se debe sacar hasta la primera barra. Es decir que seria: https://tcga.xenahubs.net/download/TCGA.UCS.sampleMap/RPPA
-#TENER EN CUENTA QUE ESTA FUNCION SOPORTA SOLO DATASETS QUE PROVENGAN DEL HUB DE TCGA (https://xenabrowser.net/datapages/?host=https://tcga.xenahubs.net)
 getUrlFromTCGAXenaHub <- function(dataset){
   prefix<-"https://tcga.xenahubs.net/download/"
-  url.parts<-unlist(strsplit(dataset, '/'))
-  url.sufix<-url.parts[2]
-  if (length(url.parts)>=3){
-    for (x in 3:length(url.parts)) {
-      url.sufix<-paste(url.sufix, url.parts[x],sep="/")
-    }
-  }
-  url<-paste0(prefix, url.sufix, ".gz")
+  url<-paste0(prefix, dataset, ".gz")
 }
 
 
