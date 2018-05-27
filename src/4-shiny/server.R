@@ -36,7 +36,7 @@ shinyServer(function(input, output, session) {
         runMultimirAnalisys()
         ###MDB: 26/2/2018 - P.ADJUST
         #colnames(sharedValues$correlationsStep2) <- c("Gene","Mature miRNA","miRNA-mRNA correlation","p-value","miRNA db","Predicted score","PubMed ID")
-        colnames(sharedValues$correlationsStep2) <- c("Gene","Mature miRNA","miRNA-mRNA correlation","p-value", "adj-p-value", "miRNA db","Predicted score","PubMed ID")
+        colnames(sharedValues$correlationsStep2) <- c("Gene","Mature miRNA","miRNA-mRNA correlation","p-value", "adj-p-value", "id", "miRNA db","Predicted score","PubMed ID")
         
         sharedValues$mirna.matrix.to.render <- sharedValues$correlationsStep2
       } else {
@@ -281,8 +281,17 @@ shinyServer(function(input, output, session) {
       selected.mirna <- correlations()[input$result_rows_selected,2]
       selected.gene.row <- which(mrnaExpressionData()==selected.gene)
       selected.mirna.row <- which(mirnaExpressionData()==selected.mirna)
-      X <- as.numeric(as.vector(mirnaExpressionData()[selected.mirna.row,2:ncol(mirnaExpressionData())]))
-      Y <- as.numeric(as.vector(mrnaExpressionData()[selected.gene.row,2:ncol(mrnaExpressionData())]))
+      
+      mrna.sample.names<- colnames(mrnaExpressionData())[2:ncol(mrnaExpressionData())]
+      mirna.sample.names<- colnames(mirnaExpressionData())[2:ncol(mirnaExpressionData())]
+      cols.in.common<-intersect(mrna.sample.names, mirna.sample.names)
+      
+      #X <- as.numeric(as.vector(mirnaExpressionData()[selected.mirna.row,2:ncol(mirnaExpressionData())]))
+      #Y <- as.numeric(as.vector(mrnaExpressionData()[selected.gene.row,2:ncol(mrnaExpressionData())]))
+      
+      X <- as.numeric(as.vector(mirnaExpressionData()[selected.mirna.row,cols.in.common]))
+      Y <- as.numeric(as.vector(mrnaExpressionData()[selected.gene.row,cols.in.common]))
+      
       cor.test(X, Y)
       plot(X, Y, xlab=selected.mirna, ylab=selected.gene, main='miRNA vs. mRNA correlation plot', col='Black', pch=21, frame.plot=TRUE) #col=Group
       line <- lm(Y ~ X)

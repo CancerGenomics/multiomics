@@ -1,0 +1,4 @@
+Gene	Location	CNV_mRNA_Correlation	p-value	p_value_fdr_adjusted
+ATAD3C	1p36.33	1	0	0
+A2ML1	12p13.31	0.999704657261507	0	0
+TP53	1p36.33	1	0	0

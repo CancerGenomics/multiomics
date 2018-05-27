@@ -96,7 +96,7 @@ mirna.dif.expr<-(intersection[[2]])
 
 calculated <- CalculateCorrelationsMirnaMrnaUsingWCGNA(mrna.dif.expr,mirna.dif.expr, working.path, 
                                                        output.file.name=maturemirna.x.mrna.correlation.file.name,
-                                                      r.minimium=0.3)
+                                                      r.minimium=0.7)
 
 
 

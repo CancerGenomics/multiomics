@@ -389,7 +389,7 @@ keepBestGeneXMirnaAccordingCorrelationAndAddMirnaDbInfo <- function(genes.x.mirn
 	colnames(result)<-c("Gen_symbol","mature_mirna_id","Mirna_Mrna_Correlation","p_value_Of_Mirna_Mrna_Correlation", "p_value_Of_Mirna_Mrna_Correlation_adjusted", "ID", "mirna_database","database_predicted_score", "validation_pubmed_id")
 	csvOutputFile<-paste(output.path, output.file, sep="")
 	write.table(result, csvOutputFile, sep="\t",row.names=FALSE)
-	
+	colnames(genes.x.mirnas)
 	return (result)
 }
 
