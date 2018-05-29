@@ -306,11 +306,21 @@ shinyServer(function(input, output, session) {
     
     if(!is.null(input$mirna.survivalFile) && !is.null(input$result_rows_selected)){
       
+      intersection<-keepSameColumns(mrnaExpressionData(),mirnaExpressionData())
+      mrna.dif.expr<-(intersection[[1]])
+      mirna.dif.expr<-(intersection[[2]])
+      
+      #selected.gene <- correlations()[input$result_rows_selected,1]
+      #selected.gene.row <- which(mrnaExpressionData()==selected.gene)
+      #expression.vector <- as.numeric(as.vector(mrnaExpressionData()[selected.gene.row,2:ncol(mrnaExpressionData())]))
+      
       selected.gene <- correlations()[input$result_rows_selected,1]
-      selected.gene.row <- which(mrnaExpressionData()==selected.gene)
-      expression.vector <- as.numeric(as.vector(mrnaExpressionData()[selected.gene.row,2:ncol(mrnaExpressionData())]))
+      selected.gene.row <- which(mrna.dif.expr==selected.gene)
+      expression.vector <- as.numeric(as.vector(mrna.dif.expr[selected.gene.row,2:ncol(mrna.dif.expr)]))
+      
       
       mirna.survival.matrix <- read.table(input$mirna.survivalFile$datapath, header = T)
+      mirna.survival.matrix<-mirna.survival.matrix[mirna.survival.matrix$X_SAMPLE_ID %in% colnames(mirna.dif.expr),]
       survival.name.col <- which(colnames(mirna.survival.matrix)==input$mirna.survival.column.name)
       survival.event.col <- which(colnames(mirna.survival.matrix)==input$mirna.event.column.name)
       
