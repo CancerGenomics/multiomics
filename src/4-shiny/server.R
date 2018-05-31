@@ -800,8 +800,13 @@ shinyServer(function(input, output, session) {
     
     if(!is.null(input$xenaCohorts)) {
       filtered <- sharedValues$xena.datasets
+      print(input$xenaCohortDatasetsFilter)
       if((input$xenaCohortDatasetsFilter != "All")) {
         filtered <- filtered[grep(input$xenaCohortDatasetsFilter,filtered)]
+        if(input$xenaCohortDatasetsFilter == "RNA") {
+          mirna <- filtered[grep("miRNA",filtered)]
+          filtered <- filtered[!filtered %in% mirna]
+        }
       }
       
       updateSelectInput(session, "xenaCohortDatasets","Cohort datasets", choices = filtered)
