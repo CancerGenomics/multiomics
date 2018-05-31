@@ -80,6 +80,9 @@ mirna.dif.expr.path<-paste(working.path, mirna.dif.expr.path.file, sep="")
 #BIG FILES FOR TESTING
 #mrna.dif.expr.path<-"C:\\desarrollo\\workspaces\\r\\UAI\\multiomics2\\examples\\mRNAvsmiRNA\\mRNA_TCGA_breast.csv"
 #mirna.dif.expr.pat<-"C:\\desarrollo\\workspaces\\r\\UAI\\multiomics2\\examples\\mRNAvsmiRNA\\miRNA_TCGA_breast.csv"
+mrna.dif.expr.path<-"C:\\Users\\matia\\Desktop\\temp2\\Pathway_Paradigm_mRNA"
+mirna.dif.expr.path<-"C:\\Users\\matia\\Desktop\\temp2\\miRNA_GA_gene"
+
 
 #It reads mrna file and mirna file. It sorts each file by sample name (that is by column)
 mrna.dif.expr <- readMrnaExpressionFile(mrna.dif.expr.path)
@@ -90,7 +93,6 @@ mirna.dif.expr <- readMirnaExpressionFile(mirna.dif.expr.path)
 intersection<-keepSameColumns(mrna.dif.expr,mirna.dif.expr)
 mrna.dif.expr<-(intersection[[1]])
 mirna.dif.expr<-(intersection[[2]])
-
 
 
 

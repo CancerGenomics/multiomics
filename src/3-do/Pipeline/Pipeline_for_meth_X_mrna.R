@@ -33,9 +33,15 @@ working.path=paste(sourceBaseLocation, "/test/examples/methylation_X_mrnas/",sep
 #####DO  
 mrna.dif.expr.path<-paste(working.path, mrna.dif.expr.path.file, sep="")
 meth.path<-paste(working.path, meth.file, sep="")
+
+##use this if you want to test with files
+#mrna.dif.expr.path<-"C:\\Users\\matia\\Desktop\\temp2\\Pathway_Paradigm_mRNA"
+#meth.path<-"C:\\Users\\matia\\Desktop\\temp2\\HumanMethylation27"
+
 print("Preparing...")
 mrna.dif.expr <- readMrnaExpressionFile(mrna.dif.expr.path)
 meth <- readMethylationFile(meth.path)
+
 
 #Keep columns which are in both databases
 intersection<-keepSameColumns(mrna.dif.expr,meth)
@@ -44,16 +50,16 @@ meth<-(intersection[[2]])
 
 path.platform<-paste(sourceBaseLocation, "/resources/methilation.platforms/illuminaMethyl450_hg19_GPL16304.txt", sep="")
 
+res2<-methXMrnasWCGNA(mrna.dif.expr, meth, getMethylationPlatformTableForPipeline("HumanMethylation450 BeadChip", path.platform), output.path=working.path,
+                      output.file.name="methXMrna.csv",
+                      r.minimium=0.2, 
+                      pearsons.method = "pearson", 
+                      inc.progress = F)
+
+
 res<-methXMrnas(mrna.dif.expr, meth, getMethylationPlatformTableForPipeline("HumanMethylation450 BeadChip", path.platform), output.path=working.path,
           output.file.name="methXMrna.csv",
           r.minimium=0.2, 
           pearsons.method = "pearson", 
           inc.progress = F)
 
-dim(res)
-
-res2<-methXMrnasWCGNA(mrna.dif.expr, meth, getMethylationPlatformTableForPipeline("HumanMethylation450 BeadChip", path.platform), output.path=working.path,
-                output.file.name="methXMrna.csv",
-                r.minimium=0.2, 
-                pearsons.method = "pearson", 
-                inc.progress = F)

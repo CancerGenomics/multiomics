@@ -7,7 +7,7 @@
 readCNVFile <- function(cnv.path, ncol.for.expression.id=1) {
 
   print("Reading cnv file...")
-  cnv <- na.omit(read.table(cnv.path, header=TRUE,fill=TRUE, row.names = NULL))
+  cnv <- na.omit(read.table(cnv.path, header=TRUE,fill=TRUE, row.names = NULL, sep="\t"))
   cnv <-SortMatrixByColumnName(cnv, 1)
   
   return (cnv)
@@ -21,7 +21,7 @@ readCNVFile <- function(cnv.path, ncol.for.expression.id=1) {
 readMrnaExpressionFile <- function(expression.file, ncol.for.expression.id=1) {
   
   print("Reading the mrna file...")
-  expression <- na.omit(read.table(expression.file, header=TRUE,fill=TRUE, row.names = NULL))
+  expression <- na.omit(read.table(expression.file, header=TRUE,fill=TRUE, row.names = NULL, sep = "\t"))
   unique.names<-make.unique(as.character(expression[,1]),  sep = "_")
   rownames(expression)<-unique.names
   #expression<-expression[,2:ncol(expression)]
@@ -30,7 +30,6 @@ readMrnaExpressionFile <- function(expression.file, ncol.for.expression.id=1) {
   #rownames(expression) <- expression[,1]
   return (expression)
 }
-
 
 keepSameColumns <- function(matrix1, matrix2) {
   cols_to_keep <- intersect(colnames(matrix1)[-1],colnames(matrix2)[-1])
@@ -82,7 +81,7 @@ generateAllURLSFromXenaHub2 <- function(){
 readMethylationFile <- function(meth.path, ncol.for.expression.id=1) {
   
   print("Reading methylation file...")
-  meth <- na.omit(read.table(meth.path, header=TRUE,fill=TRUE, row.names = NULL))
+  meth <- na.omit(read.table(meth.path, header=TRUE,fill=TRUE, row.names = NULL, sep="\t"))
   meth <-SortMatrixByColumnName(meth, 1)
   return (meth)
 }

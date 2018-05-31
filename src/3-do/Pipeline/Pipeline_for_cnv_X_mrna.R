@@ -34,8 +34,15 @@ working.path=paste(sourceBaseLocation, "/test/examples/cnv_X_mrnas/",sep="")
 mrna.dif.expr.path<-paste(working.path, mrna.dif.expr.path.file, sep="")
 cnv.path<-paste(working.path, cnv.file, sep="")
 print("Preparing...")
+
+##use this if you want to test with files
+#mrna.dif.expr.path<-"C:\\Users\\matia\\Desktop\\temp2\\Pathway_Paradigm_mRNA"
+#cnv.path<-"C:\\Users\\matia\\Desktop\\temp2\\Gistic2_CopyNumber_Gistic2_all_data_by_genes_small"
+
 mrna.dif.expr <- readMrnaExpressionFile(mrna.dif.expr.path)
 cnv <- readCNVFile(cnv.path)
+
+
 
 #Keep columns which are in both databases
 intersection<-keepSameColumns(mrna.dif.expr,cnv)
