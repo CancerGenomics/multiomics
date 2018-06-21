@@ -1,4 +1,4 @@
-correlation.with.wcgna <- function(x, y, minimium) {
+correlation.with.wcgna <- function(x, y, minimium, keep.pos.cor=T, keep.neg.cor=T) {
   
   ### Enable parallel processing for WCGNA Correlation
   enableWGCNAThreads()
@@ -15,13 +15,16 @@ correlation.with.wcgna <- function(x, y, minimium) {
   print("Running correlation using WCGNA.")
   cor.and.pvalue <- corAndPvalue(x.transposed.numeric, y.transposed.numeric)
   cat("CORRELATION TIME: : ", (proc.time() - correlation.start)["elapsed"], "\n")
-
+  
   merge.start <- proc.time()
   # correlation result into a dataframe
   cor.melt<-melt(cor.and.pvalue$cor)
   colnames(cor.melt) <- c("x","y","correlation")
   # Filter rows with a correlation that does not meet the minimum required value
   cor.melt <- subset(cor.melt, abs(correlation) > minimium)
+  
+  if (!keep.pos.cor)   cor.melt <- subset(cor.melt, correlation < 0)
+  if (!keep.neg.cor)   cor.melt <- subset(cor.melt, correlation > 0)
   
   #pvalue result into a dataframe
   p.melt<-melt(cor.and.pvalue$p)

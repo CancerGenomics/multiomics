@@ -3,7 +3,7 @@
 ###############################################################################
 
 
-  
+
 
 # mirna.file: it is the path of a file with the following format
 #  -Row 1: It has the sample labels
@@ -81,12 +81,12 @@ CalculateCorrelationsMirnaMrnaUsingWCGNA <- function(expression, mirna, output.p
   mirna<-mirna[,2:ncol(mirna)]
   
   # calcultate correlation using wcgna
-  correlation.result <-correlation.with.wcgna(expression, mirna,r.minimium)
+  correlation.result <-correlation.with.wcgna(expression, mirna,r.minimium, keep.pos.cor=F, keep.neg.cor=T)
   colnames(correlation.result)<-(c("Gen_symbol","mature_mirna_id","Mirna_Mrna_Correlation","p_value_Of_Mirna_Mrna_Correlation", "p_value_fdr_adjustedMirna_Mrna_Correlation"))
   
   # Write the result to a file
   write.to.file(correlation.result, output.path, output.file.name)
-
+  
   print(proc.time() - ptm)
   
   return (as.matrix(correlation.result))
@@ -133,121 +133,11 @@ CalculateCorrelationsMirnaMrnaUsingWCGNA <- function(expression, mirna, output.p
 CalculateCorrelationsMirnaMrna <- function(expression, mirna, output.path="~/", 
                                            output.file.name="inputStep2-matureMirnaXmrna.csv",
                                            r.minimium=0.7, 
-										   pearsons.method = "pearson", 
-                                           inc.progress = F){
-  
-
-  
-  ###MDB: 26/2/2018 - P.ADJUST
-  #Columns are: "Gen_symbol","mature_mirna_id","Mirna_Mrna_Correlation","p_value_Of_Mirna_Mrna_Correlation", "p_value_fdr_adjustedMirna_Mrna_Correlation", "ID"
-  num.of.result.columns<-6
-  position.of.adjusted.p.value<-5
-  ####
-  
-  ptm <- proc.time()
-	total.rows=nrow(expression)*nrow(mirna)
-	print(paste("Running pipeline with", r.minimium, 
-				"threshold and pearson's method:", pearsons.method, sep=" "))
-	
-	# The result matix is created
-	res <- matrix(nrow=total.rows,ncol=num.of.result.columns)
-	colnames(res)<-(c("Gen_symbol","mature_mirna_id","Mirna_Mrna_Correlation","p_value_Of_Mirna_Mrna_Correlation", "p_value_fdr_adjustedMirna_Mrna_Correlation", "ID"))
-	
-	
-	###MDB: 26/2/2018 - P.ADJUST - Start on 0
-	actual<-0
-	actual.n.correlated<-1
-	print("Start process!")
-	
-	###MDB: 26/2/2018 - P.ADJUST
-	p.values.all<-c()
-	p.values.positions.of.correlated.pairs<-c()
-	ids<-c()
-	###
-	for (i in 1:nrow(mirna)) {
-	  ###MDB: 26/2/2018 - P.ADJUST
-	  actual.mirna<-mirna[i,1]
-		mirna.para.ese.gen<-mirna[i,2:ncol(mirna)]
-		###
-		for (j in 1:nrow(expression)) {
-		  actual<-actual+1
-			actual.gen<-expression[j,1]
-			expression.para.ese.gen<-expression[j,2:ncol(expression)]
-			if ((actual)%%500==0)print(paste("analised ", actual, " from ", total.rows))
-			if ((actual)%%1000==0) {
-			  elapsedTime <- (proc.time() - ptm)[3]
-			  print(paste(
-			    "elapsed time: (seconds)", format2Print(elapsedTime), 
-			    " - (minutes)", format2Print(elapsedTime/60), 
-			    " - (hours)", format2Print(elapsedTime/60/60)
-			  ))
-			  remainingTime <- ((total.rows*elapsedTime)/actual) - elapsedTime
-			  print(paste("estimated remaining time (seconds)", format2Print(remainingTime),
-			              " - (minutes)", format2Print(remainingTime/60), 
-			              " - (hours)", format2Print(remainingTime/60/60)
-			  ))
-			}
-			resultado.pearson<-cor.test(as.numeric(expression.para.ese.gen),
-					                    as.numeric(mirna.para.ese.gen), 
-										method = pearsons.method)
-			###MDB: 26/2/2018 - P.ADJUST
-			p.values.all<-append(p.values.all, resultado.pearson$p.value)
-			#id<-paste(actual, actual.gen, actual.mirna, sep="-")
-			id<-actual
-			ids<-append(ids, id)
-			
-			###
-			if (!is.na(abs(resultado.pearson$estimate))) {
-				if (abs(resultado.pearson$estimate) > r.minimium) {
-				  
-				  ###MDB: 26/2/2018 - P.ADJUST
-				  newValue<-c(as.character(actual.gen), as.character(actual.mirna), 
-				              		  resultado.pearson$estimate, resultado.pearson$p.value, -9999, id)
-				  ##
-				  
-				  res[actual.n.correlated,1:num.of.result.columns] <- newValue
-				  actual.n.correlated<-actual.n.correlated+1
-
-				  ###MDB: 26/2/2018 - P.ADJUST
-				  p.values.positions.of.correlated.pairs<-append(p.values.positions.of.correlated.pairs, id)
-				}
-			}
-		}
-		
-		if(inc.progress) {
-			incProgress(1/nrow(mirna));
-		}	
-	}
-	###MDB: 26/2/2018 - P.ADJUST
-	p.values.adjusted.fdr<-p.adjust(p.values.all, method="fdr", n=length(p.values.all))
-	names(p.values.adjusted.fdr)<-ids
-
-	###MDB: 26/2/2018 - P.ADJUST
-	res[res[,"ID"] %in% p.values.positions.of.correlated.pairs, position.of.adjusted.p.value]<-p.values.adjusted.fdr[as.character(p.values.positions.of.correlated.pairs)]
-	####
-	
-	###MDB: 26/2/2018 - P.ADJUST
-	# deleting useless and unused rows
-	res <- res[c(1:actual.n.correlated-1),c(1:num.of.result.columns)]
-	
-
-  
-  #if (!(folder.exists(output.path))) {dir.create(output.path)}
-	file.path<-paste(output.path, output.file.name, sep="")
-	write.table(res, file.path, sep="\t", row.names=FALSE, 
-			    col.names=TRUE, quote=FALSE)
-	print(proc.time() - ptm)
-	
-	return (convertVectorToMatrix(res))
-}
-
-
-
-CalculateCorrelationsMirnaMrnaUsingBigCor <- function(expression, mirna, output.path="~/", 
-                                           output.file.name="inputStep2-matureMirnaXmrna.csv",
-                                           r.minimium=0.7, 
                                            pearsons.method = "pearson", 
                                            inc.progress = F){
+  
+  
+  
   ###MDB: 26/2/2018 - P.ADJUST
   #Columns are: "Gen_symbol","mature_mirna_id","Mirna_Mrna_Correlation","p_value_Of_Mirna_Mrna_Correlation", "p_value_fdr_adjustedMirna_Mrna_Correlation", "ID"
   num.of.result.columns<-6
@@ -274,7 +164,117 @@ CalculateCorrelationsMirnaMrnaUsingBigCor <- function(expression, mirna, output.
   p.values.positions.of.correlated.pairs<-c()
   ids<-c()
   ###
- 
+  for (i in 1:nrow(mirna)) {
+    ###MDB: 26/2/2018 - P.ADJUST
+    actual.mirna<-mirna[i,1]
+    mirna.para.ese.gen<-mirna[i,2:ncol(mirna)]
+    ###
+    for (j in 1:nrow(expression)) {
+      actual<-actual+1
+      actual.gen<-expression[j,1]
+      expression.para.ese.gen<-expression[j,2:ncol(expression)]
+      if ((actual)%%500==0)print(paste("analised ", actual, " from ", total.rows))
+      if ((actual)%%1000==0) {
+        elapsedTime <- (proc.time() - ptm)[3]
+        print(paste(
+          "elapsed time: (seconds)", format2Print(elapsedTime), 
+          " - (minutes)", format2Print(elapsedTime/60), 
+          " - (hours)", format2Print(elapsedTime/60/60)
+        ))
+        remainingTime <- ((total.rows*elapsedTime)/actual) - elapsedTime
+        print(paste("estimated remaining time (seconds)", format2Print(remainingTime),
+                    " - (minutes)", format2Print(remainingTime/60), 
+                    " - (hours)", format2Print(remainingTime/60/60)
+        ))
+      }
+      resultado.pearson<-cor.test(as.numeric(expression.para.ese.gen),
+                                  as.numeric(mirna.para.ese.gen), 
+                                  method = pearsons.method)
+      ###MDB: 26/2/2018 - P.ADJUST
+      p.values.all<-append(p.values.all, resultado.pearson$p.value)
+      #id<-paste(actual, actual.gen, actual.mirna, sep="-")
+      id<-actual
+      ids<-append(ids, id)
+      
+      ###
+      if (!is.na(abs(resultado.pearson$estimate))) {
+        if (abs(resultado.pearson$estimate) > r.minimium) {
+          
+          ###MDB: 26/2/2018 - P.ADJUST
+          newValue<-c(as.character(actual.gen), as.character(actual.mirna), 
+                      resultado.pearson$estimate, resultado.pearson$p.value, -9999, id)
+          ##
+          
+          res[actual.n.correlated,1:num.of.result.columns] <- newValue
+          actual.n.correlated<-actual.n.correlated+1
+          
+          ###MDB: 26/2/2018 - P.ADJUST
+          p.values.positions.of.correlated.pairs<-append(p.values.positions.of.correlated.pairs, id)
+        }
+      }
+    }
+    
+    if(inc.progress) {
+      incProgress(1/nrow(mirna));
+    }	
+  }
+  ###MDB: 26/2/2018 - P.ADJUST
+  p.values.adjusted.fdr<-p.adjust(p.values.all, method="fdr", n=length(p.values.all))
+  names(p.values.adjusted.fdr)<-ids
+  
+  ###MDB: 26/2/2018 - P.ADJUST
+  res[res[,"ID"] %in% p.values.positions.of.correlated.pairs, position.of.adjusted.p.value]<-p.values.adjusted.fdr[as.character(p.values.positions.of.correlated.pairs)]
+  ####
+  
+  ###MDB: 26/2/2018 - P.ADJUST
+  # deleting useless and unused rows
+  res <- res[c(1:actual.n.correlated-1),c(1:num.of.result.columns)]
+  
+  
+  
+  #if (!(folder.exists(output.path))) {dir.create(output.path)}
+  file.path<-paste(output.path, output.file.name, sep="")
+  write.table(res, file.path, sep="\t", row.names=FALSE, 
+              col.names=TRUE, quote=FALSE)
+  print(proc.time() - ptm)
+  
+  return (convertVectorToMatrix(res))
+}
+
+
+
+CalculateCorrelationsMirnaMrnaUsingBigCor <- function(expression, mirna, output.path="~/", 
+                                                      output.file.name="inputStep2-matureMirnaXmrna.csv",
+                                                      r.minimium=0.7, 
+                                                      pearsons.method = "pearson", 
+                                                      inc.progress = F){
+  ###MDB: 26/2/2018 - P.ADJUST
+  #Columns are: "Gen_symbol","mature_mirna_id","Mirna_Mrna_Correlation","p_value_Of_Mirna_Mrna_Correlation", "p_value_fdr_adjustedMirna_Mrna_Correlation", "ID"
+  num.of.result.columns<-6
+  position.of.adjusted.p.value<-5
+  ####
+  
+  ptm <- proc.time()
+  total.rows=nrow(expression)*nrow(mirna)
+  print(paste("Running pipeline with", r.minimium, 
+              "threshold and pearson's method:", pearsons.method, sep=" "))
+  
+  # The result matix is created
+  res <- matrix(nrow=total.rows,ncol=num.of.result.columns)
+  colnames(res)<-(c("Gen_symbol","mature_mirna_id","Mirna_Mrna_Correlation","p_value_Of_Mirna_Mrna_Correlation", "p_value_fdr_adjustedMirna_Mrna_Correlation", "ID"))
+  
+  
+  ###MDB: 26/2/2018 - P.ADJUST - Start on 0
+  actual<-0
+  actual.n.correlated<-1
+  print("Start process!")
+  
+  ###MDB: 26/2/2018 - P.ADJUST
+  p.values.all<-c()
+  p.values.positions.of.correlated.pairs<-c()
+  ids<-c()
+  ###
+  
   row.names(expression)<-expression[,1]
   row.names(mirna)<-mirna[,1]
   expression<-expression[,2:ncol(expression)]
@@ -296,7 +296,7 @@ CalculateCorrelationsMirnaMrnaUsingBigCor <- function(expression, mirna, output.
   #apply(df, 2, function(mrna){
   # i<-0
   #  for (mirna in colnames(bigcorres)) {
-    ###MDB: 26/2/2018 - P.ADJUST
+  ###MDB: 26/2/2018 - P.ADJUST
   #    print(i)
   #    i<-i+1
   #     if (abs(bigcorres[mrna, mirna]) > r.minimium){
@@ -306,26 +306,26 @@ CalculateCorrelationsMirnaMrnaUsingBigCor <- function(expression, mirna, output.
   #}
   #}
   # })
-    
-    
-    
+  
+  
+  
   
   
   bigcorres<-df
   i<-0
   for (mrna in rownames(bigcorres)[-1]) {
-   for (mirna in colnames(bigcorres)[-1]) {
+    for (mirna in colnames(bigcorres)[-1]) {
       ###MDB: 26/2/2018 - P.ADJUST
-     print(i)
-     i<-i+1
-     if (abs(as.numeric(bigcorres[mrna, mirna])) > r.minimium){
-       newValue<-c(as.character(mrna), as.character(mirna),bigcorres[mrna, mirna], -9999, -9999, paste(mrna, "<>",mirna, sep=""))
-       res[actual.n.correlated,1:num.of.result.columns] <- newValue
-       actual.n.correlated<-actual.n.correlated+1
+      print(i)
+      i<-i+1
+      if (abs(as.numeric(bigcorres[mrna, mirna])) > r.minimium){
+        newValue<-c(as.character(mrna), as.character(mirna),bigcorres[mrna, mirna], -9999, -9999, paste(mrna, "<>",mirna, sep=""))
+        res[actual.n.correlated,1:num.of.result.columns] <- newValue
+        actual.n.correlated<-actual.n.correlated+1
       }
-    res[res[,1]==mrna & res[,2]==mirna, 2]<-bigcorres[mrna, mirna]
+      res[res[,1]==mrna & res[,2]==mirna, 2]<-bigcorres[mrna, mirna]
     }
-     }
+  }
   
   res <- res[c(1:actual.n.correlated-1),c(1:num.of.result.columns)]
   
@@ -367,30 +367,30 @@ CalculateCorrelationsMirnaMrnaUsingBigCor <- function(expression, mirna, output.
 keepBestGeneXMirnaAccordingCorrelationAndAddMirnaDbInfo <- function(genes.x.mirnas, output.path, output.file="inputStep3-mirnaXmRNAWithPredictedAndValidated.csv", predicted.cut.off=30){
   
   print("Running multiMiR analisys")
-	
-	mirnas<-genes.x.mirnas[,2]
-	mirnas<-unique(as.character(mirnas))
-	
-	genes<-genes.x.mirnas[,1]
-	genes<-unique(as.character(genes))
-	
-	#result <- data.frame(Gene_Symbol=character(0), mature_mirna_id=character(0), Mirna_Mrna_Correlation=numeric(0), p_value_Of_Mirna_Mrna_Correlation=numeric(0), Database=character(0),Database_Predicted_Score=numeric(0),pubMedID=character(0))  
-	result <- data.frame(Gene_Symbol=character(0), mature_mirna_id=character(0), Mirna_Mrna_Correlation=numeric(0), p_value_Of_Mirna_Mrna_Correlation=numeric(0), p_value_Of_Mirna_Mrna_Correlation_adjusted=numeric(0), id=numeric(0),Database=character(0),Database_Predicted_Score=numeric(0),pubMedID=character(0))  
-	for (i in 1:length(mirnas)) {
-		
-		print(paste("mirna",i, "/", length(mirnas), ": ", mirnas[i]), sep="")
-		multimir<- getPredictedFromMulimir(mirnas[i])
-	
-		if (!is.null(multimir) && nrow(multimir)>0)
-		{resultTemp<-merge(genes.x.mirnas, multimir,  by.x=c(colnames(genes.x.mirnas)[1],colnames(genes.x.mirnas)[2]),by.y=c("target_symbol", "mature_mirna_id"))
-			result<-rbind(result, resultTemp)
-		}
-	}
-	colnames(result)<-c("Gen_symbol","mature_mirna_id","Mirna_Mrna_Correlation","p_value_Of_Mirna_Mrna_Correlation", "p_value_Of_Mirna_Mrna_Correlation_adjusted", "ID", "mirna_database","database_predicted_score", "validation_pubmed_id")
-	csvOutputFile<-paste(output.path, output.file, sep="")
-	write.table(result, csvOutputFile, sep="\t",row.names=FALSE)
-	colnames(genes.x.mirnas)
-	return (result)
+  
+  mirnas<-genes.x.mirnas[,2]
+  mirnas<-unique(as.character(mirnas))
+  
+  genes<-genes.x.mirnas[,1]
+  genes<-unique(as.character(genes))
+  
+  #result <- data.frame(Gene_Symbol=character(0), mature_mirna_id=character(0), Mirna_Mrna_Correlation=numeric(0), p_value_Of_Mirna_Mrna_Correlation=numeric(0), Database=character(0),Database_Predicted_Score=numeric(0),pubMedID=character(0))  
+  result <- data.frame(Gene_Symbol=character(0), mature_mirna_id=character(0), Mirna_Mrna_Correlation=numeric(0), p_value_Of_Mirna_Mrna_Correlation=numeric(0), p_value_Of_Mirna_Mrna_Correlation_adjusted=numeric(0), id=numeric(0),Database=character(0),Database_Predicted_Score=numeric(0),pubMedID=character(0))  
+  for (i in 1:length(mirnas)) {
+    
+    print(paste("mirna",i, "/", length(mirnas), ": ", mirnas[i]), sep="")
+    multimir<- getPredictedFromMulimir(mirnas[i])
+    
+    if (!is.null(multimir) && nrow(multimir)>0)
+    {resultTemp<-merge(genes.x.mirnas, multimir,  by.x=c(colnames(genes.x.mirnas)[1],colnames(genes.x.mirnas)[2]),by.y=c("target_symbol", "mature_mirna_id"))
+    result<-rbind(result, resultTemp)
+    }
+  }
+  colnames(result)<-c("Gen_symbol","mature_mirna_id","Mirna_Mrna_Correlation","p_value_Of_Mirna_Mrna_Correlation", "p_value_Of_Mirna_Mrna_Correlation_adjusted", "ID", "mirna_database","database_predicted_score", "validation_pubmed_id")
+  csvOutputFile<-paste(output.path, output.file, sep="")
+  write.table(result, csvOutputFile, sep="\t",row.names=FALSE)
+  colnames(genes.x.mirnas)
+  return (result)
 }
 
 
@@ -431,41 +431,41 @@ keepBestGeneXMirnaAccordingCorrelationAndAddMirnaDbInfo <- function(genes.x.mirn
 ColapseMirnaXMrna <- function(mirnaXmrna, output.path, output.file = "pipelineOutput-mirnaXmRNAWithPredictedAndValidatedColapsed.csv"){
   
   if(nrow(mirnaXmrna) > 0) {
-
-  	#It keeps just the ones correlating negatively
-	  mirnaXmrnaNegative=mirnaXmrna[as.numeric(as.character(mirnaXmrna$Mirna_Mrna_Correlation))<0,]
-	  print(paste("Luego del filtro por negativo",nrow(mirnaXmrnaNegative)))
-
-	  #It converts NA in the validation_pubmed_id into NO
-	  mirnaXmrnaNegative$validation_pubmed_id <- as.character(mirnaXmrnaNegative$validation_pubmed_id)
-	  mirnaXmrnaNegative$mirna_database <- as.character(mirnaXmrnaNegative$mirna_database)
-	  mirnaXmrnaNegative$validation_pubmed_id[is.na(mirnaXmrnaNegative$validation_pubmed_id)] <- "NO"
-	
-	  #It collapses all the rows with the same mirna and mrna.
-	  result <- aggregate(cbind(mirna_database,as.character(database_predicted_score), validation_pubmed_id)
-	                      ~Gen_symbol+mature_mirna_id+Mirna_Mrna_Correlation+p_value_Of_Mirna_Mrna_Correlation+p_value_Of_Mirna_Mrna_Correlation_adjusted+ID,
-	                      paste, collapse=",", data=mirnaXmrnaNegative, na.action=na.pass)
-	  
-	  
-	  
-	  print(paste("Luego del agregate",nrow(result)))
-	    
-	
-	  #It ordes by mrna and then by mirna
-	  result  <- result[order(result$Gen_symbol, result$mature_mirna_id),] 
-	  print(paste("Luego del ordenamiento",nrow(result)))
-	
-  	#Write output
-  	csvOutputFile<-paste(output.path, output.file, sep="")
-	  write.table(result, csvOutputFile, sep="\t",row.names=FALSE,quote=FALSE)
-	  
-
+    
+    #It keeps just the ones correlating negatively
+    mirnaXmrnaNegative=mirnaXmrna[as.numeric(as.character(mirnaXmrna$Mirna_Mrna_Correlation))<0,]
+    print(paste("Luego del filtro por negativo",nrow(mirnaXmrnaNegative)))
+    
+    #It converts NA in the validation_pubmed_id into NO
+    mirnaXmrnaNegative$validation_pubmed_id <- as.character(mirnaXmrnaNegative$validation_pubmed_id)
+    mirnaXmrnaNegative$mirna_database <- as.character(mirnaXmrnaNegative$mirna_database)
+    mirnaXmrnaNegative$validation_pubmed_id[is.na(mirnaXmrnaNegative$validation_pubmed_id)] <- "NO"
+    
+    #It collapses all the rows with the same mirna and mrna.
+    result <- aggregate(cbind(mirna_database,as.character(database_predicted_score), validation_pubmed_id)
+                        ~Gen_symbol+mature_mirna_id+Mirna_Mrna_Correlation+p_value_Of_Mirna_Mrna_Correlation+p_value_Of_Mirna_Mrna_Correlation_adjusted,
+                        paste, collapse=",", data=mirnaXmrnaNegative, na.action=na.pass)
+    
+    
+    
+    print(paste("Luego del agregate",nrow(result)))
+    
+    
+    #It ordes by mrna and then by mirna
+    result  <- result[order(result$Gen_symbol, result$mature_mirna_id),] 
+    print(paste("Luego del ordenamiento",nrow(result)))
+    
+    #Write output
+    csvOutputFile<-paste(output.path, output.file, sep="")
+    write.table(result, csvOutputFile, sep="\t",row.names=FALSE,quote=FALSE)
+    
+    
   } else {
     print("No hay datos en el input, no se ejecuta el algoritmo de colapsamiento")
     result <- matrix()
   }
-	
-	return (as.matrix(result))
+  
+  return (as.matrix(result))
 }
 
 # Formats a number with 2 decimal places

@@ -36,8 +36,8 @@ shinyServer(function(input, output, session) {
         runMultimirAnalisys()
         ###MDB: 26/2/2018 - P.ADJUST
         #colnames(sharedValues$correlationsStep2) <- c("Gene","Mature miRNA","miRNA-mRNA correlation","p-value","miRNA db","Predicted score","PubMed ID")
-        colnames(sharedValues$correlationsStep2) <- c("Gene","Mature miRNA","miRNA-mRNA correlation","p-value", "adj-p-value", "id", "miRNA db","Predicted score","PubMed ID")
-        
+        #colnames(sharedValues$correlationsStep2) <- c("Gene","Mature miRNA","miRNA-mRNA correlation","p-value", "adj-p-value", "id", "miRNA db","Predicted score","PubMed ID")
+        colnames(sharedValues$correlationsStep2) <- c("Gene","Mature miRNA","miRNA-mRNA correlation","p-value", "adj-p-value", "miRNA db","Predicted score","PubMed ID")
         sharedValues$mirna.matrix.to.render <- sharedValues$correlationsStep2
       } else {
         print("running only step 1")
@@ -192,7 +192,7 @@ shinyServer(function(input, output, session) {
                    }
                    else
                    {
-                     collapsedResult<-data.frame(matrix(nrow = 0, ncol = 9))
+                     collapsedResult<-data.frame(matrix(nrow = 0, ncol = 8))
                      
                    }
                    sharedValues$correlationsStep2 <- collapsedResult
@@ -396,8 +396,8 @@ shinyServer(function(input, output, session) {
       mrna.dif.expr<-(intersection[[1]])
       cnv<-(intersection[[2]])
       sharedValues$cnvMrnaCorrelations <- CnvXMrnasWCGNA(mrna.dif.expr, cnv, output.path="~/", 
-                                                    output.file.name=paste(input$cnv.mrnaFile$name,"-",input$cnv.cnvFile$name,"-outputFile.csv", sep = ""),
-                                                    r.minimium = cnvThreshold(), inc.progress = T, pearsons.method = cnvPearsonsMethod())
+                                                         output.file.name=paste(input$cnv.mrnaFile$name,"-",input$cnv.cnvFile$name,"-outputFile.csv", sep = ""),
+                                                         r.minimium = cnvThreshold(), inc.progress = T, pearsons.method = cnvPearsonsMethod())
     }
     return (sharedValues$cnvMrnaCorrelations)
   }), quoted = T)
@@ -542,57 +542,57 @@ shinyServer(function(input, output, session) {
   
   
   output$cnv.ccorrelationSurvival <- renderPlot({
-     ERROR.GROUPING="ERROR.GROUPING"
-     ERROR.EXECUTING.SURV.FIT.FOR.PLOTTING="ERROR.EXECUTING.SURVFIT.FOR.PLOTTING"
-     
-	 if(!is.null(input$cnv.survivalFile) && !is.null(input$MRNACNVResult_rows_selected)){
-       
-	   intersection<-keepSameColumns(cnvMrnaExpressionData(),cnvExpressionData())
-	   mrna.dif.expr<-(intersection[[1]])
-	   cnv.dif.expr<-(intersection[[2]])
-		 
-	   selected.gene <- cnvMrnaCorrelations()[input$MRNACNVResult_rows_selected,1]
-	   selected.gene.row <- which(mrna.dif.expr==selected.gene)
-	   expression.vector <- as.numeric(as.vector(mrna.dif.expr[selected.gene.row,2:ncol(mrna.dif.expr)]))
-	   
-	   
-	   cnv.survival.matrix <- read.table(input$cnv.survivalFile$datapath, header = T)
-	   cnv.survival.matrix<-cnv.survival.matrix[cnv.survival.matrix$X_SAMPLE_ID %in% colnames(cnv.dif.expr),]
-	   survival.name.col <- which(colnames(cnv.survival.matrix)==input$cnv.survival.column.name)
-	   survival.event.col <- which(colnames(cnv.survival.matrix)==input$cnv.event.column.name)
-	   
-	   ######ENGANCHAR CON LA GUI Y ELIMINAR HARCODEO ####
-	   number.of.clusters<-2
-	   grouping.FUN<-multiomics.cut2
-	   minimium.number.of.samples.in.a.group<-1
-	   
-	   time<-as.vector(cnv.survival.matrix[,survival.name.col])
-	   event<-as.vector(cnv.survival.matrix[,survival.event.col])
-	   
-       tryCatch({
-         #Grouping
-         tryCatch(
-           {	groups<-grouping.FUN(expression.vector, number.of.clusters)
-           #Validation for checking if all groups have got well formed groups
-           result.check.groups.are.well.formed<-checkGroupsAreWellFormed(groups, selected.gene, minimium.number.of.samples.in.a.group)	
-           if (!result.check.groups.are.well.formed@OK) stop(result.check.groups.are.well.formed@message)
-           
-           },error=function(e){stop(formatErrorMessage(error.type=ERROR.GROUPING, error.detail=e$message))})
-         
-         n.groups <- length(unique(groups))
-         
-         #SurvFit for plotting
-         tryCatch({
-           surv.fit<-survfit(formula = Surv(time, event) ~ groups)
-           #Los colores se asignan as?: el primer color del vector col se asigna al grupo m?s chico, el segundo color al segundo m?s chico y as? siguiendo.
-           #Es decir, no importa el orden en el que aparezcan los elementos en el time.Considera solamente el groups. 
-           plot(surv.fit,col=c("blue", "red"), xlab="Time", ylab="survival")
-           title<-selected.gene
-           drawLegends(groups, "Survival", title)
-         },error=function(e){stop(formatErrorMessage(error.type=ERROR.EXECUTING.SURV.FIT.FOR.PLOTTING, error.detail=e$message))})
-       })
-     }
-   })    
+    ERROR.GROUPING="ERROR.GROUPING"
+    ERROR.EXECUTING.SURV.FIT.FOR.PLOTTING="ERROR.EXECUTING.SURVFIT.FOR.PLOTTING"
+    
+    if(!is.null(input$cnv.survivalFile) && !is.null(input$MRNACNVResult_rows_selected)){
+      
+      intersection<-keepSameColumns(cnvMrnaExpressionData(),cnvExpressionData())
+      mrna.dif.expr<-(intersection[[1]])
+      cnv.dif.expr<-(intersection[[2]])
+      
+      selected.gene <- cnvMrnaCorrelations()[input$MRNACNVResult_rows_selected,1]
+      selected.gene.row <- which(mrna.dif.expr==selected.gene)
+      expression.vector <- as.numeric(as.vector(mrna.dif.expr[selected.gene.row,2:ncol(mrna.dif.expr)]))
+      
+      
+      cnv.survival.matrix <- read.table(input$cnv.survivalFile$datapath, header = T)
+      cnv.survival.matrix<-cnv.survival.matrix[cnv.survival.matrix$X_SAMPLE_ID %in% colnames(cnv.dif.expr),]
+      survival.name.col <- which(colnames(cnv.survival.matrix)==input$cnv.survival.column.name)
+      survival.event.col <- which(colnames(cnv.survival.matrix)==input$cnv.event.column.name)
+      
+      ######ENGANCHAR CON LA GUI Y ELIMINAR HARCODEO ####
+      number.of.clusters<-2
+      grouping.FUN<-multiomics.cut2
+      minimium.number.of.samples.in.a.group<-1
+      
+      time<-as.vector(cnv.survival.matrix[,survival.name.col])
+      event<-as.vector(cnv.survival.matrix[,survival.event.col])
+      
+      tryCatch({
+        #Grouping
+        tryCatch(
+          {	groups<-grouping.FUN(expression.vector, number.of.clusters)
+          #Validation for checking if all groups have got well formed groups
+          result.check.groups.are.well.formed<-checkGroupsAreWellFormed(groups, selected.gene, minimium.number.of.samples.in.a.group)	
+          if (!result.check.groups.are.well.formed@OK) stop(result.check.groups.are.well.formed@message)
+          
+          },error=function(e){stop(formatErrorMessage(error.type=ERROR.GROUPING, error.detail=e$message))})
+        
+        n.groups <- length(unique(groups))
+        
+        #SurvFit for plotting
+        tryCatch({
+          surv.fit<-survfit(formula = Surv(time, event) ~ groups)
+          #Los colores se asignan as?: el primer color del vector col se asigna al grupo m?s chico, el segundo color al segundo m?s chico y as? siguiendo.
+          #Es decir, no importa el orden en el que aparezcan los elementos en el time.Considera solamente el groups. 
+          plot(surv.fit,col=c("blue", "red"), xlab="Time", ylab="survival")
+          title<-selected.gene
+          drawLegends(groups, "Survival", title)
+        },error=function(e){stop(formatErrorMessage(error.type=ERROR.EXECUTING.SURV.FIT.FOR.PLOTTING, error.detail=e$message))})
+      })
+    }
+  })    
   
   
   ###########################################################################
@@ -607,10 +607,10 @@ shinyServer(function(input, output, session) {
       mrna.dif.expr<-(intersection[[1]])
       meth<-(intersection[[2]])
       sharedValues$methMrnaCorrelations <- methXMrnasWCGNA(mrna.dif.expr, meth, methPlatform() , output.path="~/",
-                                                      output.file.name=paste(input$meth.mrnaFile$name,"-",input$meth.methFile$name,"-outputFile.csv", sep = ""),           
-                                                      r.minimium = methThreshold(), 
-                                                      pearsons.method = methPearsonsMethod(), 
-                                                      inc.progress = T)
+                                                           output.file.name=paste(input$meth.mrnaFile$name,"-",input$meth.methFile$name,"-outputFile.csv", sep = ""),           
+                                                           r.minimium = methThreshold(), 
+                                                           pearsons.method = methPearsonsMethod(), 
+                                                           inc.progress = T)
       
     }
     return (sharedValues$methMrnaCorrelations)
@@ -756,25 +756,25 @@ shinyServer(function(input, output, session) {
   
   mrnaCohortsData <- reactive({
     tryCatch(
-        withProgress(message = 'Connectig with Xena...', detail = "Getting cohorts", min=0, max=1, {    
-                   print("Connecting to XenaHub...")
-                   cohorts(XenaHub(hosts = "https://tcga.xenahubs.net"))
-        })  
-    , error=function(e){
-      tryCatch(
-        {
-          library(curl) 
-          readLines(curl("https://tcga.xenahubs.net"))
-          withProgress(message = 'Connectig with Xena...', detail = "Getting cohorts", min=0, max=1, {    
-            print("Connecting to XenaHub...")
-            cohorts(XenaHub(hosts = "https://tcga.xenahubs.net"))
-          })
-        }, error=function(e){print("Error connecting to https://tcga.xenahubs.net.")})
-    })
-    })
-
+      withProgress(message = 'Connectig with Xena...', detail = "Getting cohorts", min=0, max=1, {    
+        print("Connecting to XenaHub...")
+        cohorts(XenaHub(hosts = "https://tcga.xenahubs.net"))
+      })  
+      , error=function(e){
+        tryCatch(
+          {
+            library(curl) 
+            readLines(curl("https://tcga.xenahubs.net"))
+            withProgress(message = 'Connectig with Xena...', detail = "Getting cohorts", min=0, max=1, {    
+              print("Connecting to XenaHub...")
+              cohorts(XenaHub(hosts = "https://tcga.xenahubs.net"))
+            })
+          }, error=function(e){print("Error connecting to https://tcga.xenahubs.net.")})
+      })
+  })
   
-    
+  
+  
   observeEvent(input$connectToXenaHub, { 
     updateSelectInput(session, "xenaCohorts","XenaHub available cohorts", choices = mrnaCohortsData())
   })  

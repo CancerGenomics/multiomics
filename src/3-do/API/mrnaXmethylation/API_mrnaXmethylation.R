@@ -4,10 +4,10 @@
 #Take into account that the platform file should Have two columns: GEN - CG. If a gen has goto multiple cgs, there will be many rows for this gene
 
 methXMrnas <- function(mrna, meth, meth.platform, output.path="~/", 
-                      output.file.name="methylationXMrna.csv",
-                      r.minimium=0.7, 
-                      pearsons.method = "pearson", 
-                      inc.progress = F){
+                       output.file.name="methylationXMrna.csv",
+                       r.minimium=0.7, 
+                       pearsons.method = "pearson", 
+                       inc.progress = F){
   
   ptm <- proc.time()
   total.rows=nrow(mrna)*15
@@ -48,55 +48,55 @@ methXMrnas <- function(mrna, meth, meth.platform, output.path="~/",
     cgs.for.this.gene<-get.cgs.for.this.genes(actual.gen,meth.platform)
     #Se queda con el primer CNV
     if (length(cgs.for.this.gene)>0){
-        
-        for (actual.cg.index in 1:length(cgs.for.this.gene)){
-            actual<-actual+1
-            actual.cg<-cgs.for.this.gene[actual.cg.index]
-            #position.in.cnv.dataset<-position.in.cnv.dataset[1]
-            actual.mrna<-mrna[i,2:ncol(mrna)]
-            #position.in.meth.dataset<-which(ids.in.meth.dataset == actual.cg)
-            actual.meth<-meth[meth[,1] == actual.cg,2:ncol(meth)]
-            if (nrow(actual.meth)>0){
-                  resultado.pearson<-cor.test(as.numeric(actual.mrna),
-                                              as.numeric(actual.meth), 
-                                              method = pearsons.method)
-        
-                  ###MDB: 26/2/2018 - P.ADJUST
-                  p.values.all<-append(p.values.all, resultado.pearson$p.value)
-                  #id<-paste(actual, actual.gen, actual.mirna, sep="-")
-                  id<-actual
-                  ids<-append(ids, id)
-                  
-                  
-                  if (!is.na(abs(resultado.pearson$estimate))) {
-                    if ((abs(resultado.pearson$estimate) > r.minimium) & (resultado.pearson$estimate<0)) {
-                      location<-getGeneLocation(actual.gen);
-                      newValue<-c(as.character(actual.gen), location, actual.cg,
-                                  resultado.pearson$estimate, resultado.pearson$p.value, -9999, id)
-                      res[actual.n.correlated,1:num.of.result.columns] <- newValue
-                      actual.n.correlated<-actual.n.correlated+1
-                      ###MDB: 26/2/2018 - P.ADJUST
-                      p.values.positions.of.correlated.pairs<-append(p.values.positions.of.correlated.pairs, id)
-                    }
-                  }
       
-                  if ((actual)%%500==0)print(paste("analised ", actual, " from ", total.rows))
-                  if ((actual)%%1000==0) {
-                    elapsedTime <- (proc.time() - ptm)[3]
-                    print(paste(
-                      "elapsed time: (seconds)", format2Print(elapsedTime), 
-                      " - (minutes)", format2Print(elapsedTime/60), 
-                      " - (hours)", format2Print(elapsedTime/60/60)
-                      
-                    ))
-                    remainingTime <- ((total.rows*elapsedTime)/actual) - elapsedTime
-                    print(paste("estimated remaining time (seconds)", format2Print(remainingTime),
-                                " - (minutes)", format2Print(remainingTime/60), 
-                                " - (hours)", format2Print(remainingTime/60/60)
-                    ))
-                  }
-                }
+      for (actual.cg.index in 1:length(cgs.for.this.gene)){
+        actual<-actual+1
+        actual.cg<-cgs.for.this.gene[actual.cg.index]
+        #position.in.cnv.dataset<-position.in.cnv.dataset[1]
+        actual.mrna<-mrna[i,2:ncol(mrna)]
+        #position.in.meth.dataset<-which(ids.in.meth.dataset == actual.cg)
+        actual.meth<-meth[meth[,1] == actual.cg,2:ncol(meth)]
+        if (nrow(actual.meth)>0){
+          resultado.pearson<-cor.test(as.numeric(actual.mrna),
+                                      as.numeric(actual.meth), 
+                                      method = pearsons.method)
+          
+          ###MDB: 26/2/2018 - P.ADJUST
+          p.values.all<-append(p.values.all, resultado.pearson$p.value)
+          #id<-paste(actual, actual.gen, actual.mirna, sep="-")
+          id<-actual
+          ids<-append(ids, id)
+          
+          
+          if (!is.na(abs(resultado.pearson$estimate))) {
+            if ((abs(resultado.pearson$estimate) > r.minimium) & (resultado.pearson$estimate<0)) {
+              location<-getGeneLocation(actual.gen);
+              newValue<-c(as.character(actual.gen), location, actual.cg,
+                          resultado.pearson$estimate, resultado.pearson$p.value, -9999, id)
+              res[actual.n.correlated,1:num.of.result.columns] <- newValue
+              actual.n.correlated<-actual.n.correlated+1
+              ###MDB: 26/2/2018 - P.ADJUST
+              p.values.positions.of.correlated.pairs<-append(p.values.positions.of.correlated.pairs, id)
             }
+          }
+          
+          if ((actual)%%500==0)print(paste("analised ", actual, " from ", total.rows))
+          if ((actual)%%1000==0) {
+            elapsedTime <- (proc.time() - ptm)[3]
+            print(paste(
+              "elapsed time: (seconds)", format2Print(elapsedTime), 
+              " - (minutes)", format2Print(elapsedTime/60), 
+              " - (hours)", format2Print(elapsedTime/60/60)
+              
+            ))
+            remainingTime <- ((total.rows*elapsedTime)/actual) - elapsedTime
+            print(paste("estimated remaining time (seconds)", format2Print(remainingTime),
+                        " - (minutes)", format2Print(remainingTime/60), 
+                        " - (hours)", format2Print(remainingTime/60/60)
+            ))
+          }
+        }
+      }
     }
     if(inc.progress) {
       incProgress(1/nrow(mrna));
@@ -126,10 +126,10 @@ methXMrnas <- function(mrna, meth, meth.platform, output.path="~/",
 }
 
 methXMrnasWCGNA <- function(mrna, meth, meth.platform, output.path="~/", 
-                       output.file.name="methylationXMrna.csv",
-                       r.minimium=0.7, 
-                       pearsons.method = "pearson", 
-                       inc.progress = F){
+                            output.file.name="methylationXMrna.csv",
+                            r.minimium=0.7, 
+                            pearsons.method = "pearson", 
+                            inc.progress = F){
   
   library("WGCNA")
   library("reshape2")
@@ -144,13 +144,13 @@ methXMrnasWCGNA <- function(mrna, meth, meth.platform, output.path="~/",
   
   final.data.frame <- data.frame(matrix(ncol = 5, nrow = 0))
   colnames(final.data.frame) <- c("x", "y", "correlation", "p.value", "p.value.fdr.adjusted")
-
+  
   # For each gen on MRNA file
   for (i in 1:nrow(mrna)) {
     # Build a dataframe with actual gen row only
     actual.mrna<-mrna[i,2:ncol(mrna)]
     actual.gen<-as.character(mrna[i,1])
-
+    
     # Get a list of all CG associated to the actual gen using the file meth.platform
     cg.genes <- subset(meth.platform, gene == actual.gen)
     
@@ -164,7 +164,7 @@ methXMrnasWCGNA <- function(mrna, meth, meth.platform, output.path="~/",
         
         print("Correlation....")
         # calcultate correlation using wcgna
-        correlation.result <-correlation.with.wcgna(actual.mrna, current.gen.meth.values.by.cg,r.minimium)
+        correlation.result <-correlation.with.wcgna(actual.mrna, current.gen.meth.values.by.cg,r.minimium, keep.pos.cor=F, keep.neg.cor=T)
         # colnames(correlation.result)<-(c("Gene","Location", "CNV_mRNA_Correlation", "p-value", "p_value_fdr_adjusted"))
         final.data.frame <- rbind(final.data.frame, correlation.result)
       }
@@ -191,6 +191,6 @@ methXMrnasWCGNA <- function(mrna, meth, meth.platform, output.path="~/",
 
 
 get.cgs.for.this.genes <- function(actual.gen,meth.platform){
-    as.character((meth.platform[meth.platform$gene == actual.gen,])[,2])
+  as.character((meth.platform[meth.platform$gene == actual.gen,])[,2])
 } 
 
