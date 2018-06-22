@@ -113,7 +113,7 @@ CnvXMrnasWCGNA <- function(expression, cnv, output.path="~/",
                            output.file.name="cnvXMrna.csv",
                            r.minimium=0.7, 
                            pearsons.method = "pearson", 
-                           inc.progress = F){
+                           inc.progress = F,keep.pos.cor=T, keep.neg.cor=F){
   
   ###MDB: 26/3/2018
   library("WGCNA")

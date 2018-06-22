@@ -64,7 +64,7 @@ CalculateCorrelationsMirnaMrnaUsingWCGNA <- function(expression, mirna, output.p
                                                      output.file.name="inputStep2-matureMirnaXmrna.csv",
                                                      r.minimium=0.7, 
                                                      pearsons.method = "pearson", 
-                                                     inc.progress = F){
+                                                     inc.progress = F,keep.pos.cor=F, keep.neg.cor=T){
   
   library("WGCNA")
   library("reshape2")

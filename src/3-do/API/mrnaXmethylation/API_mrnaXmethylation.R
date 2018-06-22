@@ -129,7 +129,7 @@ methXMrnasWCGNA <- function(mrna, meth, meth.platform, output.path="~/",
                             output.file.name="methylationXMrna.csv",
                             r.minimium=0.7, 
                             pearsons.method = "pearson", 
-                            inc.progress = F){
+                            inc.progress = F, keep.pos.cor=F, keep.neg.cor=T){
   
   library("WGCNA")
   library("reshape2")
