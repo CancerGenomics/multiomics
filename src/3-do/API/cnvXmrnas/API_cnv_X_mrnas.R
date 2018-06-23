@@ -104,7 +104,7 @@ CnvXMrnas <- function(mrna, cnv, output.path="~/",
   write.table(res, file.path, sep="\t", row.names=FALSE, 
               col.names=TRUE, quote=FALSE)
   print(proc.time() - ptm)
-  browser()
+  #browser()
   #res[,"Location"]<-(select(org.Hs.eg.db,keys=res[,"Gene"],columns=cols,keytype="SYMBOL"))[,"MAP"]
   
   
