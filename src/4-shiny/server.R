@@ -120,12 +120,12 @@ shinyServer(function(input, output, session) {
   
   mrnaExpressionReadData <- reactive({
 			  print("mrnaExpressionData")
-			  return(readMrnaExpressionFile(input$cnv.mrnaFile$datapath))
+			  return(readMrnaExpressionFile(input$mrnaFile$datapath))
 		  })
   
   mirnaExpressionReadData <- reactive({
 			  print("mirnaExpressionData")
-			  readMirnaExpressionFile(input$cnv.cnvFile$datapath)
+			  readMirnaExpressionFile(input$mirnaFile$datapath)
 		  })
   
   mrnaExpressionData <- reactive({
@@ -214,12 +214,24 @@ shinyServer(function(input, output, session) {
   
   observeEvent(input$mirna.survivalFile,{
     clinical.data <- na.omit(read.table(input$mirna.survivalFile$datapath, nrows = 1, header=TRUE,fill=TRUE))
-    updateSelectInput(session,"mirna.survival.column.name", choices = colnames(clinical.data))
-    shinyjs::show("mirna.survival.column.name")
-    updateSelectInput(session,"mirna.event.column.name", choices = colnames(clinical.data))
-    shinyjs::show("mirna.event.column.name")
-    
+    updateClinicalDataSelects(session, clinical.data, "mirna.survival.column.name", "mirna.event.column.name")
   })
+  
+  updateClinicalDataSelects <- function(session, clinical.data, survivalSelectName, eventSelectName) {
+    if("OVERALL_SURVIVAL" %in% colnames(clinical.data)) {
+      updateSelectInput(session,survivalSelectName, choices = colnames(clinical.data), selected = "OVERALL_SURVIVAL")
+    } else {
+      updateSelectInput(session,survivalSelectName, choices = colnames(clinical.data))
+    }
+    shinyjs::show(survivalSelectName)
+    
+    if("overall_survival_indicator" %in% colnames(clinical.data)) {
+      updateSelectInput(session,eventSelectName, choices = colnames(clinical.data), selected = "overall_survival_indicator")
+    } else {
+      updateSelectInput(session,eventSelectName, choices = colnames(clinical.data))
+    }
+    shinyjs::show(eventSelectName)   
+  }
   
   validatemirnaExpressionData <- function(datapath) {
     result <- tryCatch({
@@ -318,10 +330,6 @@ shinyServer(function(input, output, session) {
     
     if(!is.null(input$mirna.survivalFile) && !is.null(input$result_rows_selected)){
       
-      #selected.gene <- correlations()[input$result_rows_selected,1]
-      #selected.gene.row <- which(mrnaExpressionData()==selected.gene)
-      #expression.vector <- as.numeric(as.vector(mrnaExpressionData()[selected.gene.row,2:ncol(mrnaExpressionData())]))
-      
       selected.gene <- correlations()[input$result_rows_selected,1]
       selected.gene.row <- which(mrnaExpressionData()==selected.gene)
       expression.vector <- as.numeric(as.vector(mrnaExpressionData()[selected.gene.row,2:ncol(mrnaExpressionData())]))
@@ -342,9 +350,7 @@ shinyServer(function(input, output, session) {
       
       time<-as.vector(mirna.survival.matrix[,survival.name.col])
       event<-as.vector(mirna.survival.matrix[,survival.event.col])
-      #event<-c(0,1,0,1,0,1,0,1,0,0,0,0,1,1,1,0,1,1,1,1,0,0,0,1,0,1,0,0,1,1,1,0,0,0,0)
-      #time<-c(0.00000,22.17659,181.25670,36.43532,105.62630,64.98563,123.53180,46.88296,133.88090,94.48871,121.65910,211.90970,31.29960,66.04920,31.43040,210.89120,27.48600,17.83984,44.84400,46.19302,153.19920,155.95890,181.61810,24.77207,169.52770,112.88710,65.83984,220.09030,32.49281,32.51520,95.14560,49.41360,66.66119,153.16630,158.09450)
-      
+     
       tryCatch({
         #Grouping
         tryCatch(
@@ -398,11 +404,11 @@ shinyServer(function(input, output, session) {
   })
 
   cnvMrnaExpressionData <- reactive({
-			return(mirnaMrnaIntersection()[[1]])
+			return(cnvMrnaIntersection()[[1]])
 		})
 
   cnvExpressionData <- reactive({
-			return(mirnaMrnaIntersection()[[2]])
+			return(cnvMrnaIntersection()[[2]])
 		})
 
   cnvMrnaIntersection <- reactive({
@@ -437,7 +443,7 @@ shinyServer(function(input, output, session) {
                      cnvMrnaCorrelations()
                      sharedValues$cnv.matrix.to.render <- sharedValues$cnvMrnaCorrelations
                      
-                     if(!is.null(input$cnv.survivalFile)) {
+                     if(!is.null(input$cnv.survivalFile) && (nrow(sharedValues$cnv.matrix.to.render) > 0)) {
                        number.of.clusters=1
                        print(cnvMrnaExpressionData())
                        progResult <- getPrognosticStatistic(cnvMrnaExpressionData(), number.of.clusters, groupin.FUN=multiomics.cut2, 
@@ -497,10 +503,7 @@ shinyServer(function(input, output, session) {
   
   observeEvent(input$cnv.survivalFile,{
     clinical.data <- na.omit(read.table(input$cnv.survivalFile$datapath, nrows = 1, header=TRUE,fill=TRUE))
-    updateSelectInput(session,"cnv.survival.column.name", choices = colnames(clinical.data))
-    shinyjs::show("cnv.survival.column.name")
-    updateSelectInput(session,"cnv.event.column.name", choices = colnames(clinical.data))
-    shinyjs::show("cnv.event.column.name")
+    updateClinicalDataSelects(session, clinical.data, "cnv.survival.column.name", "cnv.event.column.name")
     
   })  
   
