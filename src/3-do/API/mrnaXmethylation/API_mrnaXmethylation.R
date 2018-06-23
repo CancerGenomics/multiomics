@@ -127,8 +127,7 @@ methXMrnas <- function(mrna, meth, meth.platform, output.path="~/",
 
 methXMrnasWCGNA <- function(mrna, meth, meth.platform, output.path="~/", 
                             output.file.name="methylationXMrna.csv",
-                            r.minimium=0.7, 
-                            pearsons.method = "pearson", 
+                            r.minimium=0.7,
                             inc.progress = F, keep.pos.cor=F, keep.neg.cor=T){
   
   library("WGCNA")
@@ -136,8 +135,7 @@ methXMrnasWCGNA <- function(mrna, meth, meth.platform, output.path="~/",
   library("data.table")
   
   ptm <- proc.time()
-  print(paste("Running pipeline methylaion_X_mrnas with", r.minimium, 
-              "threshold and pearson's method:", pearsons.method, sep=" "))
+  print(paste("Running pipeline methylaion_X_mrnas with", r.minimium, "threshold", sep=" "))
   
   # TODO: Find a way to avoid this.
   # rm(final.data.frame)
@@ -164,7 +162,7 @@ methXMrnasWCGNA <- function(mrna, meth, meth.platform, output.path="~/",
         
         print("Correlation....")
         # calcultate correlation using wcgna
-        correlation.result <-correlation.with.wcgna(actual.mrna, current.gen.meth.values.by.cg,r.minimium, keep.pos.cor=F, keep.neg.cor=T)
+        correlation.result <-correlation.with.wcgna(actual.mrna, current.gen.meth.values.by.cg,r.minimium, keep.pos.cor=keep.pos.cor, keep.neg.cor=keep.neg.cor)
         # colnames(correlation.result)<-(c("Gene","Location", "CNV_mRNA_Correlation", "p-value", "p_value_fdr_adjusted"))
         final.data.frame <- rbind(final.data.frame, correlation.result)
       }

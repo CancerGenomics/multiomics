@@ -143,12 +143,14 @@ shinyServer(function(input, output, session) {
       mrna.dif.expr<-(intersection[[1]])
       mirna.dif.expr<-(intersection[[2]])
       
+      keep.pos.cor <- (input$mirna.correlation.type == "positive") || (input$mirna.correlation.type == "both")
+      keep.neg.cor <- (input$mirna.correlation.type == "negative") || (input$mirna.correlation.type == "both")
+      
       sharedValues$correlations <- CalculateCorrelationsMirnaMrnaUsingWCGNA(
         mrna.dif.expr, mirna.dif.expr,
         output.path="~/", 
         output.file.name = paste(input$mirnaFile$name,"-",input$mrnaFile$name,"-outputFile.csv", sep = ""),
-        r.minimium = threshold(), inc.progress = T, 
-        pearsons.method = pearsonsMethod())
+        r.minimium = threshold(), inc.progress = T, keep.pos.cor = keep.pos.cor, keep.neg.cor = keep.neg.cor)
     } 
     return (sharedValues$correlations)
   }), quoted = T)
@@ -395,9 +397,13 @@ shinyServer(function(input, output, session) {
       intersection<-keepSameColumns(cnvMrnaExpressionData(),cnvExpressionData())
       mrna.dif.expr<-(intersection[[1]])
       cnv<-(intersection[[2]])
+      
+      keep.pos.cor <- (input$cnv.correlation.type == "positive") || (input$cnv.correlation.type == "both")
+      keep.neg.cor <- (input$cnv.correlation.type == "negative") || (input$cnv.correlation.type == "both")
+      
       sharedValues$cnvMrnaCorrelations <- CnvXMrnasWCGNA(mrna.dif.expr, cnv, output.path="~/", 
                                                          output.file.name=paste(input$cnv.mrnaFile$name,"-",input$cnv.cnvFile$name,"-outputFile.csv", sep = ""),
-                                                         r.minimium = cnvThreshold(), inc.progress = T, pearsons.method = cnvPearsonsMethod())
+                                                         r.minimium = cnvThreshold(), inc.progress = T,keep.pos.cor=keep.pos.cor,keep.neg.cor=keep.neg.cor)
     }
     return (sharedValues$cnvMrnaCorrelations)
   }), quoted = T)
@@ -606,11 +612,15 @@ shinyServer(function(input, output, session) {
       intersection<-keepSameColumns(methMrnaExpressionData(),methExpressionData())
       mrna.dif.expr<-(intersection[[1]])
       meth<-(intersection[[2]])
+      
+      keep.pos.cor <- (input$meth.correlation.type == "positive") || (input$meth.correlation.type == "both")
+      keep.neg.cor <- (input$meth.correlation.type == "negative") || (input$meth.correlation.type == "both")
+      
       sharedValues$methMrnaCorrelations <- methXMrnasWCGNA(mrna.dif.expr, meth, methPlatform() , output.path="~/",
                                                            output.file.name=paste(input$meth.mrnaFile$name,"-",input$meth.methFile$name,"-outputFile.csv", sep = ""),           
                                                            r.minimium = methThreshold(), 
-                                                           pearsons.method = methPearsonsMethod(), 
-                                                           inc.progress = T)
+                                                           inc.progress = T,keep.pos.cor=keep.pos.cor,
+                                                           keep.neg.cor=keep.neg.cor)
       
     }
     return (sharedValues$methMrnaCorrelations)

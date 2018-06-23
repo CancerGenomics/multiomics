@@ -3,6 +3,9 @@ correlation.with.wcgna <- function(x, y, minimium, keep.pos.cor=T, keep.neg.cor=
   ### Enable parallel processing for WCGNA Correlation
   enableWGCNAThreads()
   
+  print(paste0("positive: ", keep.pos.cor))
+  print(paste0("negative: ", keep.neg.cor))
+  
   # Calculate correlation between x and y using  WCGNA
   correlation.start <- proc.time()
   # transpose matrix before correlation

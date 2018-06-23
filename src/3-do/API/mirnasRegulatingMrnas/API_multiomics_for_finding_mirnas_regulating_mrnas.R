@@ -63,7 +63,6 @@ readMirnaExpressionFile <- function(mirna.file, ncol.for.expression.id=1) {
 CalculateCorrelationsMirnaMrnaUsingWCGNA <- function(expression, mirna, output.path="~/", 
                                                      output.file.name="inputStep2-matureMirnaXmrna.csv",
                                                      r.minimium=0.7, 
-                                                     pearsons.method = "pearson", 
                                                      inc.progress = F,keep.pos.cor=F, keep.neg.cor=T){
   
   library("WGCNA")
@@ -71,7 +70,7 @@ CalculateCorrelationsMirnaMrnaUsingWCGNA <- function(expression, mirna, output.p
   library("data.table")
   
   ptm <- proc.time()
-  print(paste("Running pipeline with", r.minimium,"threshold and pearson's method:", pearsons.method, sep=" "))
+  print(paste("Running pipeline with", r.minimium,"threshold", sep=" "))
   
   #Organize the matrix to keep it in the following format
   #Mirna or mrna as columns, samples as rows. mirna names o mrna names as column names, and sample names as row names.
@@ -81,7 +80,7 @@ CalculateCorrelationsMirnaMrnaUsingWCGNA <- function(expression, mirna, output.p
   mirna<-mirna[,2:ncol(mirna)]
   
   # calcultate correlation using wcgna
-  correlation.result <-correlation.with.wcgna(expression, mirna,r.minimium, keep.pos.cor=F, keep.neg.cor=T)
+  correlation.result <-correlation.with.wcgna(expression, mirna,r.minimium, keep.pos.cor=keep.pos.cor, keep.neg.cor=keep.neg.cor)
   colnames(correlation.result)<-(c("Gen_symbol","mature_mirna_id","Mirna_Mrna_Correlation","p_value_Of_Mirna_Mrna_Correlation", "p_value_fdr_adjustedMirna_Mrna_Correlation"))
   
   # Write the result to a file
