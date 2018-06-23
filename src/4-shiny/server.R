@@ -404,18 +404,18 @@ shinyServer(function(input, output, session) {
   })
 
   cnvMrnaExpressionData <- reactive({
-			return(cnvMrnaIntersection()[[1]])
-		})
+	return(cnvMrnaIntersection()[[1]])
+  })
 
   cnvExpressionData <- reactive({
-			return(cnvMrnaIntersection()[[2]])
-		})
+	return(cnvMrnaIntersection()[[2]])
+  })
 
   cnvMrnaIntersection <- reactive({
-			#Keep columns which are in both databases
-			intersection<-keepSameColumns(cnvMrnaExpressionReadData(),cnvExpressionReadData())
-			return(intersection)
-		})
+	#Keep columns which are in both databases
+	intersection<-keepSameColumns(cnvMrnaExpressionReadData(),cnvExpressionReadData())
+	return(intersection)
+  })
   
   cnvMrnaCorrelations <- reactive(quote({
     if(sharedValues$fromButton) {
@@ -423,7 +423,7 @@ shinyServer(function(input, output, session) {
       keep.pos.cor <- (input$cnv.correlation.type == "positive") || (input$cnv.correlation.type == "both")
       keep.neg.cor <- (input$cnv.correlation.type == "negative") || (input$cnv.correlation.type == "both")
       
-      sharedValues$cnvMrnaCorrelations <- CnvXMrnas(cnvExpressionData(), cnvExpressionData(), output.path="~/", 
+      sharedValues$cnvMrnaCorrelations <- CnvXMrnas(cnvMrnaExpressionData(), cnvExpressionData(), output.path="~/", 
                                                          output.file.name=paste(input$cnv.mrnaFile$name,"-",input$cnv.cnvFile$name,"-outputFile.csv", sep = ""),
                                                          r.minimium = cnvThreshold(), inc.progress = T,keep.pos.cor=keep.pos.cor,keep.neg.cor=keep.neg.cor)
     }
@@ -449,7 +449,7 @@ shinyServer(function(input, output, session) {
                        progResult <- getPrognosticStatistic(cnvMrnaExpressionData(), number.of.clusters, groupin.FUN=multiomics.cut2, 
                                                             input$cnv.survivalFile$datapath, input$cnv.survival.column.name , 
                                                             input$cnv.event.column.name, minimium.number.of.samples.in.a.group=10)
-                       colnames(sharedValues$cnvMrnaCorrelations) <- c("Gene","Location","CNV-mRNA correlation","p-value", "p_value_fdr_adjusted")
+                       colnames(sharedValues$cnvMrnaCorrelations) <- c("Gene","Location","CNV-mRNA correlation","p-value", "p_value_fdr_adjusted", "ID")
                        # creating a matrix to bind to the actual result        
                        tmp <- matrix(nrow = nrow(sharedValues$cnvMrnaCorrelations), ncol = ncol(progResult)-1 )
                        actual.result <- sharedValues$cnvMrnaCorrelations
@@ -464,8 +464,10 @@ shinyServer(function(input, output, session) {
                          gen <- sharedValues$cnv.matrix.to.render[i,1]
                          # values corresponding to actual gen to add columns
                          row <- which(progResult[,1] == gen)
-                         # adding columns for actual gen row
-                         sharedValues$cnv.matrix.to.render[i,(ncol(actual.result) +1):ncol(sharedValues$cnv.matrix.to.render)] <- progResult[row,2:ncol(progResult)]
+                         if(!isEmpty(row)){
+                           # adding columns for actual gen row
+                           sharedValues$cnv.matrix.to.render[i,(ncol(actual.result) +1):ncol(sharedValues$cnv.matrix.to.render)] <- progResult[row,2:ncol(progResult)]
+                         }
                        }					    
                      }
                      
