@@ -417,7 +417,7 @@ shinyServer(function(input, output, session) {
       keep.pos.cor <- (input$cnv.correlation.type == "positive") || (input$cnv.correlation.type == "both")
       keep.neg.cor <- (input$cnv.correlation.type == "negative") || (input$cnv.correlation.type == "both")
       
-      sharedValues$cnvMrnaCorrelations <- CnvXMrnasWCGNA(cnvExpressionData(), cnvExpressionData(), output.path="~/", 
+      sharedValues$cnvMrnaCorrelations <- CnvXMrnas(cnvExpressionData(), cnvExpressionData(), output.path="~/", 
                                                          output.file.name=paste(input$cnv.mrnaFile$name,"-",input$cnv.cnvFile$name,"-outputFile.csv", sep = ""),
                                                          r.minimium = cnvThreshold(), inc.progress = T,keep.pos.cor=keep.pos.cor,keep.neg.cor=keep.neg.cor)
     }
