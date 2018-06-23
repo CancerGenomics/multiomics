@@ -47,7 +47,8 @@ getPrognosticStatistic<-function(expression, number.of.clusters, groupin.FUN='mu
   expression.with.survival.file.path<-"multiomics.temp.exprWithSurv.csv"
   do.generateExpressionAndSurvivalDataFromTCGA(expression, clinical.file.path, clinical.survival.column.name, clinical.event.column.name,expression.with.survival.file.path)
   result<-calculate.statistics.gene.by.gene(expression.with.survival.file.path, number.of.clusters=2, maximum.p.value.accepted=0.05, grouping.FUN=multiomics.cut2, print.surv.diff=TRUE, print.concordance.index=TRUE, print.coxph=TRUE, gene.names.to.evaluate=NULL, minimium.number.of.samples.in.a.group=10)
-  result[,c(1,2,6,7,8,9,10,11)]
+  res <- result[,c(1,2,6,7,8,9,10,11)]
+  return(res)
 }
 
 
@@ -610,7 +611,13 @@ calculate.statistics.gene.by.gene <- function(expression.with.survival.file.path
 										concordance.index.object<-getConcordanceIndex(expression.x.survival.object@time, expression.x.survival.object@event, groups)
 										newrow<-append(newrow, concordance.index.object@concordance.index)
 									}
-								},error=function(e){stop(formatErrorMessage(error.type=ERROR.CONCORDANCE.INDEX, error.detail=e$message))})
+								},error=function(e){
+								    print(e)
+								    stop(
+								      formatErrorMessage(
+								        error.type=ERROR.CONCORDANCE.INDEX, 
+								        error.detail=e$message))
+								  })
 						
 							
 						res.env$mat[i,] <- append(newrow, "OK")						

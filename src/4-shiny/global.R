@@ -23,6 +23,7 @@ source("../survival.entities/ExpressionXSurvivalEntity.R")
 source("../survival.entities/CoxphEntity.R")
 source("../survival.entities/ValidationResult.R")
 source("../survival.entities/SurvdiffEntity.R")
+source("../survival.entities/ConcordanceIndexEntity.R")
 
 source("../3-do/Private/multiomics_private_data_validation.R")
 source("../3-do/Private/multiomics_private_multimir_interaction.R")
