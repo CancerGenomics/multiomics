@@ -118,14 +118,28 @@ shinyServer(function(input, output, session) {
     
   }
   
+  mrnaExpressionReadData <- reactive({
+			  print("mrnaExpressionData")
+			  return(readMrnaExpressionFile(input$cnv.mrnaFile$datapath))
+		  })
+  
+  mirnaExpressionReadData <- reactive({
+			  print("mirnaExpressionData")
+			  readMirnaExpressionFile(input$cnv.cnvFile$datapath)
+		  })
+  
   mrnaExpressionData <- reactive({
-    print("mrnaExpressionData")
-    return(readMrnaExpressionFile(input$mrnaFile$datapath))
+    return(mirnaMrnaIntersection()[[1]])
   })
   
   mirnaExpressionData <- reactive({
-    print("mirnaExpressionData")
-    readMirnaExpressionFile(input$mirnaFile$datapath)
+    return(mirnaMrnaIntersection()[[2]])
+  })
+
+  mirnaMrnaIntersection <- reactive({
+	#Keep columns which are in both databases
+	intersection<-keepSameColumns(mrnaExpressionReadData(),mirnaExpressionReadData())
+	return(intersection)
   })
   
   threshold <- reactive({
@@ -138,16 +152,12 @@ shinyServer(function(input, output, session) {
   
   correlations <- reactive(quote({
     if(sharedValues$fromButton) {
-      #Keep columns which are in both databases
-      intersection<-keepSameColumns(mrnaExpressionData(),mirnaExpressionData())
-      mrna.dif.expr<-(intersection[[1]])
-      mirna.dif.expr<-(intersection[[2]])
-      
+
       keep.pos.cor <- (input$mirna.correlation.type == "positive") || (input$mirna.correlation.type == "both")
       keep.neg.cor <- (input$mirna.correlation.type == "negative") || (input$mirna.correlation.type == "both")
       
       sharedValues$correlations <- CalculateCorrelationsMirnaMrnaUsingWCGNA(
-        mrna.dif.expr, mirna.dif.expr,
+        mrnaExpressionData(), mirnaExpressionData(),
         output.path="~/", 
         output.file.name = paste(input$mirnaFile$name,"-",input$mrnaFile$name,"-outputFile.csv", sep = ""),
         r.minimium = threshold(), inc.progress = T, keep.pos.cor = keep.pos.cor, keep.neg.cor = keep.neg.cor)
@@ -308,21 +318,17 @@ shinyServer(function(input, output, session) {
     
     if(!is.null(input$mirna.survivalFile) && !is.null(input$result_rows_selected)){
       
-      intersection<-keepSameColumns(mrnaExpressionData(),mirnaExpressionData())
-      mrna.dif.expr<-(intersection[[1]])
-      mirna.dif.expr<-(intersection[[2]])
-      
       #selected.gene <- correlations()[input$result_rows_selected,1]
       #selected.gene.row <- which(mrnaExpressionData()==selected.gene)
       #expression.vector <- as.numeric(as.vector(mrnaExpressionData()[selected.gene.row,2:ncol(mrnaExpressionData())]))
       
       selected.gene <- correlations()[input$result_rows_selected,1]
-      selected.gene.row <- which(mrna.dif.expr==selected.gene)
-      expression.vector <- as.numeric(as.vector(mrna.dif.expr[selected.gene.row,2:ncol(mrna.dif.expr)]))
+      selected.gene.row <- which(mrnaExpressionData()==selected.gene)
+      expression.vector <- as.numeric(as.vector(mrnaExpressionData()[selected.gene.row,2:ncol(mrnaExpressionData())]))
       
       
       mirna.survival.matrix <- read.table(input$mirna.survivalFile$datapath, header = T)
-      mirna.survival.matrix<-mirna.survival.matrix[mirna.survival.matrix$X_SAMPLE_ID %in% colnames(mirna.dif.expr),]
+      mirna.survival.matrix<-mirna.survival.matrix[mirna.survival.matrix$X_SAMPLE_ID %in% colnames(mirnaExpressionData()),]
       survival.name.col <- which(colnames(mirna.survival.matrix)==input$mirna.survival.column.name)
       survival.event.col <- which(colnames(mirna.survival.matrix)==input$mirna.event.column.name)
       
@@ -377,31 +383,41 @@ shinyServer(function(input, output, session) {
     input$cnv.thresholdSlider
   })
   
-  cnvMrnaExpressionData <- reactive({
-    print("mrnaExpressionData")
+  cnvMrnaExpressionReadData <- reactive({
+    print("cnvMrnaExpressionReadData")
     readMrnaExpressionFile(input$cnv.mrnaFile$datapath)
   })
   
-  cnvExpressionData <- reactive({
-    print("cnvExpressionData")
+  cnvExpressionReadData <- reactive({
+    print("cnvExpressionReadData")
     readCNVFile(input$cnv.cnvFile$datapath)
   })
   
   cnvPearsonsMethod <- reactive({
     input$cnv.pearsons.method
   })
+
+  cnvMrnaExpressionData <- reactive({
+			return(mirnaMrnaIntersection()[[1]])
+		})
+
+  cnvExpressionData <- reactive({
+			return(mirnaMrnaIntersection()[[2]])
+		})
+
+  cnvMrnaIntersection <- reactive({
+			#Keep columns which are in both databases
+			intersection<-keepSameColumns(cnvMrnaExpressionReadData(),cnvExpressionReadData())
+			return(intersection)
+		})
   
   cnvMrnaCorrelations <- reactive(quote({
     if(sharedValues$fromButton) {
-      #Keep columns which are in both databases
-      intersection<-keepSameColumns(cnvMrnaExpressionData(),cnvExpressionData())
-      mrna.dif.expr<-(intersection[[1]])
-      cnv<-(intersection[[2]])
       
       keep.pos.cor <- (input$cnv.correlation.type == "positive") || (input$cnv.correlation.type == "both")
       keep.neg.cor <- (input$cnv.correlation.type == "negative") || (input$cnv.correlation.type == "both")
       
-      sharedValues$cnvMrnaCorrelations <- CnvXMrnasWCGNA(mrna.dif.expr, cnv, output.path="~/", 
+      sharedValues$cnvMrnaCorrelations <- CnvXMrnasWCGNA(cnvExpressionData(), cnvExpressionData(), output.path="~/", 
                                                          output.file.name=paste(input$cnv.mrnaFile$name,"-",input$cnv.cnvFile$name,"-outputFile.csv", sep = ""),
                                                          r.minimium = cnvThreshold(), inc.progress = T,keep.pos.cor=keep.pos.cor,keep.neg.cor=keep.neg.cor)
     }
@@ -553,17 +569,13 @@ shinyServer(function(input, output, session) {
     
     if(!is.null(input$cnv.survivalFile) && !is.null(input$MRNACNVResult_rows_selected)){
       
-      intersection<-keepSameColumns(cnvMrnaExpressionData(),cnvExpressionData())
-      mrna.dif.expr<-(intersection[[1]])
-      cnv.dif.expr<-(intersection[[2]])
-      
       selected.gene <- cnvMrnaCorrelations()[input$MRNACNVResult_rows_selected,1]
-      selected.gene.row <- which(mrna.dif.expr==selected.gene)
-      expression.vector <- as.numeric(as.vector(mrna.dif.expr[selected.gene.row,2:ncol(mrna.dif.expr)]))
+      selected.gene.row <- which(cnvExpressionData()==selected.gene)
+      expression.vector <- as.numeric(as.vector(cnvExpressionData()[selected.gene.row,2:ncol(cnvExpressionData())]))
       
       
       cnv.survival.matrix <- read.table(input$cnv.survivalFile$datapath, header = T)
-      cnv.survival.matrix<-cnv.survival.matrix[cnv.survival.matrix$X_SAMPLE_ID %in% colnames(cnv.dif.expr),]
+      cnv.survival.matrix<-cnv.survival.matrix[cnv.survival.matrix$X_SAMPLE_ID %in% colnames(cnvExpressionData()),]
       survival.name.col <- which(colnames(cnv.survival.matrix)==input$cnv.survival.column.name)
       survival.event.col <- which(colnames(cnv.survival.matrix)==input$cnv.event.column.name)
       
@@ -608,15 +620,11 @@ shinyServer(function(input, output, session) {
   
   methMrnaCorrelations <- reactive(quote({
     if(sharedValues$fromButton) {
-      #Keep columns which are in both databases
-      intersection<-keepSameColumns(methMrnaExpressionData(),methExpressionData())
-      mrna.dif.expr<-(intersection[[1]])
-      meth<-(intersection[[2]])
-      
+     
       keep.pos.cor <- (input$meth.correlation.type == "positive") || (input$meth.correlation.type == "both")
       keep.neg.cor <- (input$meth.correlation.type == "negative") || (input$meth.correlation.type == "both")
       
-      sharedValues$methMrnaCorrelations <- methXMrnasWCGNA(mrna.dif.expr, meth, methPlatform() , output.path="~/",
+      sharedValues$methMrnaCorrelations <- methXMrnasWCGNA(methMrnaExpressionData(), methExpressionData(), methPlatform() , output.path="~/",
                                                            output.file.name=paste(input$meth.mrnaFile$name,"-",input$meth.methFile$name,"-outputFile.csv", sep = ""),           
                                                            r.minimium = methThreshold(), 
                                                            inc.progress = T,keep.pos.cor=keep.pos.cor,
@@ -634,13 +642,27 @@ shinyServer(function(input, output, session) {
     input$meth.thresholdSlider
   })
   
-  methMrnaExpressionData <- reactive({
+  methMrnaExpressionReadData <- reactive({
     readMrnaExpressionFile(input$meth.mrnaFile$datapath)
   })
   
-  methExpressionData <- reactive({
+  methExpressionReadData <- reactive({
     readMethylationFile(input$meth.methFile$datapath)
   })
+
+  methMrnaExpressionData <- reactive({
+			return(methMrnaIntersection()[[1]])
+		})
+
+  methExpressionData <- reactive({
+			return(methMrnaIntersection()[[2]])
+		})
+
+  methMrnaIntersection <- reactive({
+			#Keep columns which are in both databases
+			intersection<-keepSameColumns(methMrnaExpressionReadData(),methExpressionReadData())
+			return(intersection)
+		})
   
   methPearsonsMethod <- reactive({
     input$meth.pearsons.method
