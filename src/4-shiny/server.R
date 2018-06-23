@@ -568,7 +568,7 @@ shinyServer(function(input, output, session) {
   })
   
   
-  output$cnv.ccorrelationSurvival <- renderPlot({
+  output$cnv.correlationSurvival <- renderPlot({
     ERROR.GROUPING="ERROR.GROUPING"
     ERROR.EXECUTING.SURV.FIT.FOR.PLOTTING="ERROR.EXECUTING.SURVFIT.FOR.PLOTTING"
     
@@ -579,7 +579,7 @@ shinyServer(function(input, output, session) {
       expression.vector <- as.numeric(as.vector(cnvExpressionData()[selected.gene.row,2:ncol(cnvExpressionData())]))
       
       
-      cnv.survival.matrix <- read.table(input$cnv.survivalFile$datapath, header = T)
+      cnv.survival.matrix <- read.table(input$cnv.survivalFile$datapath, header = T, stringsAsFactors = F)
       cnv.survival.matrix<-cnv.survival.matrix[cnv.survival.matrix$X_SAMPLE_ID %in% colnames(cnvExpressionData()),]
       survival.name.col <- which(colnames(cnv.survival.matrix)==input$cnv.survival.column.name)
       survival.event.col <- which(colnames(cnv.survival.matrix)==input$cnv.event.column.name)
@@ -612,7 +612,10 @@ shinyServer(function(input, output, session) {
           plot(surv.fit,col=c("blue", "red"), xlab="Time", ylab="survival")
           title<-selected.gene
           drawLegends(groups, "Survival", title)
-        },error=function(e){stop(formatErrorMessage(error.type=ERROR.EXECUTING.SURV.FIT.FOR.PLOTTING, error.detail=e$message))})
+        },error=function(e){
+            print(e)
+            stop(formatErrorMessage(error.type=ERROR.EXECUTING.SURV.FIT.FOR.PLOTTING, error.detail=e$message))
+          })
       })
     }
   })    
