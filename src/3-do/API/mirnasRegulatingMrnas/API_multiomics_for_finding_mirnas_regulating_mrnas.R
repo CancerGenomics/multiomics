@@ -18,7 +18,7 @@
 #  -Cells has the expression levels of each mirna for each sample. 
 readMirnaExpressionFile <- function(mirna.file, ncol.for.expression.id=1) {
   print("Reading the mirna file...")
-  mirna <- na.omit(read.table(mirna.file, header=TRUE, fill=TRUE, sep="\t"))  
+  mirna <- na.omit(read.table(mirna.file, header=TRUE, fill=TRUE, sep="\t",check.names=F))  
   print("Sorting the mirna data...")
   mirna <-SortMatrixByColumnName(mirna, 1)
   return (mirna)
