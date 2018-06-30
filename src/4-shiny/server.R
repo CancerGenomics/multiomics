@@ -97,9 +97,11 @@ shinyServer(function(input, output, session) {
         if(nrow(sharedValues$mirna.matrix.to.render) > 0) {
           shinyjs::show(id = "downloadMrnaMirnaResult")
           shinyjs::show(id = "mirnaClip")
+          shinyjs::hide(id = "mirnaEmptyResultMessage")
         } else {
           shinyjs::hide(id = "downloadMrnaMirnaResult")
           shinyjs::hide(id = "mirnaClip")
+          shinyjs::show(id = "mirnaEmptyResultMessage")
         }
       }
       
@@ -251,6 +253,7 @@ shinyServer(function(input, output, session) {
       output$result <- DT::renderDataTable(sharedValues$mirna.matrix.to.render, selection = 'single')      
       shinyjs::hide(id="downloadMrnaMirnaResult")
       shinyjs::hide(id="mirnaClip")
+      
     } else {
       shinyjs::hide(id="mirnaMirnaFileErrorMsg")
     }
@@ -480,11 +483,13 @@ shinyServer(function(input, output, session) {
                        })  					  
                        
                        shinyjs::show(id = "cnvClip")
+                       shinyjs::hide(id = "cnvEmptyResultMessage")
                        print("Hay resultados")
                      } else {
                        print("NO hay resultados")
                        shinyjs::hide(id = "downloadMrnaCNVResult")
                        shinyjs::hide(id = "cnvClip")
+                       shinyjs::show(id = "cnvEmptyResultMessage")
                      }      
                      sharedValues$fromButton <- F
                    } else {
@@ -698,7 +703,7 @@ shinyServer(function(input, output, session) {
                      if(nrow(sharedValues$meth.matrix.to.render) > 0) {
                        output$MRNAMethResult <- DT::renderDataTable(sharedValues$meth.matrix.to.render, selection = 'single')
                        shinyjs::show(id = "downloadMrnaMethResult")
-                       
+                       shinyjs::hide(id = "methEmptyResultMessage")
                        # Add clipboard buttons
                        output$methClip <- renderUI({
                          rclipButton("methCopyToClipboard", "Copy genes to clipboard", geneListToClipboard(methMrnaCorrelations()[,1]) , icon("clipboard"))
@@ -709,6 +714,7 @@ shinyServer(function(input, output, session) {
                        print("NO hay resultados")
                        shinyjs::hide(id = "downloadMrnaMethResult")
                        shinyjs::hide(id = "methClip")
+                       shinyjs::show(id = "methEmptyResultMessage")
                      }
                      sharedValues$fromButton <- F
                    } else {

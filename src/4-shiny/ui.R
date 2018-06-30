@@ -92,6 +92,11 @@ shinyUI(
           actionButton("runMRNAMiRNACorrelation", "Run pipeline")
         ),
         mainPanel(
+          tags$div(id="downloadMrnaMirnaResultDiv",
+                   shinyjs::hidden(
+                     p(id="mirnaEmptyResultMessage", class="alert alert-danger",
+                       "There is no correlation with that parameters."))
+          ),
           DT::dataTableOutput('result'),
           tags$div(id="downloadMrnaMirnaResultDiv",
               shinyjs::hidden(downloadButton("downloadMrnaMirnaResult", "Download csv"))
@@ -170,6 +175,11 @@ shinyUI(
           actionButton("runMRNACNVCorrelation", "Run pipeline")
         ),
         mainPanel(
+          tags$div(id="downloadCnvMirnaResultDiv",
+                   shinyjs::hidden(
+                     p(id="cnvEmptyResultMessage", class="alert alert-danger",
+                       "There is no correlation with that parameters."))
+          ),          
           DT::dataTableOutput('MRNACNVResult'),
           tags$div(id="downloadMrnaCNVResultDiv",
                    shinyjs::hidden(downloadButton("downloadMrnaCNVResult", "Download csv"))),
@@ -230,6 +240,11 @@ shinyUI(
                  actionButton("runMRNAMethylationCorrelation", "Run pipeline")
                ),
                mainPanel(
+                 tags$div(id="downloadCnvMethResultDiv",
+                          shinyjs::hidden(
+                            p(id="methEmptyResultMessage", class="alert alert-danger",
+                              "There is no correlation with that parameters."))
+                 ),                   
                  DT::dataTableOutput('MRNAMethResult'),
                  tags$div(id="downloadMrnaMethylationResultDiv",
                           shinyjs::hidden(downloadButton("downloadMrnaMethResult", "Download csv"))),
