@@ -632,7 +632,7 @@ shinyServer(function(input, output, session) {
       keep.pos.cor <- (input$meth.correlation.type == "positive") || (input$meth.correlation.type == "both")
       keep.neg.cor <- (input$meth.correlation.type == "negative") || (input$meth.correlation.type == "both")
       
-      sharedValues$methMrnaCorrelations <- methXMrnas(methMrnaExpressionData(), methExpressionData(), methPlatform() , output.path="~/",
+      sharedValues$methMrnaCorrelations <- methXMrnasWCGNA(methMrnaExpressionData(), methExpressionData(), methPlatform() , output.path="~/",
                                                            output.file.name=paste(input$meth.mrnaFile$name,"-",input$meth.methFile$name,"-outputFile.csv", sep = ""),           
                                                            r.minimium = methThreshold(), 
                                                            inc.progress = T,keep.pos.cor=keep.pos.cor,
