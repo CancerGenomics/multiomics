@@ -79,7 +79,7 @@ shinyUI(
           hidden(selectInput("mirna.survival.column.name","Survival column name",NULL)),
           hidden(selectInput("mirna.event.column.name","Event column name",NULL)),
           sliderInput("thresholdSlider", label=h4("Correlation coefficient"), 
-				      min=0.3, max=1, value=0.7, step=0.05),
+				      min=0, max=1, value=0.7, step=0.05),
           radioButtons("mirna.correlation.type", label = h4("Correlation type"),
 				       choices = c("Positive" = "positive", "Negative" = "negative", "Both" = "both"), 
 				       selected = "negative"),		
@@ -222,7 +222,7 @@ shinyUI(
                  # TODO habria que tomar los choices de las plataformas disponibles en getMethylationPlatformNames()
                  selectInput("meth.platform.select", label = h4("Platform"), choices = c("HumanMethylation450 BeadChip")),
                  sliderInput("meth.thresholdSlider", label=h4("Correlation coefficient"), 
-                             min=0.3, max=1, value=0.7, step=0.05),
+                             min=0, max=1, value=0.7, step=0.05),
                  radioButtons("meth.correlation.type", label = h4("Correlation type"),
                               choices = c("Positive" = "positive", "Negative" = "negative", "Both" = "both"), 
                               selected = "positive"),	

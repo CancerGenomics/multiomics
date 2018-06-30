@@ -70,15 +70,17 @@ CnvXMrnas <- function(mrna, cnv, output.path="~/",
       
       if (!is.na(abs(resultado.pearson$estimate))) {
         if (abs(resultado.pearson$estimate) > r.minimium) {
-          location<-getGeneLocation(actual.gen);
-          newValue<-c(as.character(actual.gen), location,
-                      resultado.pearson$estimate, resultado.pearson$p.value, -9999, id)
-          ###MDB: 26/2/2018 - P.ADJUST
-          res[actual.n.correlated,1:num.of.result.columns] <- newValue
-          actual.n.correlated<-actual.n.correlated+1
-          
-          ###MDB: 26/2/2018 - P.ADJUST
-          p.values.positions.of.correlated.pairs<-append(p.values.positions.of.correlated.pairs, id)
+          if ((keep.pos.cor==T && resultado.pearson$estimate>0) || ((keep.neg.cor==T && resultado.pearson$estimate<0))){ 
+            location<-getGeneLocation(actual.gen);
+            newValue<-c(as.character(actual.gen), location,
+                        resultado.pearson$estimate, resultado.pearson$p.value, -9999, id)
+            ###MDB: 26/2/2018 - P.ADJUST
+            res[actual.n.correlated,1:num.of.result.columns] <- newValue
+            actual.n.correlated<-actual.n.correlated+1
+            
+            ###MDB: 26/2/2018 - P.ADJUST
+            p.values.positions.of.correlated.pairs<-append(p.values.positions.of.correlated.pairs, id)
+          }
         }
       }
     }
@@ -87,13 +89,17 @@ CnvXMrnas <- function(mrna, cnv, output.path="~/",
     }	
   }
   
-  ###MDB: 26/2/2018 - P.ADJUST
-  p.values.adjusted.fdr<-p.adjust(p.values.all, method="fdr", n=length(p.values.all))
-  names(p.values.adjusted.fdr)<-ids
-  
-  ###MDB: 26/2/2018 - P.ADJUST
-  res[res[,"ID"] %in% p.values.positions.of.correlated.pairs, position.of.adjusted.p.value]<-p.values.adjusted.fdr[as.character(p.values.positions.of.correlated.pairs)]
-  ####
+  if (length(p.values.all)>0){
+    ###MDB: 26/2/2018 - P.ADJUST
+    p.values.adjusted.fdr<-p.adjust(p.values.all, method="fdr", n=length(p.values.all))
+    names(p.values.adjusted.fdr)<-ids
+
+    ###MDB: 26/2/2018 - P.ADJUST
+    res[res[,"ID"] %in% p.values.positions.of.correlated.pairs, position.of.adjusted.p.value]<-p.values.adjusted.fdr[as.character(p.values.positions.of.correlated.pairs)]
+    ####
+    
+  }
+      
   
   ###MDB: 27/2/2018 - P.ADJUST
   # deleting useless and unused rows
@@ -138,7 +144,6 @@ CnvXMrnasWCGNA <- function(expression, cnv, output.path="~/",
   #correlation.result <-correlation.with.wcgna(expression, mirna,r.minimium, keep.pos.cor=keep.pos.cor, keep.neg.cor=keep.neg.cor)
   correlation.result <-correlation.gene.to.gene(expression, mirna,r.minimium, keep.pos.cor=keep.pos.cor, keep.neg.cor=keep.neg.cor)
   
-  browser()
   colnames(correlation.result)<-(c("Gene","Location", "CNV_mRNA_Correlation", "p-value", "p_value_fdr_adjusted"))
   
   # Apply function to set Gene Location on resulting dataframe. This is specific to this Process

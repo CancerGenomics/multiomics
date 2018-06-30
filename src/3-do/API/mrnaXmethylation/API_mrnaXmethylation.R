@@ -7,7 +7,7 @@ methXMrnas <- function(mrna, meth, meth.platform, output.path="~/",
                        output.file.name="methylationXMrna.csv",
                        r.minimium=0.7, 
                        pearsons.method = "pearson", 
-                       inc.progress = F){
+                       inc.progress = F,keep.pos.cor=T, keep.neg.cor=F){
   
   ptm <- proc.time()
   total.rows=nrow(mrna)*15
@@ -38,7 +38,6 @@ methXMrnas <- function(mrna, meth, meth.platform, output.path="~/",
   ###
   
   ids.in.meth.dataset<-meth[,1]
-  
   print("Start process!")
   for (i in 1:nrow(mrna)) {
     
@@ -47,6 +46,7 @@ methXMrnas <- function(mrna, meth, meth.platform, output.path="~/",
     #In meths i have each cg, which do methialtion over the gene.
     cgs.for.this.gene<-get.cgs.for.this.genes(actual.gen,meth.platform)
     #Se queda con el primer CNV
+    
     if (length(cgs.for.this.gene)>0){
       
       for (actual.cg.index in 1:length(cgs.for.this.gene)){
@@ -66,17 +66,21 @@ methXMrnas <- function(mrna, meth, meth.platform, output.path="~/",
           #id<-paste(actual, actual.gen, actual.mirna, sep="-")
           id<-actual
           ids<-append(ids, id)
-          
+   
           
           if (!is.na(abs(resultado.pearson$estimate))) {
-            if ((abs(resultado.pearson$estimate) > r.minimium) & (resultado.pearson$estimate<0)) {
-              location<-getGeneLocation(actual.gen);
-              newValue<-c(as.character(actual.gen), location, actual.cg,
-                          resultado.pearson$estimate, resultado.pearson$p.value, -9999, id)
-              res[actual.n.correlated,1:num.of.result.columns] <- newValue
-              actual.n.correlated<-actual.n.correlated+1
-              ###MDB: 26/2/2018 - P.ADJUST
-              p.values.positions.of.correlated.pairs<-append(p.values.positions.of.correlated.pairs, id)
+
+            if (abs(resultado.pearson$estimate) > r.minimium) {
+
+              if ((keep.pos.cor==T && resultado.pearson$estimate>0) || ((keep.neg.cor==T && resultado.pearson$estimate<0))){ 
+                location<-getGeneLocation(actual.gen);
+                newValue<-c(as.character(actual.gen), location, actual.cg,
+                            resultado.pearson$estimate, resultado.pearson$p.value, -9999, id)
+                res[actual.n.correlated,1:num.of.result.columns] <- newValue
+                actual.n.correlated<-actual.n.correlated+1
+                ###MDB: 26/2/2018 - P.ADJUST
+                p.values.positions.of.correlated.pairs<-append(p.values.positions.of.correlated.pairs, id)
+              }
             }
           }
           
@@ -102,15 +106,16 @@ methXMrnas <- function(mrna, meth, meth.platform, output.path="~/",
       incProgress(1/nrow(mrna));
     }	
   }
-  
-  ###MDB: 26/2/2018 - P.ADJUST
-  p.values.adjusted.fdr<-p.adjust(p.values.all, method="fdr", n=length(p.values.all))
-  names(p.values.adjusted.fdr)<-ids
-  
-  ###MDB: 26/2/2018 - P.ADJUST
-  res[res[,"ID"] %in% p.values.positions.of.correlated.pairs, position.of.adjusted.p.value]<-p.values.adjusted.fdr[as.character(p.values.positions.of.correlated.pairs)]
-  ####
-  
+
+  if (length(p.values.all)>0){
+    ###MDB: 26/2/2018 - P.ADJUST
+    p.values.adjusted.fdr<-p.adjust(p.values.all, method="fdr", n=length(p.values.all))
+    names(p.values.adjusted.fdr)<-ids
+    
+    ###MDB: 26/2/2018 - P.ADJUST
+    res[res[,"ID"] %in% p.values.positions.of.correlated.pairs, position.of.adjusted.p.value]<-p.values.adjusted.fdr[as.character(p.values.positions.of.correlated.pairs)]
+    ####
+  }
   
   # deleting useless and unused rows
   res <- res[c(1:actual.n.correlated-1),c(1:num.of.result.columns)]
