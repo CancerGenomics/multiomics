@@ -566,7 +566,9 @@ shinyServer(function(input, output, session) {
       X <- as.numeric(as.vector(cnvExpressionData()[selected.cnv.row,2:ncol(cnvExpressionData())]))
       Y <- as.numeric(as.vector(cnvMrnaExpressionData()[selected.gene.row,2:ncol(cnvMrnaExpressionData())]))
       cor.test(X, Y)
-      plot(X, Y, xlab=selected.gene, ylab=selected.gene, main='CNV vs. mRNA correlation plot', col='Black', pch=21, frame.plot=TRUE) #col=Group
+      xlab <- paste0(selected.gene," Mrna")
+      ylab <- paste0(selected.gene," CNV")
+      plot(X, Y, xlab=xlab, ylab=ylab, main='CNV vs. mRNA correlation plot', col='Black', pch=21, frame.plot=TRUE) #col=Group
       line <- lm(Y ~ X)
       abline(line, col="blue")
     }
