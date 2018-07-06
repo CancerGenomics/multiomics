@@ -2,8 +2,8 @@
 # 
 # Author: Matias
 ###############################################################################
-source("D:/desarrollo/workspaces/R/multiomics/survival.utils/expression_grouping_functions.R", echo=FALSE, encoding="Cp1252")
-source("D:/desarrollo/workspaces/R/multiomics/testing.utils/Assertions.R", echo=FALSE, encoding="Cp1252")
+source("/home/dtopalian/multiomics/src/survival.utils/expression_grouping_functions.R", echo=FALSE, encoding="Cp1252")
+source("/home/dtopalian/multiomics/test/testing.utils/Assertions.R", echo=FALSE, encoding="Cp1252")
 
 
 ###############################TEST test.multiomics.G1PairUpG2PairDown#################################### 

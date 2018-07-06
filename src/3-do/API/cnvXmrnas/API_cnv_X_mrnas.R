@@ -32,7 +32,6 @@ CnvXMrnas <- function(mrna, cnv, output.path="~/",
   res <- matrix(nrow=total.rows,ncol=num.of.result.columns)
   colnames(res)<-(c("Gene","Location", "CNV-mRNA correlation", "p-value", "p_value_fdr_adjusted", "ID"))
   
-  
   ids.in.cnv.dataset<-cnv[,1]
   
   print("Start process!")
@@ -119,7 +118,7 @@ CnvXMrnas <- function(mrna, cnv, output.path="~/",
   
 }
 
-CnvXMrnasWCGNA <- function(expression, cnv, output.path="~/", 
+CnvXMrnasWCGNA <- function(mrna, cnv, output.path="~/", 
                            output.file.name="cnvXMrna.csv",
                            r.minimium=0.7, 
                            inc.progress = F,keep.pos.cor=T, keep.neg.cor=F){
@@ -133,32 +132,50 @@ CnvXMrnasWCGNA <- function(expression, cnv, output.path="~/",
   ptm <- proc.time()
   print(paste("Running pipeline with", r.minimium,"threshold", sep=" "))
   
-  #Organize the matrix to keep it in the following format
-  #Mirna or mrna as columns, samples as rows. mirna names o mrna names as column names, and sample names as row names.
-  row.names(expression)<-expression[,1]
-  row.names(cnv)<-cnv[,1]
-  expression<-expression[,2:ncol(expression)]
-  mirna<-cnv[,2:ncol(cnv)]
+  actual<-0
+  actual.n.correlated<-1
   
-  # calcultate correlation using wcgna
-  #correlation.result <-correlation.with.wcgna(expression, mirna,r.minimium, keep.pos.cor=keep.pos.cor, keep.neg.cor=keep.neg.cor)
-  correlation.result <-correlation.gene.to.gene(expression, mirna,r.minimium, keep.pos.cor=keep.pos.cor, keep.neg.cor=keep.neg.cor)
+  final.data.frame <- data.frame(matrix(ncol = 6, nrow = 0))
+  colnames(final.data.frame) <- c("x", "y", "correlation", "p.value", "p.value.fdr.adjusted", "ID")
   
-  colnames(correlation.result)<-(c("Gene","Location", "CNV_mRNA_Correlation", "p-value", "p_value_fdr_adjusted"))
+  ids.in.cnv.dataset<-cnv[,1]
+  
+  for (i in 1:nrow(mrna)) {
+    actual<-actual+1
+    actual.gen<-as.character(mrna[i,1])
+    position.in.cnv.dataset<-which(ids.in.cnv.dataset == actual.gen)
+    #Se queda con el primer CNV
+    if (length(position.in.cnv.dataset)>0){
+      position.in.cnv.dataset<-position.in.cnv.dataset[1]
+      actual.mrna<-mrna[i,2:ncol(mrna)]
+      actual.cnv<-cnv[position.in.cnv.dataset,2:ncol(cnv)]
+  
+      actual.mrna<-actual.mrna[,2:ncol(actual.mrna)]
+      actual.cnv<-actual.cnv[,2:ncol(actual.cnv)]
+      
+      # calcultate correlation using wcgna
+      correlation.result <-correlation.with.wcgna(actual.mrna, actual.cnv,r.minimium, keep.pos.cor=keep.pos.cor, keep.neg.cor=keep.neg.cor)
+      
+      # create a data.frame to set ID on final dataframe
+      tmp <- data.frame(actual.gen, actual)
+      colnames(tmp) <- c('x','ID')
+      final.data.frame <- rbind(final.data.frame, merge(correlation.result,tmp,by='x'))
+    }
+  }
+  
+  colnames(final.data.frame)<-(c("Gene","Location", "CNV_mRNA_Correlation", "p-value", "p_value_fdr_adjusted", "ID"))
   
   # Apply function to set Gene Location on resulting dataframe. This is specific to this Process
-  correlation.result[,2] <- apply(correlation.result[,2], 1, getGeneLocationFromFactor)
+  final.data.frame[,2] <- apply(final.data.frame[,2], 1, getGeneLocationFromFactor)
   
   # Write the result to a file
   ################write.to.file(correlation.result, output.path, output.file.name)
   
   print(proc.time() - ptm)
   
-  return (as.matrix(correlation.result))
+  return (as.matrix(final.data.frame))
   
 }
-
-
 
 ###NO TIENE CALCULADO EL P.ADJUST
 correlation.gene.to.gene <- function(x, y, r.minimium, keep.pos.cor=T, keep.neg.cor=T) {

@@ -79,14 +79,16 @@ shinyServer(function(input, output, session) {
         colnames(tmp) <- colnames(progResult)[2:ncol(progResult)]
         sharedValues$mirna.matrix.to.render <- cbind(actual.result,tmp)
         
-        # loop into the matrix to plot looking for the corresponding values per gen
-        for (i in 1:nrow(sharedValues$mirna.matrix.to.render)) {
-          # actual gen from row i
-          gen <- sharedValues$mirna.matrix.to.render[i,1]
-          # values corresponding to actual gen to add columns
-          row <- which(progResult[,1] == gen)
-          # adding columns for actual gen row
-          sharedValues$mirna.matrix.to.render[i,(ncol(actual.result) +1):ncol(sharedValues$mirna.matrix.to.render)] <- progResult[row,2:ncol(progResult)]
+        if (nrow(sharedValues$mirna.matrix.to.render) > 0) {
+          # loop into the matrix to plot looking for the corresponding values per gen
+          for (i in 1:nrow(sharedValues$mirna.matrix.to.render)) {
+            # actual gen from row i
+            gen <- sharedValues$mirna.matrix.to.render[i,1]
+            # values corresponding to actual gen to add columns
+            row <- which(progResult[,1] == gen)
+            # adding columns for actual gen row
+            sharedValues$mirna.matrix.to.render[i,(ncol(actual.result) +1):ncol(sharedValues$mirna.matrix.to.render)] <- progResult[row,2:ncol(progResult)]
+          }
         }
       }      
       
@@ -426,7 +428,7 @@ shinyServer(function(input, output, session) {
       keep.pos.cor <- (input$cnv.correlation.type == "positive") || (input$cnv.correlation.type == "both")
       keep.neg.cor <- (input$cnv.correlation.type == "negative") || (input$cnv.correlation.type == "both")
       
-      sharedValues$cnvMrnaCorrelations <- CnvXMrnas(cnvMrnaExpressionData(), cnvExpressionData(), output.path="~/", 
+      sharedValues$cnvMrnaCorrelations <- CnvXMrnasWCGNA(cnvMrnaExpressionData(), cnvExpressionData(), output.path="~/", 
                                                          output.file.name=paste(input$cnv.mrnaFile$name,"-",input$cnv.cnvFile$name,"-outputFile.csv", sep = ""),
                                                          r.minimium = cnvThreshold(), inc.progress = T,keep.pos.cor=keep.pos.cor,keep.neg.cor=keep.neg.cor)
     }
@@ -437,7 +439,6 @@ shinyServer(function(input, output, session) {
     withProgress(message = 'Please stand by...', 
                  detail = "calculating correlation", 
                  min=0, max=1, {
-                   
                    if(!is.null(input$cnv.mrnaFile) && !is.null(input$cnv.cnvFile)) {
                      
                      print("Preparing...")

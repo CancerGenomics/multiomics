@@ -30,13 +30,14 @@ test_that("WCGNA correlation gives same results as previous implementation", {
   calculated.legacy <- methXMrnas(mrna.dif.expr, meth.dif.expr, meth.platform.table, output.path=the.output.path,
                                        output.file.name="cnvXMrna.csv",
                                        r.minimium=0.2, 
-                                       pearsons.method = "pearson", 
+                                       pearsons.method = "pearson",
+                                       keep.pos.cor=T, keep.neg.cor=T,
                                        inc.progress = F)
   
   calculated.wcgna <- methXMrnasWCGNA(mrna.dif.expr, meth.dif.expr, meth.platform.table, output.path=the.output.path,
                                        output.file.name="cnvXMrna.csv",
                                        r.minimium=0.2, 
-                                       pearsons.method = "pearson", 
+                                       keep.pos.cor=T, keep.neg.cor=T,
                                        inc.progress = F)
   
   # Remove ID column before comparing and transform matrix to data.frame

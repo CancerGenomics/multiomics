@@ -142,9 +142,6 @@ methXMrnasWCGNA <- function(mrna, meth, meth.platform, output.path="~/",
   ptm <- proc.time()
   print(paste("Running pipeline methylaion_X_mrnas with", r.minimium, "threshold", sep=" "))
   
-  # TODO: Find a way to avoid this.
-  # rm(final.data.frame)
-  
   final.data.frame <- data.frame(matrix(ncol = 5, nrow = 0))
   colnames(final.data.frame) <- c("x", "y", "correlation", "p.value", "p.value.fdr.adjusted")
   
@@ -174,9 +171,7 @@ methXMrnasWCGNA <- function(mrna, meth, meth.platform, output.path="~/",
     }
   }
   
-  # Filter out results with correlation greater than 0. This is specific to this correlation
   colnames(final.data.frame)<-(c("Gene", "methylation-id", "Methylation_mRNA_correlation", "p-value", "p_value_fdr_adjusted"))
-  final.data.frame <- subset(final.data.frame, Methylation_mRNA_correlation < 0)
   
   # For each row, calculate methylation-id position
   if (nrow(final.data.frame) > 0) {

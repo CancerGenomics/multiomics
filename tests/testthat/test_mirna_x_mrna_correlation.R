@@ -30,7 +30,7 @@ test_that("WCGNA correlation gives same results as previous implementation", {
   # Test with a r.minimum equal to 0
   calculated.wcgna <- CalculateCorrelationsMirnaMrnaUsingWCGNA(mrna.dif.expr,mirna.dif.expr, working.path, 
                                                          output.file.name=maturemirna.x.mrna.correlation.file.name,
-                                                         r.minimium=0.0)
+                                                         keep.pos.cor=T, keep.neg.cor=T, r.minimium=0.0)
 
   calculated.legacy <- CalculateCorrelationsMirnaMrna(mrna.dif.expr,mirna.dif.expr, working.path, 
                                 output.file.name=maturemirna.x.mrna.correlation.file.name,
@@ -47,7 +47,7 @@ test_that("WCGNA correlation gives same results as previous implementation", {
   # Test with a r.minimum greater than 0
   calculated.wcgna <- CalculateCorrelationsMirnaMrnaUsingWCGNA(mrna.dif.expr,mirna.dif.expr, working.path, 
                                                                   output.file.name=maturemirna.x.mrna.correlation.file.name,
-                                                                  r.minimium=0.8)
+                                                                  keep.pos.cor=T, keep.neg.cor=T, r.minimium=0.8)
   
   calculated.legacy <- CalculateCorrelationsMirnaMrna(mrna.dif.expr,mirna.dif.expr, working.path, 
                                                      output.file.name=maturemirna.x.mrna.correlation.file.name,
