@@ -29,6 +29,7 @@ working.path=paste(sourceBaseLocation, "/test/examples/cnv_X_mrnas/",sep="")
 #cnv.file="CNV_breast_750s.csv"
 #the.output.path="D:\\matias\\academia\\investigacion\\medicina personalizada\\8-DatosGenomica\\2016-09-13---paper multiomics\\CNV\\"
 
+enableWGCNAThreads()
 
 #####DO  
 mrna.dif.expr.path<-paste(working.path, mrna.dif.expr.path.file, sep="")

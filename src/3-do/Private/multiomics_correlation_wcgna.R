@@ -1,13 +1,5 @@
 correlation.with.wcgna <- function(x, y, minimium, keep.pos.cor=T, keep.neg.cor=T) {
   
-  ### Enable parallel processing for WCGNA Correlation
-  enableWGCNAThreads()
-  
-  print(paste0("positive: ", keep.pos.cor))
-  print(paste0("negative: ", keep.neg.cor))
-  
-  # Calculate correlation between x and y using  WCGNA
-  correlation.start <- proc.time()
   # transpose matrix before correlation
   x.transposed <-t(x)
   y.transposed <- t(y)
@@ -15,11 +7,8 @@ correlation.with.wcgna <- function(x, y, minimium, keep.pos.cor=T, keep.neg.cor=
   x.transposed.numeric<-apply(x.transposed, 2, as.numeric)
   y.transposed.numeric<-apply(y.transposed, 2, as.numeric)
   
-  print("Running correlation using WCGNA.")
   cor.and.pvalue <- corAndPvalue(x.transposed.numeric, y.transposed.numeric)
-  cat("CORRELATION TIME: : ", (proc.time() - correlation.start)["elapsed"], "\n")
   
-  merge.start <- proc.time()
   # correlation result into a dataframe
   cor.melt<-melt(cor.and.pvalue$cor)
   colnames(cor.melt) <- c("x","y","correlation")
@@ -43,7 +32,6 @@ correlation.with.wcgna <- function(x, y, minimium, keep.pos.cor=T, keep.neg.cor=
   # as the caller code needs a data.frame to work
   temp.table <- merge(as.data.table(cor.melt), as.data.table(p.melt), by=c("x","y"))
   result.table <-merge(temp.table, as.data.table(padj.melt),  by=c("x","y"))
-  cat("MERGE TIME: : ", (proc.time() - merge.start)["elapsed"], "\n")
   
   return(result.table)
 }

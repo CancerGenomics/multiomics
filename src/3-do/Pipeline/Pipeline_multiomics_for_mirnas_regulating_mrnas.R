@@ -34,7 +34,7 @@ source(paste(sourceBaseLocation, "/src/survival.utils/read_genomic_data_utils.R"
 source(paste(sourceBaseLocation, "/src/survival.utils/file_utils.R",sep=""), echo=FALSE, encoding="Cp1252")
 
 library("multiMiR")
-
+enableWGCNAThreads()
 
 ##########CONFIG: You should change this 3 variables to set your values##################
 #Where input files are and where the intermediate and result files will be stored

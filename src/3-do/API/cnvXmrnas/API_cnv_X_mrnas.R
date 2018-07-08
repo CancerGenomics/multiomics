@@ -181,7 +181,6 @@ CnvXMrnasWCGNA <- function(mrna, cnv, output.path="~/",
 correlation.gene.to.gene <- function(x, y, r.minimium, keep.pos.cor=T, keep.neg.cor=T) {
   
   ### Enable parallel processing for WCGNA Correlation
-  enableWGCNAThreads()
   p.values.positions.of.correlated.pairs<-c()
   num.of.result.columns<-5
 

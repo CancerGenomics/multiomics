@@ -3,6 +3,9 @@ options(shiny.maxRequestSize=500*1024^2)
 
 shinyServer(function(input, output, session) {
   
+  ### Enable parallel processing for WCGNA Correlation
+  enableWGCNAThreads()
+  
   sharedValues <- reactiveValues(fromButton=F,correlations="",correlationsStep2="",
                                  mirna.matrix.to.render="",cnvMrnaCorrelations="",
                                  cnv.matrix.to.render="", meth.matrix.to.render="",
