@@ -1,5 +1,5 @@
 # max size is 500MB
-options(shiny.maxRequestSize=500*1024^2)
+options(shiny.maxRequestSize=5000*1024^2)
 
 shinyServer(function(input, output, session) {
   
